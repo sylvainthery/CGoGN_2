@@ -273,7 +273,7 @@ TEST_F(ChunkArrayContainerTest, test_merge)
 //		std::cout << i++ << " : "<< x << std::endl;
 
 	// check contains of result
-	std::vector<int32> after;
+	std::vector<uint32> after;
 	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 		after.push_back(data_i->operator[](i));
 
@@ -367,7 +367,7 @@ TEST_F(ChunkArrayContainerTest, test_merge_tri)
 
 
 	// check contains of result
-	std::vector<int32> after;
+	std::vector<uint32> after;
 	uint32 nb_true=0u;
 	for (uint32 i=ca_cont.begin(); i!=ca_cont.end(); ca_cont.next(i))
 	{
