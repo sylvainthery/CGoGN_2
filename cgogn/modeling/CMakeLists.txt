@@ -9,6 +9,7 @@ set(HEADER_ALGOS
 	algos/pliant_remeshing.h
 	algos/decimation.h
 	algos/tetrahedralization.h
+	algos/dual.h
 )
 set(HEADER_TILING
 	tiling/tiling.h
@@ -26,6 +27,7 @@ set(HEADER_DECIMATION
 	decimation/edge_traversor_map_order.h
 	decimation/edge_traversor_edge_length.h
 	decimation/edge_traversor_qem.h
+
 )
 
 set(HEADER_FILES dll.h ${HEADER_ALGOS} ${HEADER_TILING} ${HEADER_DECIMATION})
@@ -74,7 +76,6 @@ install(DIRECTORY algos tiling decimation
 
 
 cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}" "${CGOGN_SOURCE_DIR}" "include")
-
 
 source_group("ALGOS" FILES ${HEADER_ALGOS}  ${SOURCE_ALGOS})
 source_group("TILING" FILES ${HEADER_TILING} ${SOURCE_TILING})
