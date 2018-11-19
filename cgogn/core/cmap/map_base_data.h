@@ -120,15 +120,27 @@ public:
 		return (instances_ != nullptr) && (std::find(instances_->begin(), instances_->end(), map) != instances_->end());
 	}
 
+	inline ChunkArrayContainer<uint8>& cac_topology()
+	{
+		return topology_;
+	}
+
 	/*******************************************************************************
 	 * Containers management
 	 *******************************************************************************/
 
 	template <Orbit ORBIT>
-	inline const ChunkArrayContainer<uint32>& attribute_container() const
+	inline ChunkArrayContainer<uint32>& attribute_container()
 	{
 		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
 		return attributes_[ORBIT];
+	}
+
+	template <Orbit ORBIT>
+	inline ChunkArray<uint32>& embeddings_array()
+	{
+		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+		return *(embeddings_[ORBIT]);
 	}
 
 	inline const ChunkArrayContainer<uint32>& attribute_container(Orbit orbit) const
@@ -137,19 +149,22 @@ public:
 		return attributes_[orbit];
 	}
 
+	inline ChunkArrayContainer<uint8>& topology_container()
+	{
+		return topology_;
+	}
+
 	inline const ChunkArrayContainer<uint8>& topology_container() const
 	{
 		return topology_;
 	}
 
-protected:
-
-	template <Orbit ORBIT>
-	inline ChunkArrayContainer<uint32>& non_const_attribute_container()
-	{
-		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
-		return attributes_[ORBIT];
-	}
+//	template <Orbit ORBIT>
+//	inline ChunkArrayContainer<uint32>& non_const_attribute_container()
+//	{
+//		static_assert(ORBIT < NB_ORBITS, "Unknown orbit parameter");
+//		return attributes_[ORBIT];
+//	}
 
 	/*******************************************************************************
 	 * Marking attributes management
@@ -191,8 +206,6 @@ protected:
 	/*******************************************************************************
 	 * Embedding (orbit indexing) management
 	 *******************************************************************************/
-
-public:
 
 	template <Orbit ORBIT>
 	inline bool is_embedded() const
@@ -239,8 +252,6 @@ public:
 
 		return (*embeddings_[orb])[d.index];
 	}
-
-protected:
 
 	template <class CellType>
 	inline void set_embedding(Dart d, uint32 emb)

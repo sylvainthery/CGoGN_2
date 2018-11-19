@@ -29,26 +29,19 @@
 namespace cgogn
 {
 
-template <typename MAP2>
-class CMap1Builder_T;
-
 template <typename MAP_TYPE>
 class CMap1_T : public CMap0_T<MAP_TYPE>
 {
 public:
 
 	static const uint8 DIMENSION = 1;
-
 	static const uint8 PRIM_SIZE = 1;
 
 	using MapType = MAP_TYPE ;
 	using Inherit = CMap0_T<MAP_TYPE>;
 	using Self = CMap1_T<MAP_TYPE>;
 
-	using Builder = CMap1Builder_T<Self>;
-
 	friend class MapBase<MAP_TYPE>;
-	friend class CMap1Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -108,6 +101,13 @@ public:
 
 	~CMap1_T() override
 	{}
+
+
+	inline ChunkArray<Dart>& ca_phi1()
+	{
+		return *(phi1_);
+	}
+
 
 	/*!
 	 * \brief Check the integrity of embedding information
@@ -255,8 +255,6 @@ public:
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
-protected:
-
 	/*!
 	 * \brief Add a face in the map.
 	 * \param size : the number of darts in the built face
@@ -275,35 +273,6 @@ protected:
 		return d;
 	}
 
-public:
-
-	/*!
-	 * \brief Add a face in the map.
-	 * \param size : the number of vertices in the built face
-	 * \return The built face. If the map has Vertex or Face attributes,
-	 * the new inserted cells are automatically embedded on new attribute elements.
-	 */
-	Face add_face(uint32 size)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		const Face f(add_face_topo(size));
-
-		if (this->template is_embedded<Vertex>())
-		{
-			foreach_dart_of_orbit(f, [this] (Dart d)
-			{
-				this->new_orbit_embedding(Vertex(d));
-			});
-		}
-
-		if (this->template is_embedded<Face>())
-			this->new_orbit_embedding(f);
-
-		return f;
-	}
-
-protected:
 
 	/*!
 	 * \brief Remove a face from the map.
@@ -321,21 +290,6 @@ protected:
 		this->remove_topology_element(d);
 	}
 
-public:
-
-	/*!
-	 * \brief Remove a face from the map.
-	 * \param f : the face to remove
-	 */
-	inline void remove_face(Face f)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		remove_face_topo(f.dart);
-	}
-
-protected:
-
 	/**
 	 * \brief Split a vertex.
 	 * \param d : a dart of the vertex
@@ -349,32 +303,6 @@ protected:
 		return e;
 	}
 
-public:
-
-	/**
-	 * \brief Split a vertex.
-	 * \param d : a vertex
-	 * \return The inserted vertex
-	 * A new vertex is inserted after v in the PHI1 orbit.
-	 * If the map has Vertex or Face attributes, the inserted cells
-	 * are automatically embedded on new attribute elements.
-	 */
-	inline Vertex split_vertex(Vertex v)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		const Vertex nv(split_vertex_topo(v.dart));
-
-		if (this->template is_embedded<Vertex>())
-			this->new_orbit_embedding(nv);
-
-		if (this->template is_embedded<Face>())
-			this->template copy_embedding<Face>(nv.dart, v.dart);
-
-		return nv;
-	}
-
-protected:
 
 	/**
 	 * \brief Remove a vertex from its face and delete it.
@@ -389,20 +317,6 @@ protected:
 		this->remove_topology_element(d);
 	}
 
-public:
-
-	/**
-	 * \brief Remove a vertex from its face and delete it.
-	 * @param v : a vertex
-	 */
-	inline void remove_vertex(Vertex v)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		remove_vertex_topo(v.dart);
-	}
-
-protected:
 
 	inline void reverse_face_topo(Dart d)
 	{
@@ -423,28 +337,6 @@ protected:
 		phi1_sew(e, d);				// Sew the last edge
 	}
 
-
-public:
-	inline Vertex make_polyline(uint32 size)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		const Dart v = add_face_topo(size);
-
-		if (this->template is_embedded<Vertex>())
-		{
-			foreach_dart_of_orbit(ConnectedComponent(v), [this] (Dart d)
-			{
-				this->new_orbit_embedding(Vertex(d));
-			});
-		}
-
-		this->boundary_mark(Boundary(v));
-
-		return Vertex(phi1(v));
-	}
-
-protected:
 
 	/*!
 	 * \brief Close the topological hole that contains Dart d (a fixed point of phi1 relation)
@@ -477,77 +369,12 @@ protected:
 		return first;
 	}
 
-	/*!
-	 * \brief Close a hole with a new face and update the embedding of incident cells.
-	 * \param d : a vertex of the hole
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * A face is inserted on the boundary that begin at dart d.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted face and incident cells are automatically updated.
-	 * More precisely :
-	 *  - the Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
-	 */
-	inline Vertex close_hole(Dart d)
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
 
-		const Vertex v(close_hole_topo(d));
 
-//		if (this->template is_embedded<Vertex>())
-//		{
-//			foreach_dart_of_orbit(ConnectedComponent(v), [this] (Dart it)
-//			{
-//				this->template copy_embedding<Vertex>(it, this->phi1(phi2(it)));
-//			});
-//		}
-
-		return v;
-	}
-
-	/*!
-	 * \brief Close the map by inserting faces in its holes and update the embedding of incident cells.
-	 * This method is used to close a CMap2 that has been build through the 2-sewing of 1-faces.
-	 * If the map has Dart, Vertex, Edge, Face or Volume attributes,
-	 * the embedding of the inserted faces and incident cells are automatically updated.
-	 * More precisely :
-	 *  - Vertex, Edge and Volume attributes are copied, if needed, from incident cells.
-	 * If the indexation of embedding was unique, the closed map is well embedded.
-	 */
-	// The template parameter is a hack needed to compile the class CMap2_T<DefaultMapTraits, CMap3Type<DefaultMapTraits>> with MSVC. Otherwise calling boundary_mark leads to an error.
-	template <typename = std::enable_if<std::is_same<typename MapType::TYPE, Self>::value>>
-	inline uint32 close_map()
-	{
-		CGOGN_CHECK_CONCRETE_TYPE;
-
-		uint32 nb_holes = 0u;
-
-//		std::vector<Dart>* fix_point_darts = dart_buffers()->buffer();
-//		this->foreach_dart([&] (Dart d)
-//		{
-//			if (phi1(d) == d)
-//				fix_point_darts->push_back(d);
-//		});
-
-//		for (Dart d : (*fix_point_darts))
-//		{
-//			if (phi1(d) == d)
-//			{
-//				Vertex f = close_hole(d);
-//				this->boundary_mark(f);
-//				++nb_holes;
-//			}
-//		}
-
-//		dart_buffers()->release_buffer(fix_point_darts);
-
-		return nb_holes;
-	}
 
 	/*******************************************************************************
 	 * Connectivity information
 	 *******************************************************************************/
-
-public:
 
 	inline uint32 degree(Vertex) const
 	{
@@ -598,8 +425,6 @@ public:
 	}
 #pragma warning(pop)
 
-public:
-
 	/*******************************************************************************
 	* Orbits traversal                                                             *
 	*******************************************************************************/
@@ -625,8 +450,6 @@ public:
 		}
 	}
 
-protected:
-
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI1(Dart d, const FUNC& f) const
 	{
@@ -637,24 +460,6 @@ protected:
 				break;
 			it = phi1(it);
 		} while (it != d);
-	}
-
-public:
-
-	/*******************************************************************************
-	 * Incidence traversal
-	 *******************************************************************************/
-
-	template <typename FUNC>
-	inline void foreach_incident_vertex(Face f, const FUNC& func) const
-	{
-		static_assert(is_func_parameter_same<FUNC, Vertex>::value, "Wrong function cell parameter type");
-		foreach_dart_of_orbit(f, [&func] (Dart v) { return internal::void_to_true_binder(func, Vertex(v)); });
-	}
-
-	inline std::pair<Vertex,Vertex> vertices(Edge e) const
-	{
-		return std::pair<Vertex, Vertex>(Vertex(e.dart), Vertex(this->phi1(e.dart)));
 	}
 
 protected:

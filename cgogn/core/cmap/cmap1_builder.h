@@ -24,121 +24,110 @@
 #ifndef CGOGN_CORE_CMAP_CMAP1_BUILDER_H_
 #define CGOGN_CORE_CMAP_CMAP1_BUILDER_H_
 
-#include <cgogn/core/cmap/map_base.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn
 {
 
-template <typename MAP1>
-class CMap1Builder_T
+CMap1::Face add_face(CMap1& m, uint32 size);
+
+inline void remove_face(CMap1& m, CMap1::Face f)
 {
-	static_assert(MAP1::DIMENSION == 1, "CMap1Builder_T works only with 1D Maps.");
+	m.remove_face_topo(f.dart);
+}
 
-public:
+CMap1::Vertex split_vertex(CMap1& m, CMap1::Vertex v);
 
-	using Self = CMap1Builder_T<MAP1>;
-	using Map1 = MAP1;
-	using CDart = typename Map1::CDart;
-	using Vertex = typename Map1::Vertex;
-	using Face = typename Map1::Face;
+inline void remove_vertex(CMap1& m, CMap1::Vertex v)
+{
+	m.remove_vertex_topo(v.dart);
+}
 
-	template <typename T>
-	using ChunkArrayContainer = typename Map1::template ChunkArrayContainer<T>;
+CMap1::Vertex make_polyline(CMap1& m, uint32 size);
 
-	template <typename T>
-	using ChunkArray = typename Map1::template ChunkArray<T>;
+inline CMap1::Vertex close_hole(CMap1& m,Dart d)
+{
+	return CMap1::Vertex(m.close_hole_topo(d));
+}
 
-	inline CMap1Builder_T(Map1& map) : map_(map) {}
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(CMap1Builder_T);
-	inline ~CMap1Builder_T() {}
+inline uint32 close_map(CMap1& m)
+{
+	uint32 nb_holes = 0u;
+	return nb_holes;
+}
 
-public:
-	template <Orbit ORBIT>
-	inline void create_embedding()
+template <typename FUNC>
+inline void foreach_incident_vertex(CMap1& m, CMap1::Face f, const FUNC& func)
+{
+	static_assert(is_func_parameter_same<FUNC, CMap1::Vertex>::value, "Wrong function cell parameter type");
+	m.foreach_dart_of_orbit(f, [&func] (Dart v)
 	{
-		map_.template create_embedding<ORBIT>();
+		return internal::void_to_true_binder(func, CMap1::Vertex(v));
+	});
+}
+
+inline std::pair<CMap1::Vertex,CMap1::Vertex> vertices(const CMap1& m, CMap1::Edge e)
+{
+	return std::pair<CMap1::Vertex, CMap1::Vertex>(CMap1::Vertex(e.dart), CMap1::Vertex(m.phi1(e.dart)));
+}
+
+
+
+//CPP
+
+using Vertex = CMap1::Vertex;
+using Face = CMap1::Face;
+using Boundary = CMap1::Boundary;
+using ConnectedComponent = CMap1::ConnectedComponent;
+
+Face add_face(CMap1& m, uint32 size)
+{
+	const Face f(m.add_face_topo(size));
+
+	if (m.is_embedded<CMap1::Vertex>())
+	{
+		m.foreach_dart_of_orbit(f, [&m] (Dart d)
+		{
+			m.new_orbit_embedding(CMap1::Vertex(d));
+		});
 	}
 
-	template <Orbit ORBIT>
-	inline ChunkArrayContainer<uint32>& attribute_container()
+	if (m.is_embedded<CMap1::Face>())
+		m.new_orbit_embedding(f);
+	return f;
+}
+
+
+Vertex split_vertex(CMap1& m, Vertex v)
+{
+	const Vertex nv(m.split_vertex_topo(v.dart));
+
+	if (m.is_embedded<Vertex>())
+		m.new_orbit_embedding(nv);
+
+	if (m.is_embedded<Face>())
+		m.copy_embedding<Face>(nv.dart, v.dart);
+
+	return nv;
+}
+
+Vertex make_polyline(CMap1& m, uint32 size)
+{
+	const Dart v = m.add_face_topo(size);
+
+	if (m.is_embedded<Vertex>())
 	{
-		return map_.template non_const_attribute_container<ORBIT>();
+		m.foreach_dart_of_orbit(ConnectedComponent(v), [&m] (Dart d)
+		{
+			m.new_orbit_embedding(Vertex(d));
+		});
 	}
 
-	template <class CellType>
-	inline void set_embedding(Dart d, uint32 emb)
-	{
-		map_.template set_embedding<CellType>(d, emb);
-	}
+	m.boundary_mark(Boundary(v));
 
-	template <class CellType, Orbit ORBIT>
-	inline void set_orbit_embedding(Cell<ORBIT> c, uint32 emb)
-	{
-		map_.template set_orbit_embedding<CellType>(c, emb);
-	}
+	return Vertex(m.phi1(v));
+}
 
-	template <class CellType>
-	inline uint32 new_orbit_embedding(CellType c)
-	{
-		return map_.new_orbit_embedding(c);
-	}
-
-	inline void phi1_sew(Dart d, Dart e)
-	{
-		return map_.phi1_sew(d,e);
-	}
-
-	inline void phi1_unsew(Dart d)
-	{
-		map_.phi1_unsew(d);
-	}
-
-	inline void remove_face_topo(Dart d)
-	{
-		map_.remove_face_topo(d);
-	}
-
-	inline Dart add_face_topo(uint32 nb_edges)
-	{
-		return map_.add_face_topo(nb_edges);
-	}
-
-	template <Orbit ORBIT>
-	inline void boundary_mark(Cell<ORBIT> c)
-	{
-		map_.boundary_mark(c);
-	}
-
-	template <Orbit ORBIT>
-	void boundary_unmark(Cell<ORBIT> c)
-	{
-		map_.boundary_unmark(c);
-	}
-
-	inline uint32 close_map()
-	{
-		return map_.close_map();
-	}
-
-	inline Dart add_topology_element()
-	{
-		return map_.add_topology_element();
-	}
-
-	inline ChunkArray<Dart>& ca_phi1()
-	{
-		return *(map_.phi1_);
-	}
-
-	inline ChunkArrayContainer<uint8>& cac_topology()
-	{
-		return map_.topology_;
-	}
-
-private:
-
-	Map1& map_;
-};
 
 } //end namespace cgogn
 

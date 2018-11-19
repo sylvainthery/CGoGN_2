@@ -132,7 +132,6 @@ public:
 		}
 	}
 
-protected:
 
 	inline ConcreteMap* to_concrete()
 	{
@@ -212,23 +211,6 @@ protected:
 
 		this->attributes_[ORBIT].template remove_lines<1>(index);
 	}
-
-	//	template <Orbit ORBIT>
-	//	inline void compact_orbit_container()
-	//	{
-	//		if (!this->template is_embedded<ORBIT>())
-	//			return;
-
-	//		auto& cac = this->template attribute_container<ORBIT>();
-	//		const std::vector<unsigned int>& map_old_new = cac.template compact<ConcreteMap::PRIM_SIZE>();
-	//		this->parallel_foreach_dart([&map_old_new,this](Dart d, uint32)
-	//		{
-	//			uint32& old_idx = this->embeddings_[ORBIT]->operator[](d);
-	//			const uint32 new_idx = map_old_new[old_idx];
-	//			if (new_idx != UINT32_MAX)
-	//				old_idx = new_idx;
-	//		});
-	//	}
 
 public:
 
@@ -361,7 +343,6 @@ public:
 		this->attributes_[ORBIT].copy_chunk_array_data(dest.data(), src.data());
 	}
 
-protected:
 
 	/*******************************************************************************
 	 * Marking attributes management
@@ -770,7 +751,6 @@ public:
 		return result;
 	}
 
-protected:
 
 	template <Orbit ORBIT>
 	void boundary_mark(Cell<ORBIT> c)
@@ -796,7 +776,6 @@ protected:
 	 * Traversals
 	 *******************************************************************************/
 
-protected:
 
 	/*!
 	 * \Brief Methods to iterate over darts.
@@ -1200,8 +1179,6 @@ public:
 		for (auto& b : cells_buffers[1u])
 			dbuffs->release_cell_buffer(b);
 	}
-
-protected:
 
 	/**
 	 * \brief apply a function on each cell of the map (boundary cells excluded) using a DartMarker
