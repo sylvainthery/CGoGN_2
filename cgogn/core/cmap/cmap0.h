@@ -29,9 +29,6 @@
 namespace cgogn
 {
 
-template <typename MAP2>
-class CMap0Builder_T;
-
 template <typename MAP_TYPE>
 class CMap0_T : public MapBase<MAP_TYPE>
 {
@@ -45,10 +42,7 @@ public:
 	using Inherit = MapBase<MAP_TYPE>;
 	using Self = CMap0_T<MAP_TYPE>;
 
-	using Builder = CMap0Builder_T<Self>;
-
 	friend class MapBase<MAP_TYPE>;
-	friend class CMap0Builder_T<Self>;
 	friend class DartMarker_T<Self>;
 	friend class cgogn::DartMarkerStore<Self>;
 
@@ -60,7 +54,9 @@ public:
 
 	template <typename T>
 	using ChunkArrayContainer = typename Inherit::template ChunkArrayContainer<T>;
+
 	using typename Inherit::ChunkArrayGen;
+
 	template <typename T>
 	using ChunkArray = typename Inherit::template ChunkArray<T>;
 
@@ -72,8 +68,10 @@ public:
 
 	template <Orbit ORBIT>
 	using CellMarker = typename cgogn::CellMarker<Self, ORBIT>;
+
 	template <Orbit ORBIT>
 	using CellMarkerNoUnmark = typename cgogn::CellMarkerNoUnmark<Self, ORBIT>;
+
 	template <Orbit ORBIT>
 	using CellMarkerStore = typename cgogn::CellMarkerStore<Self, ORBIT>;
 

@@ -254,8 +254,6 @@ public:
 	 * High-level embedded and topological operations
 	 *******************************************************************************/
 
-protected:
-
 	/**
 	 * @brief add_pyramid_topo_fp adds a new pyramid whose base is composed of size sides
 	 * Darts are fixed points of phi3 relation
@@ -358,9 +356,6 @@ protected:
 		return nd;
 	}
 
-public:
-
-
 
 	inline bool flip_edge_topo(Dart e)
 	{
@@ -371,8 +366,6 @@ public:
 	}
 
 
-
-protected:
 
 	inline bool flip_back_edge_topo(Dart e)
 	{
@@ -954,8 +947,6 @@ protected:
 		}
 	}
 
-protected:
-
 	template <typename FUNC>
 	inline void foreach_dart_of_PHI21_PHI31(Dart d, const FUNC& f) const
 	{
@@ -1055,9 +1046,6 @@ protected:
 		}
 		cgogn::dart_buffers()->release_buffer(visited_face2);
 	}
-
-public:
-
 
 protected:
 
@@ -1260,7 +1248,6 @@ using CMap3 = CMap3_T<CMap3Type>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_API CMap3_T<CMap3Type>;
-extern template class CGOGN_CORE_API CMap3Builder_T<CMap3>;
 extern template class CGOGN_CORE_API DartMarker<CMap3>;
 extern template class CGOGN_CORE_API DartMarkerStore<CMap3>;
 extern template class CGOGN_CORE_API DartMarkerNoUnmark<CMap3>;
@@ -1292,7 +1279,7 @@ template <typename FUNC>
 inline void foreach_incident_edge(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
+	CMap3::DartMarkerStore marker(m);
 	foreach_dart_of_orbit(v, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
@@ -1308,13 +1295,13 @@ template <typename FUNC>
 inline void foreach_incident_face(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
+	CMap3::DartMarkerStore marker(m);
 	foreach_dart_of_orbit(v, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
 			marker.mark(d);
-			marker.mark(this->phi1(phi3(d)));
+			marker.mark(m.phi1(phi3(d)));
 			return internal::void_to_true_binder(func, CMap3::Face(d));
 		}
 		return true;
@@ -1325,10 +1312,10 @@ template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
+	CMap3::DartMarkerStore marker(m);
 	foreach_dart_of_orbit(v, [&] (Dart d) -> bool
 	{
-		if (!marker.is_marked(d) && !this->is_boundary(d))
+		if (!marker.is_marked(d) && !m.is_boundary(d))
 		{
 			marker.mark_orbit(CMap3::Vertex2(d));
 			return internal::void_to_true_binder(func, CMap3::Volume(d));
@@ -1342,7 +1329,7 @@ inline void foreach_incident_vertex(CMap3& m, CMap3::Edge e, const FUNC& f)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
 	if (internal::void_to_true_binder(f, CMap3::Vertex(e.dart)))
-		f(CMap3::Vertex(this->phi2(e.dart)));
+		f(CMap3::Vertex(m.phi2(e.dart)));
 }
 
 template <typename FUNC>
@@ -1356,9 +1343,9 @@ template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::Edge e, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	foreach_dart_of_PHI23(e.dart, [this, &func] (Dart d) -> bool
+	m.foreach_dart_of_PHI23(e.dart, [&m, &func] (Dart d) -> bool
 	{
-		if (!this->is_boundary(d))
+		if (!m.is_boundary(d))
 			return internal::void_to_true_binder(func, CMap3::Volume(d));
 		else
 			return true;
@@ -1384,10 +1371,10 @@ inline void foreach_incident_volume(CMap3& m, CMap3::Face f, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
 	bool res1 = true;
-	if (!this->is_boundary(f.dart))
+	if (!m.is_boundary(f.dart))
 		res1 = internal::void_to_true_binder(func, CMap3::Volume(f.dart));
 	const Dart d3 = phi3(f.dart);
-	if (!this->is_boundary(d3) && res1)
+	if (!m.is_boundary(d3) && res1)
 		func(CMap3::Volume(d3));
 }
 
@@ -1395,7 +1382,8 @@ template <typename FUNC>
 inline void foreach_incident_vertex(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
-	Inherit::foreach_incident_vertex(v, [&func] (CMap3::Vertex2 ve) -> bool
+
+	foreach_incident_vertex(reinterpret_cast<CMap2&>(m), v, [&func] (CMap3::Vertex2 ve) -> bool
 	{
 		return internal::void_to_true_binder(func, CMap3::Vertex(ve.dart));
 	});
@@ -1405,7 +1393,7 @@ template <typename FUNC>
 inline void foreach_incident_edge(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge>::value, "Wrong function cell parameter type");
-	Inherit::foreach_incident_edge(v, [&func] (CMap3::Edge2 e) -> bool
+	foreach_incident_edge(reinterpret_cast<CMap2&>(m), v, [&func] (CMap3::Edge2 e) -> bool
 	{
 		return internal::void_to_true_binder(func, CMap3::Edge(e.dart));
 	});
@@ -1415,8 +1403,8 @@ template <typename FUNC>
 inline void foreach_incident_face(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
-	foreach_dart_of_orbit(v, [&] (Dart d) -> bool
+	CMap3::DartMarkerStore marker(m);
+	m.foreach_dart_of_orbit(v, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
@@ -1431,8 +1419,8 @@ template <typename FUNC>
 inline void foreach_incident_vertex(CMap3& m, CMap3::ConnectedComponent cc, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
-	foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+	CMap3::DartMarkerStore marker(m);
+	m.foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
@@ -1447,8 +1435,8 @@ template <typename FUNC>
 inline void foreach_incident_edge(CMap3& m, CMap3::ConnectedComponent cc, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
-	foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+	CMap3::DartMarkerStore marker(m);
+	m.foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
@@ -1463,8 +1451,8 @@ template <typename FUNC>
 inline void foreach_incident_face(CMap3& m, CMap3::ConnectedComponent cc, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
-	foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+	CMap3::DartMarkerStore marker(m);
+	m.foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
@@ -1479,8 +1467,8 @@ template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::ConnectedComponent cc, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker(*this);
-	foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
+	CMap3::DartMarkerStore marker(m);
+	m.foreach_dart_of_orbit(cc, [&] (Dart d) -> bool
 	{
 		if (!marker.is_marked(d))
 		{
@@ -1496,14 +1484,14 @@ inline void foreach_incident_volume(CMap3& m, CMap3::ConnectedComponent cc, cons
 template <typename FUNC>
 inline void foreach_incident_edge(CMap3& m, CMap3::Vertex2 v, const FUNC& func)
 {
-	Inherit::foreach_incident_edge(v, func);
+	foreach_incident_edge(reinterpret_cast<CMap2&>(m), v, func);
 }
 
 template <typename FUNC>
-inline void foreach_incident_face(CMap3::Vertex2 v, const FUNC& func)
+inline void foreach_incident_face(CMap3& m, CMap3::Vertex2 v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face2>::value, "Wrong function cell parameter type");
-	foreach_dart_of_orbit(v, [this, &func] (Dart d)
+	m.foreach_dart_of_orbit(v, [&m, &func] (Dart d)
 	{
 		return internal::void_to_true_binder(func, CMap3::Face2(d));
 	});
@@ -1512,20 +1500,20 @@ inline void foreach_incident_face(CMap3::Vertex2 v, const FUNC& func)
 template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::Vertex2 v, const FUNC& func)
 {
-	Inherit::foreach_incident_volume(v, func);
+	foreach_incident_volume(reinterpret_cast<CMap2&>(m), v, func);
 }
 
 template <typename FUNC>
 inline void foreach_incident_vertex(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 {
-	Inherit::foreach_incident_vertex(e, func);
+	foreach_incident_vertex(reinterpret_cast<CMap2&>(m), e, func);
 }
 
 template <typename FUNC>
 inline void foreach_incident_face(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face2>::value, "Wrong function cell parameter type");
-	foreach_dart_of_orbit(e, [this, &func] (Dart d) -> bool
+	m.foreach_dart_of_orbit(e, [&m, &func] (Dart d) -> bool
 	{
 		return internal::void_to_true_binder(func, CMap3::Face2(d));
 	});
@@ -1534,25 +1522,25 @@ inline void foreach_incident_face(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 {
-	Inherit::foreach_incident_volume(e, func);
+	foreach_incident_volume(reinterpret_cast<CMap2&>(m), e, func);
 }
 
 template <typename FUNC>
 inline void foreach_incident_vertex(CMap3& m, CMap3::Face2 f, const FUNC& func)
 {
-	Inherit::foreach_incident_vertex(f, func);
+	foreach_incident_vertex(reinterpret_cast<CMap2&>(m), f, func);
 }
 
 template <typename FUNC>
 inline void foreach_incident_edge(CMap3& m, CMap3::Face2 f, const FUNC& func)
 {
-	Inherit::foreach_incident_edge(f, func);
+	foreach_incident_edge(reinterpret_cast<CMap2&>(m), f, func);
 }
 
 template <typename FUNC>
 inline void foreach_incident_volume(CMap3& m, CMap3::Face2 f, const FUNC& func)
 {
-	Inherit::foreach_incident_volume(f, func);
+	foreach_incident_volume(reinterpret_cast<CMap2&>(m), f, func);
 }
 
 /*******************************************************************************
@@ -1563,9 +1551,9 @@ template <typename FUNC>
 inline void foreach_adjacent_vertex_through_edge(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
-	foreach_incident_edge(v, [&] (CMap3::Edge e) -> bool
+	foreach_incident_edge(m, v, [&] (CMap3::Edge e) -> bool
 	{
-		return internal::void_to_true_binder(func, CMap3::Vertex(this->phi2(e.dart)));
+		return internal::void_to_true_binder(func, CMap3::Vertex(m.phi2(e.dart)));
 	});
 }
 
@@ -1573,7 +1561,7 @@ template <typename FUNC>
 inline void foreach_adjacent_vertex_through_face(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_vertex(*this);
+	CMap3::DartMarkerStore marker_vertex(m);
 	marker_vertex.mark_orbit(v);
 	foreach_incident_face(v, [&] (CMap3::Face inc_face) -> bool
 	{
@@ -1595,12 +1583,12 @@ template <typename FUNC>
 inline void foreach_adjacent_vertex_through_volume(CMap3& m, CMap3::Vertex v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_vertex(*this);
+	CMap3::DartMarkerStore marker_vertex(m);
 	marker_vertex.mark_orbit(v);
-	foreach_incident_volume(v, [&] (CMap3::Volume inc_vol) -> bool
+	foreach_incident_volume(m, v, [&] (CMap3::Volume inc_vol) -> bool
 	{
 		bool res_nested_lambda = true;
-		foreach_incident_vertex(inc_vol, [&] (CMap3::Vertex inc_vert) -> bool
+		foreach_incident_vertex(m, inc_vol, [&] (CMap3::Vertex inc_vert) -> bool
 		{
 			if (!marker_vertex.is_marked(inc_vert.dart))
 			{
@@ -1620,7 +1608,7 @@ inline void foreach_adjacent_edge_through_vertex(CMap3& m, CMap3::Edge e, const 
 	foreach_incident_vertex(e, [&] (CMap3::Vertex iv) -> bool
 	{
 		bool res_nested_lambda = true;
-		foreach_incident_edge(iv, [&] (CMap3::Edge ie) -> bool
+		foreach_incident_edge(m, iv, [&] (CMap3::Edge ie) -> bool
 		{
 			if (ie.dart != iv.dart)
 				res_nested_lambda = internal::void_to_true_binder(func, ie);
@@ -1634,9 +1622,9 @@ template <typename FUNC>
 inline void foreach_adjacent_edge_through_face(CMap3& m, CMap3::Edge e, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_edge(*this);
+	CMap3::DartMarkerStore marker_edge(m);
 	marker_edge.mark_orbit(e);
-	foreach_incident_face(e, [&] (CMap3::Face inc_face) -> bool
+	foreach_incident_face(m, e, [&] (CMap3::Face inc_face) -> bool
 	{
 		bool res_nested_lambda = true;
 		foreach_incident_edge(inc_face, [&] (CMap3::Edge inc_edge) -> bool
@@ -1656,9 +1644,9 @@ template <typename FUNC>
 inline void foreach_adjacent_edge_through_volume(CMap3& m, CMap3::Edge e, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_edge(*this);
+	CMap3::DartMarkerStore marker_edge(m);
 	marker_edge.mark_orbit(e);
-	foreach_incident_volume(e, [&] (CMap3::Volume inc_vol) -> bool
+	foreach_incident_volume(m, e, [&] (CMap3::Volume inc_vol) -> bool
 	{
 		bool res_nested_lambda = true;
 		foreach_incident_edge(inc_vol, [&] (CMap3::Edge inc_edge) -> bool
@@ -1678,9 +1666,9 @@ template <typename FUNC>
 inline void foreach_adjacent_face_through_vertex(CMap3& m, CMap3::Face f, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_face(*this);
+	CMap3::DartMarkerStore marker_face(m);
 	marker_face.mark_orbit(f);
-	foreach_incident_vertex(f, [&] (CMap3::Vertex v) -> bool
+	foreach_incident_vertex(m, f, [&] (CMap3::Vertex v) -> bool
 	{
 		bool res_nested_lambda = true;
 		foreach_incident_face(v, [&](CMap3::Face inc_fac) -> bool
@@ -1703,7 +1691,7 @@ inline void foreach_adjacent_face_through_edge(CMap3& m, CMap3::Face f, const FU
 	foreach_incident_edge(f, [&] (CMap3::Edge ie) -> bool
 	{
 		bool res_nested_lambda = true;
-		foreach_incident_face(ie, [&] (CMap3::Face iface) -> bool
+		foreach_incident_face(m,ie, [&] (CMap3::Face iface) -> bool
 		{
 			if (iface.dart != ie.dart)
 				res_nested_lambda = internal::void_to_true_binder(func, iface);
@@ -1717,13 +1705,13 @@ template <typename FUNC>
 inline void foreach_adjacent_face_through_volume(CMap3& m, CMap3::Face f, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_face(*this);
+	CMap3::DartMarkerStore marker_face(m);
 	marker_face.mark_orbit(f);
 	bool res1 = true;
 
-	if (!this->is_boundary(f.dart))
+	if (!m.is_boundary(f.dart))
 	{
-		foreach_incident_face(CMap3::Volume(f.dart), [&] (CMap3::Face inc_face) -> bool
+		foreach_incident_face(m, CMap3::Volume(f.dart), [&] (CMap3::Face inc_face) -> bool
 		{
 			if (!marker_face.is_marked(inc_face.dart))
 			{
@@ -1735,9 +1723,9 @@ inline void foreach_adjacent_face_through_volume(CMap3& m, CMap3::Face f, const 
 	}
 
 	const Dart d3 = phi3(f.dart);
-	if (!this->is_boundary(d3) && res1)
+	if (!m.is_boundary(d3) && res1)
 	{
-		foreach_incident_face(CMap3::Volume(d3), [&] (CMap3::Face inc_face) -> bool
+		foreach_incident_face(m, CMap3::Volume(d3), [&] (CMap3::Face inc_face) -> bool
 		{
 			if (!marker_face.is_marked(inc_face.dart))
 			{
@@ -1753,14 +1741,14 @@ template <typename FUNC>
 inline void foreach_adjacent_volume_through_vertex(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_volume(*this);
+	CMap3::DartMarkerStore marker_volume(m);
 	marker_volume.mark_orbit(v);
-	foreach_incident_vertex(v, [&] (CMap3::Vertex inc_vert)
+	foreach_incident_vertex(m, v, [&] (CMap3::Vertex inc_vert)
 	{
 		bool res_nested_lambda = true;
 		foreach_incident_volume(inc_vert, [&](CMap3::Volume inc_vol)
 		{
-			if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
+			if (!marker_volume.is_marked(inc_vol.dart) && !m.is_boundary(inc_vol.dart))
 			{
 				marker_volume.mark_orbit(inc_vol);
 				res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
@@ -1775,14 +1763,14 @@ template <typename FUNC>
 inline void foreach_adjacent_volume_through_edge(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_volume(*this);
+	CMap3::DartMarkerStore marker_volume(m);
 	marker_volume.mark_orbit(v);
-	foreach_incident_edge(v, [&] (CMap3::Edge inc_edge) -> bool
+	foreach_incident_edge(m, v, [&] (CMap3::Edge inc_edge) -> bool
 	{
 		bool res_nested_lambda = true;
-		foreach_incident_volume(inc_edge, [&] (CMap3::Volume inc_vol) -> bool
+		foreach_incident_volume(m, inc_edge, [&] (CMap3::Volume inc_vol) -> bool
 		{
-			if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
+			if (!marker_volume.is_marked(inc_vol.dart) && !m.is_boundary(inc_vol.dart))
 			{
 				marker_volume.mark_orbit(inc_vol);
 				res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
@@ -1797,14 +1785,14 @@ template <typename FUNC>
 inline void foreach_adjacent_volume_through_face(CMap3& m, CMap3::Volume v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Volume>::value, "Wrong function cell parameter type");
-	CMap3::DartMarkerStore marker_volume(*this);
+	CMap3::DartMarkerStore marker_volume(m);
 	marker_volume.mark_orbit(v);
-	foreach_incident_face(v, [&] (CMap3::Edge inc_face) -> bool
+	foreach_incident_face(m, v, [&] (CMap3::Edge inc_face) -> bool
 	{
 		bool res_nested_lambda = true;
-		foreach_incident_volume(inc_face, [&] (CMap3::Volume inc_vol) -> bool
+		foreach_incident_volume(m, inc_face, [&] (CMap3::Volume inc_vol) -> bool
 		{
-			if (!marker_volume.is_marked(inc_vol.dart) && !this->is_boundary(inc_vol.dart))
+			if (!marker_volume.is_marked(inc_vol.dart) && !m.is_boundary(inc_vol.dart))
 			{
 				marker_volume.mark_orbit(inc_vol);
 				res_nested_lambda = internal::void_to_true_binder(func, inc_vol);
@@ -1820,18 +1808,18 @@ inline void foreach_adjacent_volume_through_face(CMap3& m, CMap3::Volume v, cons
 template <typename FUNC>
 inline void foreach_adjacent_vertex_through_edge(CMap3& m, CMap3::Vertex2 v, const FUNC& func)
 {
-	Inherit::foreach_adjacent_vertex_through_edge(v, func);
+	foreach_adjacent_vertex_through_edge(reinterpret_cast<CMap2&>(m), v, func);
 }
 
 template <typename FUNC>
 inline void foreach_adjacent_vertex_through_face(CMap3& m, CMap3::Vertex2 v, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Vertex2>::value, "Wrong function cell parameter type");
-	foreach_dart_of_orbit(v, [this, &func] (Dart vd) -> bool
+	m.foreach_dart_of_orbit(v, [&m, &func] (Dart vd) -> bool
 	{
 		bool res_nested_lambda = true;
-		const Dart vd1 = this->phi1(vd);
-		this->foreach_dart_of_orbit(CMap3::Face2(vd), [&func, &res_nested_lambda, vd, vd1] (Dart fd) -> bool
+		const Dart vd1 = m.phi1(vd);
+		m.foreach_dart_of_orbit(CMap3::Face2(vd), [&func, &res_nested_lambda, vd, vd1] (Dart fd) -> bool
 		{
 			// skip CMap3::Vertex2 v itself and its first successor around current face
 			if (fd != vd && fd != vd1)
@@ -1845,17 +1833,17 @@ inline void foreach_adjacent_vertex_through_face(CMap3& m, CMap3::Vertex2 v, con
 template <typename FUNC>
 inline void foreach_adjacent_edge_through_vertex(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 {
-	Inherit::foreach_adjacent_edge_through_vertex(e, func);
+	foreach_adjacent_edge_through_vertex(reinterpret_cast<CMap2&>(m), e, func);
 }
 
 template <typename FUNC>
 inline void foreach_adjacent_edge_through_face(CMap3& m, CMap3::Edge2 e, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Edge2>::value, "Wrong function cell parameter type");
-	foreach_dart_of_orbit(e, [this, &func] (Dart ed) -> bool
+	m.foreach_dart_of_orbit(e, [&m, &func] (Dart ed) -> bool
 	{
 		bool res_nested_lambda = true;
-		this->foreach_dart_of_orbit(CMap3::Face2(ed), [&func, &res_nested_lambda, ed] (Dart fd) -> bool
+		m.foreach_dart_of_orbit(CMap3::Face2(ed), [&func, &res_nested_lambda, ed] (Dart fd) -> bool
 		{
 			// skip CMap3::Edge2 e itself
 			if (fd != ed)
@@ -1870,11 +1858,11 @@ template <typename FUNC>
 inline void foreach_adjacent_face_through_vertex(CMap3& m, CMap3::Face2 f, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face2>::value, "Wrong function cell parameter type");
-	foreach_dart_of_orbit(f, [this, &func] (Dart fd) -> bool
+	m.foreach_dart_of_orbit(f, [&m, &func] (Dart fd) -> bool
 	{
 		bool res_nested_lambda = true;
-		const Dart fd1 = this->phi2(this->phi_1(fd));
-		this->foreach_dart_of_orbit(CMap3::Vertex2(fd), [this, &func, &res_nested_lambda, fd, fd1] (Dart vd) -> bool
+		const Dart fd1 = m.phi2(m.phi_1(fd));
+		m.foreach_dart_of_orbit(CMap3::Vertex2(fd), [&m, &func, &res_nested_lambda, fd, fd1] (Dart vd) -> bool
 		{
 			// skip CMap3::Face2 f itself and its first successor around current vertex
 			if (vd != fd && vd != fd1)
@@ -1889,20 +1877,20 @@ template <typename FUNC>
 inline void foreach_adjacent_face_through_edge(CMap3& m, CMap3::Face2 f, const FUNC& func)
 {
 	static_assert(is_func_parameter_same<FUNC, CMap3::Face2>::value, "Wrong function cell parameter type");
-	m.foreach_dart_of_orbit(f, [this, &func] (Dart d) -> bool
+	m.foreach_dart_of_orbit(f, [&m, &func] (Dart d) -> bool
 	{
-		return internal::void_to_true_binder(func, CMap3::Face2(this->phi2(d)));
+		return internal::void_to_true_binder(func, CMap3::Face2(m.phi2(d)));
 	});
 }
 
 inline std::pair<CMap3::Vertex, CMap3::Vertex> vertices(CMap3& m, CMap3::Edge e)
 {
-	return std::pair<CMap3::Vertex, CMap3::Vertex>(CMap3::Vertex(e.dart), CMap3::Vertex(this->phi1(e.dart)));
+	return std::pair<CMap3::Vertex, CMap3::Vertex>(CMap3::Vertex(e.dart), CMap3::Vertex(m.phi1(e.dart)));
 }
 
 inline std::pair<CMap3::Vertex2, CMap3::Vertex2> vertices(CMap3& m, CMap3::Edge2 e)
 {
-	return std::pair<CMap3::Vertex2, CMap3::Vertex2>(CMap3::Vertex2(e.dart), CMap3::Vertex2(this->phi1(e.dart)));
+	return std::pair<CMap3::Vertex2, CMap3::Vertex2>(CMap3::Vertex2(e.dart), CMap3::Vertex2(m.phi1(e.dart)));
 }
 
 
