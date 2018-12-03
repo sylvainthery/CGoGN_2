@@ -207,7 +207,7 @@ inline void foreach_dart_of_orbit(CMap1& m, Cell<ORBIT> c, const FUNC& f)
 }
 
 template <Orbit ORBIT>
-inline bool is_boundary_cell(CMap1& m, Cell<ORBIT> c) const
+inline bool is_boundary_cell(CMap1& m, Cell<ORBIT> c)
 {
 	switch (ORBIT)
 	{
@@ -223,6 +223,41 @@ inline bool is_boundary_cell(CMap1& m, Cell<ORBIT> c) const
 		default: cgogn_assert_not_reached_false("Orbit not supported in a CMap1"); break;
 	}
 }
+
+
+/**
+ * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
+ * @param map
+ */
+void merge_check_embedding(CMap1& m, const CMap1& map)
+{
+	if (!m.is_embedded<Orbit::DART>() && map.is_embedded<Orbit::DART>())
+		m.create_embedding<Orbit::DART>();
+	if (!m.is_embedded<Orbit::PHI1>() && map.is_embedded<Orbit::PHI1>())
+		m.create_embedding<Orbit::PHI1>();
+}
+
+/**
+ * @brief ensure all cells (introduced while merging) are embedded.
+ * @param first index of first dart to scan
+ */
+//void merge_finish_embedding(CMap1& m, uint32 first)
+//{
+//	for (uint32 j = first; j != this->topology_.end(); this->topology_.next(j))
+//	{
+//		if (m.is_embedded<Orbit::DART>())
+//		{
+//			if (!this->is_boundary(Dart(j)) && (*this->embeddings_[Orbit::DART])[j] == INVALID_INDEX)
+//				this->new_orbit_embedding(Cell<Orbit::DART>(Dart(j)));
+//		}
+
+//		if (m.is_embedded<Orbit::PHI1>())
+//		{
+//			if (!this->is_boundary(Dart(j)) && (*this->embeddings_[Orbit::PHI1])[j] == INVALID_INDEX)
+//				this->new_orbit_embedding(Cell<Orbit::PHI1>(Dart(j)));
+//		}
+//	}
+//}
 
 
 } // namespace topo
