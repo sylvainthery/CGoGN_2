@@ -29,6 +29,9 @@
 namespace cgogn
 {
 
+
+
+
 CMap1::Face add_face(CMap1& m, uint32 size);
 
 inline void remove_face(CMap1& m, CMap1::Face f)
@@ -79,6 +82,21 @@ using Vertex = CMap1::Vertex;
 using Face = CMap1::Face;
 using Boundary = CMap1::Boundary;
 using ConnectedComponent = CMap1::ConnectedComponent;
+
+bool check_embedding_integrity(CMap1& m)
+{
+	bool result = true;
+
+	if (m.is_embedded<Vertex>())
+		result = result && m.is_well_embedded<Vertex>();
+
+	if (m.is_embedded<Face>())
+		result = result && m.is_well_embedded<Face>();
+
+	return result;
+}
+
+
 
 Face add_face(CMap1& m, uint32 size)
 {

@@ -112,24 +112,10 @@ public:
 	/*!
 	 * \brief Check the integrity of embedding information
 	 */
-	inline bool check_embedding_integrity()
-	{
-		bool result = true;
-
-		if (this->template is_embedded<Vertex>())
-			result = result && this->template is_well_embedded<Vertex>();
-
-		if (this->template is_embedded<Face>())
-			result = result && this->template is_well_embedded<Face>();
-
-		return result;
-	}
 
 	/*******************************************************************************
 	 * Low-level topological operations
 	 *******************************************************************************/
-
-protected:
 
 	/*!
 	* \brief Init an newly added dart.
@@ -461,8 +447,6 @@ public:
 			it = phi1(it);
 		} while (it != d);
 	}
-
-protected:
 
 	/**
 	 * @brief check if embedding of map is also embedded in this (create if not). Used by merge method
