@@ -42,12 +42,6 @@
 namespace cgogn
 {
 
-enum TraversalStrategy
-{
-	AUTO = 0,
-	FORCE_DART_MARKING,
-	FORCE_CELL_MARKING
-};
 
 template <typename MAP_TYPE>
 class MapBase : public MapBaseData
