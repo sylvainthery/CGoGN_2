@@ -64,7 +64,7 @@ public:
 	inline ~AdjacencyCache()
 	{}
 
-	void init()
+	inline void init()
 	{
 		adjacency_ = map_.template add_attribute<VertexArray, Vertex>("__adjacency__");
 		map_.foreach_cell([&](Vertex v)
@@ -89,10 +89,10 @@ private:
 	VertexAttribute<VertexArray> adjacency_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap2>;
-extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap3>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
+//#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
+//extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap2>;
+//extern template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap3>;
+//#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_TOPOLOGY_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace topology
 

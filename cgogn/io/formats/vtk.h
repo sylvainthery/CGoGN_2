@@ -2208,8 +2208,8 @@ extern template class CGOGN_IO_EXPORT VtkVolumeImport<CMap3, Eigen::Vector3f>;
 extern template class CGOGN_IO_EXPORT VtkVolumeExport<CMap3>;
 extern template class CGOGN_IO_EXPORT VtkSurfaceExport<CMap2>;
 
-extern template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3d>;
-extern template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3f>;
+extern template class CGOGN_IO_EXPORT VtkGraphImport<UndirectedGraph,Eigen::Vector3d>;
+extern template class CGOGN_IO_EXPORT VtkGraphImport<UndirectedGraph,Eigen::Vector3f>;
 extern template class CGOGN_IO_EXPORT VtkGraphExport<UndirectedGraph>;
 
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_IO_EXTERNAL_TEMPLATES_CPP_))

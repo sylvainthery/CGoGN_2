@@ -47,8 +47,8 @@ template class CGOGN_TOPOLOGY_EXPORT ScalarField<float64, CMap2>;
 template class CGOGN_TOPOLOGY_EXPORT ScalarField<float32, CMap3>;
 template class CGOGN_TOPOLOGY_EXPORT ScalarField<float64, CMap3>;
 
-template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap2>;
-template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap3>;
+//template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap2>;
+//template class CGOGN_TOPOLOGY_EXPORT AdjacencyCache<CMap3>;
 
 
 } // namespace topology

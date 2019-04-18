@@ -140,6 +140,10 @@ private:
 	Map1& map_;
 };
 
+#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT CMap1Builder_T<CMap1>;
+#endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+
 } //end namespace cgogn
 
 #endif // CGOGN_CORE_CMAP_CMAP1_BUILDER_H_

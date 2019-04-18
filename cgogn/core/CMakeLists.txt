@@ -78,6 +78,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/utils/timer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/timer.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/utils/parallel_foreach_element.h"
+                "${CMAKE_CURRENT_LIST_DIR}/internal_templates.cpp"
 )
 
 if(${CGOGN_EXTERNAL_TEMPLATES})

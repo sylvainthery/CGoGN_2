@@ -239,8 +239,8 @@ public:
 	inline void remove_vertex(Vertex v)
 	{
 		Dart d = v.dart;
-		Dart dd = alpha0(d);
-		cgogn_message_assert(this->is_boundary(dd), "Vertex is still connected to another vertex");
+//		Dart dd = alpha0(d);
+		cgogn_message_assert(this->is_boundary(alpha0(d)), "Vertex is still connected to another vertex");
 		remove_vertex_topo(d);
 	}
 
@@ -706,7 +706,7 @@ struct UndirectedGraphType
 
 using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
 extern template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;
@@ -720,7 +720,7 @@ extern template class CGOGN_CORE_EXPORT CellMarkerStore<UndirectedGraph, Undirec
 extern template class CGOGN_CORE_EXPORT CellCache<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT BoundaryCache<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT QuickTraversor<UndirectedGraph>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 } // end namespace cgogn
 

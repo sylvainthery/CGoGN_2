@@ -185,11 +185,11 @@ private:
 	Map3& map_;
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3>;
 //extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>; // TODO : fix compilation
 //extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Hexa>; // TODO : fix compilation
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 
 } // namespace cgogn

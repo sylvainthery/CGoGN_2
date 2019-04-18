@@ -314,7 +314,7 @@ public:
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
-		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+//using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
 		std::vector<uint32> table_indices;
 
@@ -351,7 +351,7 @@ public:
 	{
 		static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"attribute must be a vertex attribute");
 
-		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
+//		using VEC3 = InsideTypeOf<VERTEX_ATTR>;
 
 		std::vector<uint32> table_indices;
 

@@ -252,9 +252,9 @@ public:
 
 };
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_CORE_EXPORT ChunkArrayGen<CGOGN_CHUNK_SIZE>;
-#endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
+#endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn
 

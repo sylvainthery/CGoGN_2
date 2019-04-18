@@ -22,7 +22,6 @@
 *******************************************************************************/
 #define CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_
 
-
 #include <cgogn/geometry/types/eigen.h>
 #include <cgogn/geometry/types/vec.h>
 
@@ -44,8 +43,8 @@ namespace cgogn
 namespace geometry
 {
 
-template class CGOGN_GEOMETRY_EXPORT OBB<Eigen::Vector3d>;
-template class CGOGN_GEOMETRY_EXPORT OBB<Eigen::Vector3f>;
+template class CGOGN_GEOMETRY_EXPORT OBB<float64,3>;
+template class CGOGN_GEOMETRY_EXPORT OBB<float32,3>;
 
 } // namespace geometry
 } // namespace cgogn
@@ -101,3 +100,4 @@ template class CGOGN_GEOMETRY_EXPORT Collector_WithinSphere<Eigen::Vector3d, CMa
 
 } // namespace geometry
 } // namespace cgogn
+

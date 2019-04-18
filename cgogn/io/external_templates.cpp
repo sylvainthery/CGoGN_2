@@ -25,7 +25,7 @@
 #include <cgogn/io/formats/msh.h>
 #include <cgogn/io/formats/cg.h>
 #include <cgogn/io/formats/cskel.h>
-#include <cgogn/io/formats/dot.h>
+//#include <cgogn/io/formats/dot.h>
 #include <cgogn/io/formats/lin.h>
 #include <cgogn/io/formats/off.h>
 #include <cgogn/io/formats/obj.h>
@@ -78,22 +78,22 @@ template class CGOGN_IO_EXPORT SMS2DMSurfaceImport<CMap2, Eigen::Vector3f>;
 template class CGOGN_IO_EXPORT SMS2DMSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_EXPORT SMS2DMSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT CgGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_EXPORT CgGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_EXPORT CgGraphImport<UndirectedGraph,Eigen::Vector3d>;
+template class CGOGN_IO_EXPORT CgGraphImport<UndirectedGraph,Eigen::Vector3f>;
+template class CGOGN_IO_EXPORT CgGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_EXPORT CgGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_EXPORT CgGraphExport<UndirectedGraph>;
 
-template class CGOGN_IO_EXPORT CskelGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT CskelGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_EXPORT CskelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_EXPORT CskelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_EXPORT CskelGraphImport<UndirectedGraph,Eigen::Vector3d>;
+template class CGOGN_IO_EXPORT CskelGraphImport<UndirectedGraph,Eigen::Vector3f>;
+template class CGOGN_IO_EXPORT CskelGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_EXPORT CskelGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_EXPORT CskelGraphExport<UndirectedGraph>;
 
-template class CGOGN_IO_EXPORT DotGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT DotGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_EXPORT DotGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_EXPORT DotGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+//template class CGOGN_IO_EXPORT DotGraphImport<Eigen::Vector3d>;
+//template class CGOGN_IO_EXPORT DotGraphImport<Eigen::Vector3f>;
+//template class CGOGN_IO_EXPORT DotGraphImport<geometry::Vec_T<std::array<float64,3>>>;
+//template class CGOGN_IO_EXPORT DotGraphImport<geometry::Vec_T<std::array<float32,3>>>;
 
 template class CGOGN_IO_EXPORT MeshbVolumeImport<CMap3, Eigen::Vector3d>;
 template class CGOGN_IO_EXPORT MeshbVolumeImport<CMap3, Eigen::Vector3f>;
@@ -117,10 +117,10 @@ template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, Eigen::Vector3f>;
 template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_EXPORT ObjSurfaceImport<CMap2, geometry::Vec_T<std::array<float32,3>>>;
 
-template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT ObjGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_EXPORT ObjGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_EXPORT ObjGraphImport<UndirectedGraph,Eigen::Vector3d>;
+template class CGOGN_IO_EXPORT ObjGraphImport<UndirectedGraph,Eigen::Vector3f>;
+template class CGOGN_IO_EXPORT ObjGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_EXPORT ObjGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_EXPORT ObjSurfaceExport<CMap2>;
 template class CGOGN_IO_EXPORT ObjGraphExport<UndirectedGraph>;
 
@@ -142,10 +142,10 @@ template class CGOGN_IO_EXPORT PlySurfaceImport<CMap2, geometry::Vec_T<std::arra
 template class CGOGN_IO_EXPORT PlySurfaceImport<CMap2, geometry::Vec_T<std::array<float32, 3>>>;
 template class CGOGN_IO_EXPORT PlySurfaceExport<CMap2>;
 
-template class CGOGN_IO_EXPORT SkelGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT SkelGraphImport<Eigen::Vector3f>;
-template class CGOGN_IO_EXPORT SkelGraphImport<geometry::Vec_T<std::array<float64,3>>>;
-template class CGOGN_IO_EXPORT SkelGraphImport<geometry::Vec_T<std::array<float32,3>>>;
+template class CGOGN_IO_EXPORT SkelGraphImport<UndirectedGraph,Eigen::Vector3d>;
+template class CGOGN_IO_EXPORT SkelGraphImport<UndirectedGraph,Eigen::Vector3f>;
+template class CGOGN_IO_EXPORT SkelGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float64,3>>>;
+template class CGOGN_IO_EXPORT SkelGraphImport<UndirectedGraph,geometry::Vec_T<std::array<float32,3>>>;
 template class CGOGN_IO_EXPORT SkelGraphExport<UndirectedGraph>;
 
 template class CGOGN_IO_EXPORT StlSurfaceImport<CMap2, Eigen::Vector3d>;
@@ -179,8 +179,8 @@ template class CGOGN_IO_EXPORT VtkVolumeImport<CMap3, Eigen::Vector3d>;
 template class CGOGN_IO_EXPORT VtkVolumeImport<CMap3, Eigen::Vector3f>;
 template class CGOGN_IO_EXPORT VtkVolumeExport<CMap3>;
 template class CGOGN_IO_EXPORT VtkSurfaceExport<CMap2>;
-template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3d>;
-template class CGOGN_IO_EXPORT VtkGraphImport<Eigen::Vector3f>;
+template class CGOGN_IO_EXPORT VtkGraphImport<UndirectedGraph,Eigen::Vector3d>;
+template class CGOGN_IO_EXPORT VtkGraphImport<UndirectedGraph,Eigen::Vector3f>;
 template class CGOGN_IO_EXPORT VtkGraphExport<UndirectedGraph>;
 
 template class CGOGN_IO_EXPORT LinPolylineImport<CMap1, Eigen::Vector3d>;

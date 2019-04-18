@@ -327,9 +327,10 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 	{
 		drawer_->new_list();
 		std::vector<Map3::Volume> selected;
-		cgogn::geometry::picking(map_, vertex_position_, A, B, selected);
-		cgogn_log_info("Viewer") << "Selected volumes: " << selected.size();
-		if (!selected.empty())
+		std::vector<Map3::Volume> selectedf;
+		cgogn::geometry::picking(map_, vertex_position_, A, B, selectedf);
+		cgogn_log_info("Viewer") << "Selected faces: " << selectedf.size();
+		if (!selectedf.empty())
 		{
 			drawer_->line_width(2.0);
 			drawer_->begin(GL_LINES);

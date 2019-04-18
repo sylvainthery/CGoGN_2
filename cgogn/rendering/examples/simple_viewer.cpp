@@ -274,7 +274,7 @@ void Viewer::draw()
 
 void Viewer::init()
 {
-	glClearColor(0.1f,0.1f,0.3f,0.0f);
+	glClearColor(0.11f,0.1f,0.3f,0.0f);
 
 	// create and fill VBO for positions
 	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);

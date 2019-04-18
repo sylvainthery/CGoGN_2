@@ -29,11 +29,11 @@ target_link_libraries(topological_analysis_2d
 	cgogn::core cgogn::geometry cgogn::io
 	cgogn::rendering cgogn::topology)
 
-add_executable(topological_analysis_3d ${HEADER_FILES} topogical_analysis_3d.cpp)
-target_link_libraries(topological_analysis_3d
-	cgogn::core cgogn::geometry cgogn::io
-	cgogn::rendering cgogn::topology)
+#add_executable(topological_analysis_3d ${HEADER_FILES} topogical_analysis_3d.cpp)
+#target_link_libraries(topological_analysis_3d
+#	cgogn::core cgogn::geometry cgogn::io
+#	cgogn::rendering cgogn::topology)
 
-set_target_properties(topological_analysis_2d topological_analysis_3d PROPERTIES FOLDER examples/topology)
+#set_target_properties(topological_analysis_2d topological_analysis_3d PROPERTIES FOLDER examples/topology)
 
 endif()

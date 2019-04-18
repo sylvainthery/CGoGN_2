@@ -500,7 +500,7 @@ bool ray_intersect(const OBB<T,D>& other,
 				  const typename OBB<T,D>::Vector& dir, T& t1, T& t2)
 {
 	using HomeVector = typename OBB<T,D>::HomeVector;
-	using Vector = typename OBB<T,D>::Vector;
+//	using Vector = typename OBB<T,D>::Vector;
 	HomeVector hFrom = other.inverse_transformation() * from.homogeneous();
 	HomeVector hDir;
 	hDir.segment(0,D) = dir;
@@ -514,7 +514,7 @@ bool ray_intersect(const OBB<T,D>& other,
 	return true;
 }
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_TYPES_OBB_CPP_))
+#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_GEOMETRY_EXTERNAL_TEMPLATES_CPP_))
 extern template class CGOGN_GEOMETRY_EXPORT OBB<float, 2>;
 extern template class CGOGN_GEOMETRY_EXPORT OBB<float, 3>;
 extern template class CGOGN_GEOMETRY_EXPORT OBB<double, 2>;

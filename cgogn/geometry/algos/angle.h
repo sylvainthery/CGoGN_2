@@ -79,7 +79,7 @@ inline ScalarOf<InsideTypeOf<VERTEX_ATTR>> angle_between_face_normals(
 
     using VEC3 = InsideTypeOf<VERTEX_ATTR>;
     using Scalar = ScalarOf<VEC3>;
-    using Face2 = Cell<Orbit::PHI1>;
+//    using Face2 = Cell<Orbit::PHI1>;
 
     const VEC3 n1 = normal(map, f1, position);
     const VEC3 n2 = normal(map, f2, position);
