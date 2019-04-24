@@ -29,7 +29,8 @@
 #include <cgogn/modeling/cgogn_modeling_export.h>
 #include <cgogn/core/basic/dart_marker.h>
 #include <cgogn/core/utils/masks.h>
-#include <cgogn/core/cmap/cmap3.h>
+#include <cgogn/core/cmap/cmap2.h>
+#include <cgogn/core/cmap/cmap2_builder.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
 namespace cgogn

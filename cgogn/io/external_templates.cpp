@@ -188,6 +188,7 @@ template class CGOGN_IO_EXPORT LinPolylineImport<CMap1, Eigen::Vector3f>;
 template class CGOGN_IO_EXPORT LinPolylineImport<CMap1, geometry::Vec_T<std::array<float64,3>>>;
 template class CGOGN_IO_EXPORT LinPolylineImport<CMap1, geometry::Vec_T<std::array<float32,3>>>;
 
+template class CGOGN_IO_EXPORT PolylineExport<CMap1>;
 } // namespace io
 } // namespace cgogn
 

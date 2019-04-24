@@ -25,8 +25,8 @@
 #define CGOGN_IO_POLYLINE_EXPORT_H_
 
 #include <cgogn/io/cgogn_io_export.h>
-
 #include <cgogn/io/mesh_io_gen.h>
+#include <cgogn/core/cmap/cmap1.h>
 
 namespace cgogn {
 
