@@ -28,6 +28,36 @@
 //#include <cgogn/io/formats/dot.h>
 #include <cgogn/io/formats/lin.h>
 #include <cgogn/io/formats/off.h>
+
+
+#include <cgogn/io/point_set_export.h>
+#include <cgogn/io/surface_export.h>
+#include <cgogn/io/volume_export.h>
+#include <cgogn/io/volume_export.h>
+#include <cgogn/io/graph_export.h>
+#include <cgogn/io/map_export.h>
+
+
+namespace cgogn
+{
+namespace io
+{
+
+template class CGOGN_IO_EXPORT PointSetExport<CMap0>;
+template class CGOGN_IO_EXPORT SurfaceExport<CMap2>;
+template class CGOGN_IO_EXPORT VolumeExport<CMap3>;
+template class CGOGN_IO_EXPORT GraphExport<UndirectedGraph>;
+template CGOGN_IO_EXPORT void export_point_set(CMap0& , const ExportOptions&);
+template CGOGN_IO_EXPORT void export_polyline(CMap1& , const ExportOptions&);
+template CGOGN_IO_EXPORT void export_graph(UndirectedGraph& , const ExportOptions&);
+template CGOGN_IO_EXPORT void export_surface(CMap2& , const ExportOptions&);
+template CGOGN_IO_EXPORT void export_volume(CMap3& , const ExportOptions&);
+
+} // namespace io
+} // namespace cgogn
+
+
+
 #include <cgogn/io/formats/obj.h>
 #include <cgogn/io/formats/2dm.h>
 #include <cgogn/io/formats/plo.h>
@@ -213,23 +243,3 @@ template CGOGN_IO_EXPORT void import_volume<Eigen::Vector3d>(CMap3&, const std::
 } // namespace io
 } // namespace cgogn
 
-
-#include <cgogn/io/map_export.h>
-
-namespace cgogn
-{
-namespace io
-{
-
-template class CGOGN_IO_EXPORT PointSetExport<CMap0>;
-template class CGOGN_IO_EXPORT SurfaceExport<CMap2>;
-template class CGOGN_IO_EXPORT VolumeExport<CMap3>;
-template class CGOGN_IO_EXPORT GraphExport<UndirectedGraph>;
-template CGOGN_IO_EXPORT void export_point_set(CMap0& , const ExportOptions&);
-template CGOGN_IO_EXPORT void export_polyline(CMap1& , const ExportOptions&);
-template CGOGN_IO_EXPORT void export_graph(UndirectedGraph& , const ExportOptions&);
-template CGOGN_IO_EXPORT void export_surface(CMap2& , const ExportOptions&);
-template CGOGN_IO_EXPORT void export_volume(CMap3& , const ExportOptions&);
-
-} // namespace io
-} // namespace cgogn

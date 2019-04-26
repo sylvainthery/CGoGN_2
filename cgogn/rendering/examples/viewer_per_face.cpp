@@ -167,6 +167,7 @@ void Viewer::draw()
 
 	if (flat_rendering_)
 	{
+		glPointSize(4);
 		param_flat_->bind(proj,view);
 		glDrawArrays(GL_TRIANGLES,0,vbo_pos_->size());
 		param_flat_->release();
@@ -225,6 +226,7 @@ void Viewer::init()
 	param_flat_ = cgogn::rendering::ShaderFlatColor::generate_param();
 	param_flat_->set_all_vbos(vbo_pos_.get(), vbo_color_.get());
 	param_flat_->ambiant_color_ = QColor(5, 5, 5);
+	param_flat_->bf_culling_ = true;
 }
 
 int main(int argc, char** argv)

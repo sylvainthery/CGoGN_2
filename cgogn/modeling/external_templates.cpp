@@ -32,6 +32,25 @@
 
 namespace cgogn
 {
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap1::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap2::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap3::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap2::Edge::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap3::Edge::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap1::Face::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap3::Face::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3f, CMap3::Volume::ORBIT>;
+
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap1::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap2::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap3::Vertex::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap2::Edge::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap3::Edge::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap1::Face::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap3::Face::ORBIT>;
+template class CGOGN_MODELING_EXPORT Attribute<Eigen::Vector3d, CMap3::Volume::ORBIT>;
+
+
 namespace modeling
 {
 

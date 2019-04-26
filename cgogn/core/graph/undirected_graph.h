@@ -707,6 +707,7 @@ struct UndirectedGraphType
 using UndirectedGraph = UndirectedGraph_T<UndirectedGraphType>;
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT MapBase<UndirectedGraphType>;
 extern template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
 extern template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;

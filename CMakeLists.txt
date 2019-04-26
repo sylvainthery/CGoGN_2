@@ -156,6 +156,7 @@ if (CGOGN_ENABLE_LTO AND ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") AND (NOT "${C
 	endif()
 endif()
 
+
 include(GenerateExportHeader)
 include(CMakePackageConfigHelpers)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

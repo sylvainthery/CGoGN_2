@@ -2655,6 +2655,7 @@ struct CMap3Type
 using CMap3 = CMap3_T<CMap3Type>;
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT MapBase<CMap3Type>;
 extern template class CGOGN_CORE_EXPORT CMap3_T<CMap3Type>;
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap3>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3>;

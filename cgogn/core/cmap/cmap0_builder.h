@@ -93,6 +93,13 @@ private:
 	Map0& map_;
 };
 
+
+#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT CMap0Builder_T<CMap0>;
+#endif //(!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+
+
+
 } //end namespace cgogn
 
 #endif // CGOGN_CORE_CMAP_CMAP0_BUILDER_H_

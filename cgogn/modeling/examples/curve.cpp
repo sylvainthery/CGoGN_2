@@ -313,12 +313,12 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 		cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
 
-		cgogn::rendering::update_vbo(vertex_position_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+		cgogn::rendering::update_vbo(vertex_position_, vbo_color_.get(), [] (const Vec3&) -> std::array<float,3>
 		{
 			return {float(1.0), float(0.0), float(0.0)};
 		});
 
-		cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
+		cgogn::rendering::update_vbo(vertex_position_, vbo_sphere_sz_.get(), [&] (const Vec3&) -> float
 		{
 			return cgogn::geometry::diagonal(bb_).norm()/1000.0;
 		});
@@ -434,7 +434,7 @@ void Viewer::resizeGL(int w ,int h)
 	QOGLViewer::resizeGL(w,h);
 }
 
-void Viewer::import(const std::string& filename)
+void Viewer::import(const std::string& /*filename*/)
 {
 	//	cgogn::io::import_graph<Vec3>(map_, filename);
 

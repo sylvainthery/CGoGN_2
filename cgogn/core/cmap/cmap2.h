@@ -2043,6 +2043,7 @@ struct CMap2Type
 using CMap2 = CMap2_T<CMap2Type>;
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
+extern template class CGOGN_CORE_EXPORT MapBase<CMap2Type>;
 extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2Type>;
 extern template class CGOGN_CORE_EXPORT DartMarker<CMap2>;
 extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2>;
