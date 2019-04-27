@@ -3,8 +3,11 @@ project(cgogn_rendering
 )
 
 # Hide symbols by default
+if (NOT(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") AND ("${CMAKE_CXX_COMPILER_ID}" VERSION_LESS_EQUAL "6.3.0")))
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+endif()
+
 
 find_package(Qt5 5.4.0 COMPONENTS Gui REQUIRED)
 find_package(QOGLViewer REQUIRED)

@@ -252,10 +252,6 @@ public:
 
 };
 
-#if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class ChunkArrayGen<CGOGN_CHUNK_SIZE>;
-#endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-
 } // namespace cgogn
 
 #endif // CGOGN_CORE_CONTAINER_CHUNK_ARRAY_GEN_H_

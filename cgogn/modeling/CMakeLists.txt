@@ -3,8 +3,11 @@
 )
 
 # Hide symbols by default
+if (NOT(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") AND ("${CMAKE_CXX_COMPILER_ID}" VERSION_LESS_EQUAL "6.3.0")))
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+endif()
+
 
 add_library(${PROJECT_NAME} SHARED "")
 
