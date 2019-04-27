@@ -758,6 +758,8 @@ public:
 protected:
 
 	template <Orbit ORBIT>
+//	auto boundary_mark(Cell<ORBIT> c)
+//	-> typename std::enable_if<	std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value >::type
 	void boundary_mark(Cell<ORBIT> c)
 	{
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");
@@ -768,6 +770,8 @@ protected:
 	}
 
 	template <Orbit ORBIT>
+//	auto boundary_unmark(Cell<ORBIT> c)
+//	-> typename std::enable_if<	std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value >::type
 	void boundary_unmark(Cell<ORBIT> c)
 	{
 		static_assert(std::is_same<Cell<ORBIT>, typename ConcreteMap::Boundary>::value, "Cell is not defined as boundary");

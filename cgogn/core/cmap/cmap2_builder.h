@@ -175,12 +175,12 @@ private:
 };
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2>;
+extern template class CMap2Builder_T<CMap2>;
 #endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Tri>;
-extern template class CGOGN_CORE_EXPORT CMap2Builder_T<CMap2Quad>;
+extern template class CMap2Builder_T<CMap2Tri>;
+extern template class CMap2Builder_T<CMap2Quad>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 

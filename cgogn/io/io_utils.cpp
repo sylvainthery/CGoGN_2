@@ -298,24 +298,24 @@ CGOGN_IO_EXPORT FileType file_type(const std::string& filename)
 		return it->second;
 	else
 	{
-		const auto it = polyline_file_type_map.find(ext);
-		if (it != polyline_file_type_map.end())
-			return it->second;
+		const auto it0 = polyline_file_type_map.find(ext);
+		if (it0 != polyline_file_type_map.end())
+			return it0->second;
 		else
 		{
-			const auto it = graph_file_type_map.find(ext);
-			if (it != graph_file_type_map.end())
-				return it->second;
+			const auto it1 = graph_file_type_map.find(ext);
+			if (it1 != graph_file_type_map.end())
+				return it1->second;
 			else
 			{
-				const auto it = surface_file_type_map.find(ext);
-				if (it != surface_file_type_map.end())
-					return it->second;
+				const auto it2 = surface_file_type_map.find(ext);
+				if (it2 != surface_file_type_map.end())
+					return it2->second;
 				else
 				{
-					const auto it = volume_file_type_map.find(ext);
-					if (it != volume_file_type_map.end())
-						return it->second;
+					const auto it3 = volume_file_type_map.find(ext);
+					if (it3 != volume_file_type_map.end())
+						return it3->second;
 					else
 					{
 						return FileType::FileType_UNKNOWN;

@@ -186,9 +186,9 @@ private:
 };
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3>;
-//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Tetra>; // TODO : fix compilation
-//extern template class CGOGN_CORE_EXPORT CMap3Builder_T<CMap3Hexa>; // TODO : fix compilation
+extern template class CMap3Builder_T<CMap3>;
+//extern template class CMap3Builder_T<CMap3Tetra>; // TODO : fix compilation
+//extern template class CMap3Builder_T<CMap3Hexa>; // TODO : fix compilation
 #endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 

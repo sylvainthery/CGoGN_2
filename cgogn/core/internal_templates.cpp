@@ -27,7 +27,7 @@
 namespace cgogn
 {
 
-template class CGOGN_CORE_EXPORT ChunkArrayGen<CGOGN_CHUNK_SIZE>;
+//template class CGOGN_CORE_EXPORT ChunkArrayGen<CGOGN_CHUNK_SIZE>;
 template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, uint32>;
 template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, uint8>;
 template class CGOGN_CORE_EXPORT ChunkArray<CGOGN_CHUNK_SIZE, std::array<float32, 3>>;
@@ -57,9 +57,6 @@ template CGOGN_CORE_EXPORT ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_fact
 
 namespace cgogn
 {
-
-template class CGOGN_CORE_EXPORT MapBase<CMap0Type>;
-template class CGOGN_CORE_EXPORT CMap0_T<CMap0Type>;
 template class CGOGN_CORE_EXPORT DartMarker<CMap0>;
 template class CGOGN_CORE_EXPORT DartMarkerStore<CMap0>;
 template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap0>;
@@ -75,8 +72,6 @@ template class CGOGN_CORE_EXPORT QuickTraversor<CMap0>;
 
 namespace cgogn
 {
-template class CGOGN_CORE_EXPORT MapBase<CMap1Type>;
-template class CGOGN_CORE_EXPORT CMap1_T<CMap1Type>;
 template class CGOGN_CORE_EXPORT DartMarker<CMap1>;
 template class CGOGN_CORE_EXPORT DartMarkerStore<CMap1>;
 template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap1>;
@@ -93,8 +88,6 @@ template class CGOGN_CORE_EXPORT QuickTraversor<CMap1>;
 
 namespace cgogn
 {
-template class CGOGN_CORE_EXPORT MapBase<CMap2Type>;
-template class CGOGN_CORE_EXPORT CMap2_T<CMap2Type>;
 template class CGOGN_CORE_EXPORT DartMarker<CMap2>;
 template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2>;
 template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap2>;
@@ -119,8 +112,6 @@ template class CGOGN_CORE_EXPORT QuickTraversor<CMap2>;
 
 namespace cgogn
 {
-template class CGOGN_CORE_EXPORT MapBase<CMap3Type>;
-template class CGOGN_CORE_EXPORT CMap3_T<CMap3Type>;
 template class CGOGN_CORE_EXPORT DartMarker<CMap3>;
 template class CGOGN_CORE_EXPORT DartMarkerStore<CMap3>;
 template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap3>;
@@ -147,7 +138,7 @@ template class CGOGN_CORE_EXPORT QuickTraversor<CMap3>;
 
 namespace cgogn
 {
-template class CGOGN_CORE_EXPORT MapBase<UndirectedGraphType>;
+////template class CGOGN_CORE_EXPORT MapBase<UndirectedGraphType>;
 template class CGOGN_CORE_EXPORT UndirectedGraph_T<UndirectedGraphType>;
 template class CGOGN_CORE_EXPORT DartMarker<UndirectedGraph>;
 template class CGOGN_CORE_EXPORT DartMarkerStore<UndirectedGraph>;

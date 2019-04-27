@@ -1197,22 +1197,22 @@ struct CMap2QuadType
 using CMap2Quad = CMap2Quad_T<CMap2QuadType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2QuadType>;
-extern template class CGOGN_CORE_EXPORT DartMarker<CMap2Quad>;
-extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2Quad>;
-extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap2Quad>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Quad, CMap2Quad::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Quad, CMap2Quad::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Quad, CMap2Quad::Volume::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Volume::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Quad, CMap2Quad::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Quad, CMap2Quad::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Quad, CMap2Quad::Volume::ORBIT>;
+extern template class CMap2_T<CMap2QuadType>;
+extern template class DartMarker<CMap2Quad>;
+extern template class DartMarkerStore<CMap2Quad>;
+extern template class DartMarkerNoUnmark<CMap2Quad>;
+extern template class CellMarker<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
+extern template class CellMarker<CMap2Quad, CMap2Quad::Edge::ORBIT>;
+extern template class CellMarker<CMap2Quad, CMap2Quad::Face::ORBIT>;
+extern template class CellMarker<CMap2Quad, CMap2Quad::Volume::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Edge::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Face::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Quad, CMap2Quad::Volume::ORBIT>;
+extern template class CellMarkerStore<CMap2Quad, CMap2Quad::Vertex::ORBIT>;
+extern template class CellMarkerStore<CMap2Quad, CMap2Quad::Edge::ORBIT>;
+extern template class CellMarkerStore<CMap2Quad, CMap2Quad::Face::ORBIT>;
+extern template class CellMarkerStore<CMap2Quad, CMap2Quad::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

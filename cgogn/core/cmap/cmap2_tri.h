@@ -1494,22 +1494,22 @@ struct CMap2TriType
 using CMap2Tri = CMap2Tri_T<CMap2TriType>;
 
 #if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap2_T<CMap2TriType>;
-extern template class CGOGN_CORE_EXPORT DartMarker<CMap2Tri>;
-extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap2Tri>;
-extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap2Tri>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Tri, CMap2Tri::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Tri, CMap2Tri::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap2Tri, CMap2Tri::Volume::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Volume::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Tri, CMap2Tri::Edge::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+extern template class CMap2_T<CMap2TriType>;
+extern template class DartMarker<CMap2Tri>;
+extern template class DartMarkerStore<CMap2Tri>;
+extern template class DartMarkerNoUnmark<CMap2Tri>;
+extern template class CellMarker<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CellMarker<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CellMarker<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CellMarker<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap2Tri, CMap2Tri::Volume::ORBIT>;
+extern template class CellMarkerStore<CMap2Tri, CMap2Tri::Vertex::ORBIT>;
+extern template class CellMarkerStore<CMap2Tri, CMap2Tri::Edge::ORBIT>;
+extern template class CellMarkerStore<CMap2Tri, CMap2Tri::Face::ORBIT>;
+extern template class CellMarkerStore<CMap2Tri, CMap2Tri::Volume::ORBIT>;
 #endif // defined(CGOGN_USE_EXTERNAL_TEMPLATES) && (!defined(CGOGN_CORE_EXTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

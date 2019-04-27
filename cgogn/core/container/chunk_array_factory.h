@@ -134,7 +134,7 @@ ChunkArrayFactory<CHUNK_SIZE>& chunk_array_factory()
 }
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
+extern template class ChunkArrayFactory<CGOGN_CHUNK_SIZE>;
 extern template CGOGN_CORE_EXPORT ChunkArrayFactory<CGOGN_CHUNK_SIZE>& chunk_array_factory<CGOGN_CHUNK_SIZE>();
 #endif // (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 

@@ -106,7 +106,7 @@ protected:
 		fp.clear();
 		fp.seekg(0, std::ios::beg);
 
-		this->nb_vertices_ = vertices_id.size();
+		this->nb_vertices_ = uint32(vertices_id.size());
 
 		do
 		{

@@ -221,15 +221,13 @@ struct CMap0Type
 using CMap0 = CMap0_T<CMap0Type>;
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT MapBase<CMap0Type>;
-extern template class CGOGN_CORE_EXPORT CMap0_T<CMap0Type>;
-extern template class CGOGN_CORE_EXPORT DartMarker<CMap0>;
-extern template class CGOGN_CORE_EXPORT DartMarkerStore<CMap0>;
-extern template class CGOGN_CORE_EXPORT DartMarkerNoUnmark<CMap0>;
-extern template class CGOGN_CORE_EXPORT CellMarker<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
-extern template class CGOGN_CORE_EXPORT QuickTraversor<CMap0>;
+extern template class DartMarker<CMap0>;
+extern template class DartMarkerStore<CMap0>;
+extern template class DartMarkerNoUnmark<CMap0>;
+extern template class CellMarker<CMap0, CMap0::Vertex::ORBIT>;
+extern template class CellMarkerNoUnmark<CMap0, CMap0::Vertex::ORBIT>;
+extern template class CellMarkerStore<CMap0, CMap0::Vertex::ORBIT>;
+extern template class QuickTraversor<CMap0>;
 #endif //(!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 } // namespace cgogn

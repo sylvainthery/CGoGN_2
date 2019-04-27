@@ -95,7 +95,7 @@ private:
 
 
 #if (!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
-extern template class CGOGN_CORE_EXPORT CMap0Builder_T<CMap0>;
+extern template class CMap0Builder_T<CMap0>;
 #endif //(!defined(CGOGN_CORE_INTERNAL_TEMPLATES_CPP_))
 
 

@@ -23,6 +23,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/tools)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
+target_compile_definitions(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:"_CRT_SECURE_NO_WARNINGS">)
+
 
 install(FILES "libmeshb.h" DESTINATION "include/cgogn/thirdparty")
 

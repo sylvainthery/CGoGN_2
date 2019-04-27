@@ -131,7 +131,7 @@ public:
 		auto darts_out_vertex = map_.template add_attribute<Dart, Vertex>("darts_out_vertex");
 
 		Dart first;
-		for (uint32 i = 0, end = edges_vertex_indices_.size(); i < end; i=i+2)
+		for (std::size_t i = 0, end = edges_vertex_indices_.size(); i < end; i=i+2)
 		{
 			Dart d = mbuild_.add_topology_element();
 			first = d;

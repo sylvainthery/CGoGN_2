@@ -176,6 +176,11 @@ set(CGOGN_SYSTEM_MODULE_PATH ${CGOGN_SOURCE_DIR}/cgogn)
 
 add_subdirectory(${CGOGN_THIRDPARTY_DIR})
 
+# suppress warning W4 overriding W3 with W4
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+	string(REPLACE "/W3" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} )
+endif()
+
 cgogn_list_subdirectory(CGOGN_CONFIGURED_MODULES ${CGOGN_SYSTEM_MODULE_PATH})
 
 foreach(subdir ${CGOGN_CONFIGURED_MODULES})
