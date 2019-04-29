@@ -1,0 +1,115 @@
+
+/*******************************************************************************
+* CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
+* Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
+*                                                                              *
+* This library is free software; you can redistribute it and/or modify it      *
+* under the terms of the GNU Lesser General Public License as published by the *
+* Free Software Foundation; either version 2.1 of the License, or (at your     *
+* option) any later version.                                                   *
+*                                                                              *
+* This library is distributed in the hope that it will be useful, but WITHOUT  *
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or        *
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License  *
+* for more details.                                                            *
+*                                                                              *
+* You should have received a copy of the GNU Lesser General Public License     *
+* along with this library; if not, write to the Free Software Foundation,      *
+* Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA.           *
+*                                                                              *
+* Web site: http://cgogn.unistra.fr/                                           *
+* Contact information: cgogn@unistra.fr                                        *
+*                                                                              *
+*******************************************************************************/
+
+#ifndef CGOGN_RENDERING_PURE_GL_VIEWER_H_
+#define CGOGN_RENDERING_PURE_GL_VIEWER_H_
+
+//#include <GL/gl3w.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Eigen>
+
+#include <Eigen/Geometry>
+#include <Eigen/SVD>
+
+//#include <cgogn/rendering/cgogn_rendering_export.h>
+#include <cgogn/rendering/camera.h>
+
+namespace cgogn
+{
+namespace rendering
+{
+
+class PureGLViewer
+{
+	enum KeyCode : uint32 
+	{
+		SHIFT= 0x1000,
+		CONTROL,
+		ALT,
+		META,
+		ARROW_LEFT,
+		ARROW_RIGHT,
+		ARROW_UP,
+		ARROW_DOWN,
+		PAGE_UP,
+		PAGE_DOWN,
+		HOME,
+		END,
+		BACKSPACE,
+		DEL,
+		ENTER,
+		TAB,
+		ESC,
+		F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12
+	}
+
+	Camera cam_;
+	MovingFrame* current_frame_;
+	Transfo3d inv_cam_;
+	int32 vp_x_;
+	int32 vp_y_;
+	int32 width_;
+	int32 height_;
+	float64 spinning_speed_;
+	float64 sensitivity_;
+	float64 last_mouse_x_;
+	float64 last_mouse_y_;
+
+protected:
+	bool shift_pressed_;
+	bool control_pressed_;
+	bool alt_pressed_;
+	bool meta_pressed_;
+
+public:
+	PureGLViewer();
+
+	inline bool obj_mode() const { return  current_frame_ != &(cam_.frame_);}
+
+	inline Mat4f get_projection_matrix() const
+	{
+		return cam_.get_projection_matrix();
+	}
+
+	inline Mat4f get_modelview_matrix() const
+	{
+		return cam_.get_modelview_matrix();
+	}
+
+	void manip(MovingFrame* fr);
+
+	virtual void mouse_press_event(int32 buttons, float64 x, float64 y);
+	virtual void mouse_release_event(int32 buttons, float64 x, float64 y);
+	virtual void mouse_move_event(int32 buttons, float64 x, float64 x)
+	virtual void mouse_dbl_click_event(int32 buttons, float64 x, float64 y);
+	virtual void mouse_wheel_event(float64 x, float64 y);
+	virtual void key_press_event(int32 key_code);
+	virtual void key_release_event(int32 key_code);
+	virtual void close_event();
+
+	virtual void init();
+
+	virtual void draw();
+};	
