@@ -137,11 +137,11 @@ int test3()
 	});
 
 	// warning function parameter for set element must be const& or val.
-	cgogn::parallel_foreach_element(v, m, l, s, [](const int32& x, std::pair<const int32, float>& y, double& z, uint32 w)
+	cgogn::parallel_foreach_element(v, m, l, s, [](int32& x, std::pair<const int32, float>& y, double& z, uint32 w)
 	{
 		y.second += 0.00001f*x;
 		z = y.second;
-		w = x;
+		x = w;
 	});
 	return 0;
 }
