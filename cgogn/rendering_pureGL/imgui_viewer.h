@@ -27,24 +27,27 @@
 
 
 //#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/pure_gl_viewer.h>
+#include <cgogn/rendering_pureGL/pure_gl_viewer.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
 namespace cgogn
 {
-namespace rendering
+namespace rendering_pgl
 {
 
 class ImGUIViewer: public PureGLViewer
 {
-
+protected:
+	bool need_draw_;
 public:
+	ImGUIViewer();
 	ImGUIViewer(int32 w, int32 h);
+	~ImGUIViewer();
 	virtual void mouse_press_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_release_event(int32 buttons, float64 x, float64 y);
-	virtual void mouse_move_event(int32 buttons, float64 x, float64 x)
+	virtual void mouse_move_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_dbl_click_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_wheel_event(float64 x, float64 y);
 	virtual void key_press_event(int32 key_code);
@@ -52,11 +55,12 @@ public:
 	virtual void close_event();
 	virtual void init();
 	virtual void draw();
-	void draw_interface();
+	virtual void interface();
 
-	void launch();
+	bool launch(const std::string&  name);
 
 };	
 
 }
 }
+#endif

@@ -27,7 +27,7 @@
 
 #include <GL/gl3w.h>
 #include <string>
-#include <cgogn/rendering/vbo.h>
+#include <cgogn/rendering_pureGL/vbo.h>
 #include <vector>
 #include <tuple>
 
@@ -35,10 +35,10 @@
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-class VAO
+class CGOGN_RENDERING_PUREGL_EXPORT VAO
 {
 protected:
 	GLuint id_;
@@ -48,6 +48,18 @@ protected:
 public:
 
 	inline VAO():id_(0),nb_(0) {}
+
+
+	inline bool is_created()
+	{
+		return id_ != 0;
+	}
+
+	inline void create()
+	{
+		nb_ = 0;
+		glGenVertexArrays(1, &id_);
+	}
 
 
 	inline VAO(const std::vector<std::tuple<GLint,VBO,GLint>>& params)
@@ -76,7 +88,7 @@ public:
 	}
 };
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

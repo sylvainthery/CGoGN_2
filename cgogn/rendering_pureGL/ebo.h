@@ -28,14 +28,15 @@
 #include <GL/gl3w.h>
 #include <string>
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-class EBO
+class CGOGN_RENDERING_PUREGL_EXPORT EBO
 {
 protected:
 	GLuint id_;
@@ -43,9 +44,17 @@ protected:
 public:
 
 	inline EBO() :
-		nb_(0)
+		id_(0), nb_(0)
+	{}
+
+	inline void create()
 	{
 		glGenBuffers(1, &id_);
+	}
+
+	inline bool is_created()
+	{
+		return id_ != 0;
 	}
 
 	inline ~EBO()
@@ -135,7 +144,7 @@ public:
 	}
 };
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

@@ -22,10 +22,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_PURE_GL_VIEWER_H_
-#define CGOGN_RENDERING_PURE_GL_VIEWER_H_
-
-//#include <GL/gl3w.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Eigen>
@@ -33,12 +29,11 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
-//#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/pure_gl_viewer.h>
+#include <cgogn/rendering_pureGL/pure_gl_viewer.h>
 
 namespace cgogn
 {
-namespace rendering
+namespace rendering_pgl
 {
 
 PureGLViewer::PureGLViewer()
@@ -50,6 +45,12 @@ PureGLViewer::~PureGLViewer()
 void PureGLViewer::close_event()
 {}
 
+void PureGLViewer::init()
+{}
+
+void PureGLViewer::draw()
+{}
+
 void PureGLViewer::manip(MovingFrame* fr)
 {
 	if (fr != nullptr)
@@ -59,17 +60,12 @@ void PureGLViewer::manip(MovingFrame* fr)
 	}
 	else
 	{
-		current_frame_ = &(cam_.frame_);
+		current_frame_ = &(cam_);
 	}
 }
 
 void PureGLViewer::key_press_event(int32 key_code)
 {
-	if (key_code == KeyCode::ESC)
-	{
-		close_event();
-		exit(0);
-	}
 }
 
 void PureGLViewer::key_release_event(int32 key_code)
@@ -84,8 +80,8 @@ void PureGLViewer::mouse_press_event(int32 buttons, float64 x, float64 y)
 			current_frame_->is_moving_ = false;
 			spinning_speed_ = 0;	
 	}
-	last_x = x;
-	last_y = y;
+	last_mouse_x_ = x;
+	last_mouse_y_ = y;
 }
 
 void PureGLViewer::mouse_release_event(int32 buttons, float64 x, float64 y)
@@ -94,25 +90,25 @@ void PureGLViewer::mouse_release_event(int32 buttons, float64 x, float64 y)
 	{
 		current_frame_->is_moving_ = (spinning_speed_ > 0.05);		
 	}
-	last_x = x;
-	last_y = y;
+	last_mouse_x_ = x;
+	last_mouse_y_ = y;
 }
 
 
 void PureGLViewer::mouse_move_event(int32 buttons, float64 x, float64 y)
 {
-	float64 dx = x - last_x;
-	float64 dy = y - last_y;
+	float64 dx = x - last_mouse_x_;
+	float64 dy = y - last_mouse_y_;
 
 	if (buttons & 1)
 	{
 		Vec3d axis(dy,dx,0.0);
-		spinning_speed_ = axis_.norm();
+		spinning_speed_ = axis.norm();
 		axis /= spinning_speed_;
 		spinning_speed_ *= 0.1;
 		if (obj_mode())
 		{
-			Transfo3d sm = Eigen::AngleAxisd(2.0*spinning_speed_,axis);
+			Transfo3d sm(Eigen::AngleAxisd(2.0*spinning_speed_,axis));
 			current_frame_->spin_ = inv_cam_ *  sm * cam_.frame_;
 			current_frame_->frame_ = current_frame_->spin_ * current_frame_->frame_; 
 		}
@@ -125,13 +121,14 @@ void PureGLViewer::mouse_move_event(int32 buttons, float64 x, float64 y)
 	
 	if (buttons & 2)
 	{
-		float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/ cam_.z_cam;
+		float64 zcam = 1.0/std::tan(cam_.field_of_view());
+		float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/ zcam;
 		if (obj_mode())
 		{
 			
 			float64 tx = dx / width_ * cam_.width() * a;
 			float64 ty = - dy / height_ * cam_.height() * a;
-			Transfo3d ntr = inv_cam_ * Eigen::Translation3d(Vec3d((tx,ty,0.0))) * cam_.frame_;
+			Transfo3d ntr = inv_cam_ * Eigen::Translation3d(Vec3d(tx,ty,0.0)) * cam_.frame_;
 			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
@@ -147,33 +144,28 @@ void PureGLViewer::mouse_move_event(int32 buttons, float64 x, float64 y)
 
 
 
-void PureGLViewer::mouse_dbl_click(int32 buttons)
+void PureGLViewer::mouse_dbl_click_event(int32 buttons, float64 x, float64 y)
 {
-	if (obj_mode())
-	{
-
-	}
-	else
-	{
-
-	}
 }
 
 
-void mouse_wheel_event(float64 dx, float64 dy)
+void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 {
 	if (dy>0)
 	{
 		if (obj_mode())
 		{
-			auto ntr = inv_cam * Eigen::Translation3d(Vec3d(0,0,0.0025*delta)) * cam_.frame_);
-			current_frame_ = ntr * current_frame_;
+			auto ntr = inv_cam_ * Eigen::Translation3d(Vec3d(0,0,0.0025*dy)) * cam_.frame_;
+			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
 		{
-			float64 a = cam_.s_radius - cam_.frame_.translation().z()/ cam_.z_cam/cam.s_radius;
-			let ntr = 0.0025*dy*a;
+			float64 zcam = 1.0/std::tan(cam_.field_of_view());
+			float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/zcam/cam_.scene_radius();
 			cam_.frame_.translation().z() += 0.0025*dy*a;
 		}
 	}
+}
+
+}
 }

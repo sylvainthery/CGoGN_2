@@ -31,12 +31,12 @@
 #include <cgogn/core/cmap/attribute.h>
 #include <cgogn/core/cmap/map_traits.h>
 #include <cgogn/geometry/types/geometry_traits.h>
-#include <cgogn/rendering/vbo.h>
+#include <cgogn/rendering_pureGL/vbo.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 /**
@@ -336,7 +336,7 @@ void generate_vbo(const ATTR& attr, const std::vector<uint32>& indices, VBO* vbo
 	vbo->release_pointer();
 }
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

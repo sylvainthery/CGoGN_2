@@ -24,31 +24,29 @@
 #ifndef CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
 #define CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_
 
-#include <GL/gl3w.h>
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/core/utils/numerics.h>
-#include <cgogn/geometry/types/eigen.h>
 #include <cgogn/core/utils/unique_ptr.h>
-
-#include <cgogn/rendering/vao.h>
+#include <cgogn/rendering_pureGL/types.h>
+#include <cgogn/rendering_pureGL/vao.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 #include <iostream>
 #include <cassert>
 #include <memory>
 
+
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
-using GLMat4d = Eigen::Matrix4d;
-using GLMat3d = Eigen::Matrix3d;
-using GLMat4  = Eigen::Matrix4f;
-using GLMat3  = Eigen::Matrix3f;
-using GLColor = Eigen::Vector4f;
-using GLVec2  = Eigen::Vector2f;
-using GLVec3  = Eigen::Vector3f;
-using GLVec4  = Eigen::Vector4f;
+//using GLMat4d = Eigen::Matrix4d;
+//using GLMat3d = Eigen::Matrix3d;
+//using GLMat4  = Eigen::Matrix4f;
+//using GLMat3  = Eigen::Matrix3f;
+//using GLColor = Eigen::Vector4f;
+//using GLVec2  = Eigen::Vector2f;
+//using GLVec3  = Eigen::Vector3f;
+//using GLVec4  = Eigen::Vector4f;
 
 inline GLColor Color(uint8 R, uint8 G, uint8 B, uint8 A=255u)
 { return GLColor(float32(R)/255.0f,float32(G)/255.0f,float32(B)/255.0f,float32(A)/255.0f);}
@@ -60,7 +58,7 @@ inline void* void_ptr(uint32 x)
 }
 
 
-class CGOGN_RENDERING_EXPORT Shader
+class CGOGN_RENDERING_PUREGL_EXPORT Shader
 {
 protected:
 	GLuint id_;
@@ -94,7 +92,7 @@ public:
 
 };
 
-class CGOGN_RENDERING_EXPORT ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderProgram
 {
 protected:
 
@@ -145,20 +143,20 @@ public:
 	void get_matrices_uniforms();
 
 	void set_matrices(const GLMat4& proj, const GLMat4& mv);
-	void set_matrices(const GLMat4d& proj, const GLMat4d& mv);
+	void set_matrices(const Mat4d& proj, const Mat4d& mv);
 
-	void set_view_matrix(const GLMat4d& mv);
 	void set_view_matrix(const GLMat4& mv);
+	void set_view_matrix(const Mat4d& mv);
 
 };
 
 
-class CGOGN_RENDERING_EXPORT ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParam
 {
 protected:
 
 	ShaderProgram* shader_;
-	VAO* vao_;
+	std::unique_ptr<VAO> vao_;
 	virtual void set_uniforms() = 0;
 
 public:
@@ -197,7 +195,7 @@ public:
 	void release();
 };
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

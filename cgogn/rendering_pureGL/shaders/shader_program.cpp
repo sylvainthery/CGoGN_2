@@ -23,12 +23,12 @@
 
 
 #include <cgogn/core/utils/unique_ptr.h>
-#include <cgogn/rendering/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 ShaderProgram::ShaderProgram():
@@ -125,11 +125,11 @@ void ShaderProgram::get_matrices_uniforms()
 	unif_normal_matrix_ = glGetUniformLocation(id_,"normal_matrix");
 }
 
-void ShaderProgram::set_matrices(const GLMat4d& proj, const GLMat4d& mv)
+void ShaderProgram::set_matrices(const Mat4d& proj, const Mat4d& mv)
 {
 	if (unif_mvp_matrix_ >= 0)
 	{
-		GLMat4d mvp = (proj*mv);
+		Mat4d mvp = (proj*mv);
 		GLMat4 m = mvp.cast<float>();
 		glUniformMatrix4fv(	unif_mvp_matrix_,1,false, m.data());
 	}
@@ -166,14 +166,14 @@ void ShaderProgram::set_matrices(const GLMat4& proj, const GLMat4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		Eigen::Affine3d t(mv);
-		GLMat3 normal_matrix = t.linear().inverse().transpose().matrix().cast<float>();
+		Eigen::Affine3d t(mv.cast<float64>());
+		GLMat3 normal_matrix = t.linear().inverse().transpose().matrix().cast<float32>();
 		glUniformMatrix3fv(	unif_normal_matrix_,1,false, normal_matrix.data());
 	}
 }
 
 
-void ShaderProgram::set_view_matrix(const GLMat4d& mv)
+void ShaderProgram::set_view_matrix(const Mat4d& mv)
 {
 	if (unif_mv_matrix_ >= 0)
 	{
@@ -184,7 +184,7 @@ void ShaderProgram::set_view_matrix(const GLMat4d& mv)
 	if (unif_normal_matrix_ >= 0)
 	{
 		Eigen::Affine3d t(mv);
-		GLMat3 normal_matrix = t.linear().inverse().transpose().matrix().cast<float>();
+		GLMat3 normal_matrix = t.linear().inverse().transpose().matrix().cast<float32>();
 		glUniformMatrix3fv(	unif_normal_matrix_,1,false, normal_matrix.data());
 	}
 }
@@ -196,7 +196,7 @@ void ShaderProgram::set_view_matrix(const GLMat4& mv)
 
 	if (unif_normal_matrix_ >= 0)
 	{
-		Eigen::Affine3d t(mv);
+		Eigen::Affine3d t(mv.cast<float64>());
 		GLMat3 normal_matrix = t.linear().inverse().transpose().matrix().cast<float>();
 		glUniformMatrix3fv(	unif_normal_matrix_,1,false, normal_matrix.data());
 	}
@@ -205,12 +205,14 @@ void ShaderProgram::set_view_matrix(const GLMat4& mv)
 
 
 ShaderParam::ShaderParam(ShaderProgram* prg) :
-	shader_(prg), vao_(nullptr)
-{}
+	shader_(prg)
+{
+	vao_ = cgogn::make_unique<VAO>();
+	vao_->create();
+}
 
 ShaderParam::~ShaderParam()
 {
-	delete vao_;
 }
 
 void ShaderParam::bind_vao_only(bool with_uniforms)
@@ -241,6 +243,6 @@ void ShaderParam::release()
 }
 
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn

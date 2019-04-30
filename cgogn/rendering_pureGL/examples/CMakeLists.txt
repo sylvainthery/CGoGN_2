@@ -7,9 +7,8 @@ project(cgogn_rendering_puregl_examples
 find_package(cgogn_core REQUIRED)
 find_package(cgogn_geometry REQUIRED)
 find_package(cgogn_io REQUIRED)
-find_package(cgogn_rendering REQUIRED)
+find_package(cgogn_rendering_pureGL REQUIRED)
 find_package(cgogn_modeling REQUIRED)
-find_package(GLFW REQUIRED)
 
 
 set(CGOGN_TEST_PREFIX "test_")
@@ -17,8 +16,8 @@ set(CGOGN_TEST_MESHES_PATH "${CMAKE_SOURCE_DIR}/data/meshes/")
 add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 
 
-add_executable(simple_viewer simple_viewer.cpp)
-target_link_libraries(simple_viewer cgogn::core cgogn::io cgogn::rendering)
+add_executable(simple_viewerPGL simple_viewer.cpp)
+target_link_libraries(simple_viewerPGL cgogn::core cgogn::io cgogn::renderingPGL)
 
 #[[add_executable(viewer_per_face viewer_per_face.cpp)
 target_link_libraries(viewer_per_face cgogn::core cgogn::io cgogn::rendering)

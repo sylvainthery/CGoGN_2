@@ -28,14 +28,15 @@
 #include <GL/gl3w.h>
 #include <string>
 #include <cgogn/core/utils/numerics.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-class VBO
+class CGOGN_RENDERING_PUREGL_EXPORT VBO
 {
 protected:
 	GLuint id_;
@@ -46,15 +47,30 @@ protected:
 public:
 
 	inline VBO(int32 vec_dim = 3) :
+		id_(0),
 		nb_vectors_(0),
 		vector_dimension_(vec_dim)
 	{
 		glGenBuffers(1, &id_);
 	}
 
+	inline void create()
+	{
+		glGenBuffers(1, &id_);
+		id_ = 0;
+	}
+
+	inline bool is_created()
+	{
+		return id_ != 0;
+	}
+
+
+
 	inline ~VBO()
 	{
 		glDeleteBuffers(1,&id_);
+		id_ = 0;
 	}
 
 	inline void set_name(const std::string& name)
@@ -153,7 +169,7 @@ public:
 	}
 };
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

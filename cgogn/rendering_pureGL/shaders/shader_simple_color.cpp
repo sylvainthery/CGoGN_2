@@ -24,14 +24,12 @@
 
 #include <iostream>
 
-#include <cgogn/rendering/shaders/shader_simple_color.h>
-
-#include <QColor>
+#include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 ShaderSimpleColor* ShaderSimpleColor::instance_ = nullptr;
@@ -65,26 +63,28 @@ const char* ShaderSimpleColor::fragment_shader_source_ =
 "   fragColor = color;\n"
 "}\n";
 
+void ShaderSimpleColor::set_locations()
+{
+	glBindAttribLocation(this->id(), ATTRIB_POS, "vertex_pos");
+}
+
 ShaderSimpleColor::ShaderSimpleColor()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.link();
-
+	this->load(vertex_shader_source_,fragment_shader_source_);
 	get_matrices_uniforms();
 
-	unif_color_ = prg_.uniformLocation("color");
+	unif_color_ = uniform_location("color");
 
 	// default param
-	set_color(QColor(255, 255, 255));
+	set_color(GLColor(1.0,1.0,1.,1.0));
 }
 
-void ShaderSimpleColor::set_color(const QColor& rgb)
+
+void ShaderSimpleColor::set_color(const GLColor& rgba)
 {
-	prg_.setUniformValue(unif_color_, rgb);
+	set_uniform_value(unif_color_, rgba);
 }
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn

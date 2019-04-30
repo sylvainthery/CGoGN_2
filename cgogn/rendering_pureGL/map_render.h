@@ -31,15 +31,15 @@
 
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <cgogn/rendering/drawer.h>
-#include <cgogn/rendering/vbo.h>
-#include <cgogn/rendering/ebo.h>
+//#include <cgogn/rendering_pureGL/drawer.h>
+#include <cgogn/rendering_pureGL/vbo.h>
+#include <cgogn/rendering_pureGL/ebo.h>
 
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 enum DrawingType : uint8
@@ -51,7 +51,7 @@ enum DrawingType : uint8
 	SIZE_BUFFER
 };
 
-class CGOGN_RENDERING_EXPORT MapRender
+class CGOGN_RENDERING_PUREGL_EXPORT MapRender
 {
 protected:
 
@@ -295,10 +295,10 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
-		indices_buffers_[prim]->allocate(table_indices.data()), nb_indices_[prim]);
+		indices_buffers_[prim]->allocate(table_indices.data(), nb_indices_[prim]);
 		indices_buffers_[prim]->release();
 	}
 
@@ -332,7 +332,7 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim]);
@@ -375,7 +375,7 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim]);
@@ -427,7 +427,7 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim]);
@@ -459,7 +459,7 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim]);
@@ -497,7 +497,7 @@ public:
 		if (table_indices.empty())
 			return;
 
-		if (!indices_buffers_[prim]->isCreated())
+		if (!indices_buffers_[prim]->is_created())
 			indices_buffers_[prim]->create();
 		indices_buffers_[prim]->bind();
 		indices_buffers_[prim]->allocate(&(table_indices[0]), nb_indices_[prim]);
@@ -589,48 +589,48 @@ void create_indices_vertices_faces(
 	});
 }
 
-template <typename MAP, typename VERTEX_ATTR>
-void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& position, DisplayListDrawer* dr)
-{
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+//template <typename MAP, typename VERTEX_ATTR>
+//void add_to_drawer(const MAP& m, typename MAP::Edge e, const VERTEX_ATTR& position, DisplayListDrawer* dr)
+//{
+//	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
-	using Vertex = typename MAP::Vertex;
+//	using Vertex = typename MAP::Vertex;
 
-	dr->vertex3fv(position[Vertex(e.dart)]);
-	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
-}
+//	dr->vertex3fv(position[Vertex(e.dart)]);
+//	dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+//}
 
-template <typename MAP, typename VERTEX_ATTR>
-void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& position, DisplayListDrawer* dr)
-{
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+//template <typename MAP, typename VERTEX_ATTR>
+//void add_to_drawer(const MAP& m, typename MAP::Face f, const VERTEX_ATTR& position, DisplayListDrawer* dr)
+//{
+//	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
+//	using Vertex = typename MAP::Vertex;
+//	using Edge = typename MAP::Edge;
 
-	m.foreach_incident_edge(f, [&] (Edge e)
-	{
-		dr->vertex3fv(position[Vertex(e.dart)]);
-		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
-	});
-}
+//	m.foreach_incident_edge(f, [&] (Edge e)
+//	{
+//		dr->vertex3fv(position[Vertex(e.dart)]);
+//		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+//	});
+//}
 
-template <typename MAP, typename VERTEX_ATTR>
-void add_to_drawer(const MAP& m, typename MAP::Volume vo, const VERTEX_ATTR& position, DisplayListDrawer* dr)
-{
-	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
+//template <typename MAP, typename VERTEX_ATTR>
+//void add_to_drawer(const MAP& m, typename MAP::Volume vo, const VERTEX_ATTR& position, DisplayListDrawer* dr)
+//{
+//	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
-	using Vertex = typename MAP::Vertex;
-	using Edge = typename MAP::Edge;
+//	using Vertex = typename MAP::Vertex;
+//	using Edge = typename MAP::Edge;
 
-	m.foreach_incident_edge(vo, [&] (Edge e)
-	{
-		dr->vertex3fv(position[Vertex(e.dart)]);
-		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
-	});
-}
+//	m.foreach_incident_edge(vo, [&] (Edge e)
+//	{
+//		dr->vertex3fv(position[Vertex(e.dart)]);
+//		dr->vertex3fv(position[Vertex(m.phi1(e.dart))]);
+//	});
+//}
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

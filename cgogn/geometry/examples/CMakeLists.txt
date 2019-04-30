@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(cgogn_geometry_examples
-	LANGUAGES CXX
+        LANGUAGES CXX
 )
 
 if (CGOGN_USE_QT)

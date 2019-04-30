@@ -24,14 +24,14 @@
 #ifndef CGOGN_RENDERING_SHADERS_FLAT_H_
 #define CGOGN_RENDERING_SHADERS_FLAT_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/vbo.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/vbo.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 // forward
@@ -39,7 +39,7 @@ template <bool CPV>
 class ShaderParamFlat: public ShaderParam
 {};
 
-class CGOGN_RENDERING_EXPORT ShaderFlatGen : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlatGen : public ShaderProgram
 {
 	template <bool CPV> friend class ShaderParamFlat;
 
@@ -126,7 +126,7 @@ private:
 
 // COLOR UNIFORM PARAM
 template <>
-class CGOGN_RENDERING_EXPORT ShaderParamFlat<false> : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlat<false> : public ShaderParam
 {
 protected:
 
@@ -150,10 +150,10 @@ public:
 
 	inline ShaderParamFlat(ShaderFlatGen* sh) :
 		ShaderParam(sh),
-		front_color_(250, 0, 0),
-		back_color_(0, 250, 0),
-		ambiant_color_(5, 5, 5),
-		light_pos_(10, 100, 1000),
+		front_color_(0.95, 0.0, 0.0, 1.0),
+		back_color_(0.0, 0.95, 0.0,1.0),
+		ambiant_color_(0.25, 0.25, 0.25,1.0),
+		light_pos_(10.0, 100.0, 1000.0),
 		bf_culling_(false)
 	{}
 
@@ -173,7 +173,7 @@ public:
 
 // COLOR PER VERTEX PARAM
 template <>
-class CGOGN_RENDERING_EXPORT ShaderParamFlat<true> : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlat<true> : public ShaderParam
 {
 protected:
 
@@ -194,10 +194,12 @@ public:
 
 	inline ShaderParamFlat(ShaderFlatGen* sh) :
 		ShaderParam(sh),
-		ambiant_color_(5, 5, 5),
+		ambiant_color_(0.25, 0.25, 0.25,1.0),
 		light_pos_(10, 100, 1000),
 		bf_culling_(false)
-	{}
+	{
+		vao_->create();
+	}
 
 	virtual ~ShaderParamFlat() override;
 
@@ -262,7 +264,7 @@ extern template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<true>;
 
 
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn
 

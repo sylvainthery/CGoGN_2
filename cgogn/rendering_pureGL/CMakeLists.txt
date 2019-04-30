@@ -4,7 +4,7 @@ project(cgogn_rendering_pureGL
 
 add_library(${PROJECT_NAME} SHARED "")
 
-add_library(cgogn::rendering_pureGL ALIAS cgogn_rendering_pureGL)
+add_library(cgogn::renderingPGL ALIAS cgogn_rendering_pureGL)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
@@ -103,6 +103,32 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/cgogn/thirdparty>
 )
 
-target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry GLFW ImGUI)
+target_link_libraries(${PROJECT_NAME} cgogn::core cgogn::geometry glfw ImGUI)
+
+
+generate_export_header(cgogn_rendering_pureGL)
+
+set(PKG_CONFIG_REQUIRES "cgogn_core cgogn_geometry")
+configure_file(${PROJECT_SOURCE_DIR}/cgogn_rendering_pureGL.pc.in ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_pureGL.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_pureGL.pc
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+	COMPONENT ccgogn_rendering_pureGL_libraries
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering_pureGL
+	COMPONENT cgogn_rendering_pureGL_headers
+	FILES_MATCHING PATTERN "*.h"
+	REGEX "(examples|tests)" EXCLUDE
+)
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_pureGL_export.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering_pureGL
+	COMPONENT cgogn_rendering_pureGL_headers
+)
+
+cgogn_create_package("${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER cgogn)

@@ -22,11 +22,7 @@
 *******************************************************************************/
 
 
-#include <cgogn/rendering/drawer.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
-
+#include <cgogn/rendering_pureGL/drawer.h>
 #include <iostream>
 
 namespace cgogn
@@ -258,7 +254,7 @@ DisplayListDrawer::Renderer::~Renderer()
 	param_ps_.reset();
 }
 
-void DisplayListDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void DisplayListDrawer::Renderer::draw(const GLMat4d& projection, const QMatrix4x4& modelview)
 {
 	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
 

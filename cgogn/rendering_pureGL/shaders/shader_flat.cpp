@@ -26,13 +26,13 @@
 
 #include <iostream>
 
-#include <cgogn/rendering/shaders/shader_flat.h>
+#include <cgogn/rendering_pureGL/shaders/shader_flat.h>
 
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 const char* ShaderFlatGen::vertex_shader_source_ =
@@ -131,7 +131,7 @@ void ShaderFlatGen::set_light_position(const GLVec3& l)
 
 void ShaderFlatGen::set_local_light_position(const GLVec3& l, const GLMat4& view_matrix)
 {
-	GLVec3 loc = (view_matrix * GLVec4(l, 1.0f)).head<3>();
+	GLVec3 loc = (view_matrix * GLVec4(l.x(),l.y(),l.z(), 1.0)).head<3>();
 	set_uniform_value(unif_light_position_, loc);
 }
 
@@ -168,6 +168,6 @@ template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<false>;
 template class CGOGN_RENDERING_EXPORT ShaderFlatTpl<true>;
 #endif
 
-} // namespace rendering
+} // namespace rendering_pgl
 
 } // namespace cgogn

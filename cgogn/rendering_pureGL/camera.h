@@ -33,15 +33,15 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
-#include <cgogn/rendering/mframe.h>
+#include <cgogn/rendering_pureGL/mframe.h>
 #include <cgogn/core/utils/numerics.h>
 
 namespace cgogn
 {
-namespace rendering
+namespace rendering_pgl
 {
 	
-class /*CGOGN_RENDERING_EXPORT*/ Camera : public MovingFrame
+class /*CGOGN_RENDERING_PURE_GL_EXPORT*/ Camera : public MovingFrame
 {
 public:
 	enum Type { PERSPECTIVE, ORTHOGRAPHIC };
@@ -91,7 +91,9 @@ public:
 	inline void set_type(Type type) { type_ = type; }
 	
 	inline void set_field_of_view(float64 fov) { field_of_view_ = fov; }
-	
+
+	inline float64 field_of_view() { return field_of_view_; }
+
 	inline void set_aspect_ratio(float64 aspect) { asp_ratio_ = aspect; }
 	
 	inline void set_scene_radius(float64 radius) { scene_radius_ = radius; }
@@ -111,15 +113,15 @@ public:
 	
 	inline const Vec3d& scene_center() const { return scene_center_; }
 
-	inline Mat4f get_projection_matrix() const
+	inline GLMat4 get_projection_matrix() const
 	{
-		float64 d = scene_radius_/std::tan(field_of_view_) - this->frame_.coeff(3,2);
+		float64 d = scene_radius_/std::tan(field_of_view_) - this->frame_.translation().z();
 		float64 znear = std::max(0.001, d - scene_radius_);
 		float64 zfar = d+scene_radius_;
 		return ((type_==PERSPECTIVE) ? perspective(znear,zfar) : ortho(znear,zfar)).cast<float>();
 	}
 
-	inline Mat4f get_modelview_matrix() const
+	inline GLMat4 get_modelview_matrix() const
 	{
 		Transfo3d m = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_))) * this->frame_ * Eigen::Translation3d(-scene_center_);
 		return m.matrix().cast<float32>();

@@ -25,7 +25,7 @@
 #ifndef CGOGN_RENDERING_PURE_GL_VIEWER_H_
 #define CGOGN_RENDERING_PURE_GL_VIEWER_H_
 
-//#include <GL/gl3w.h>
+#include <GL/gl3w.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Eigen>
@@ -33,38 +33,38 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
-//#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/camera.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/camera.h>
 
 namespace cgogn
 {
-namespace rendering
+namespace rendering_pgl
 {
 
-class PureGLViewer
+class CGOGN_RENDERING_PUREGL_EXPORT_H PureGLViewer
 {
-	enum KeyCode : uint32 
-	{
-		SHIFT= 0x1000,
-		CONTROL,
-		ALT,
-		META,
-		ARROW_LEFT,
-		ARROW_RIGHT,
-		ARROW_UP,
-		ARROW_DOWN,
-		PAGE_UP,
-		PAGE_DOWN,
-		HOME,
-		END,
-		BACKSPACE,
-		DEL,
-		ENTER,
-		TAB,
-		ESC,
-		F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12
-	}
-
+//	enum KeyCode : uint32
+//	{
+//		SHIFT= 0x1000,
+//		CONTROL,
+//		ALT,
+//		META,
+//		ARROW_LEFT,
+//		ARROW_RIGHT,
+//		ARROW_UP,
+//		ARROW_DOWN,
+//		PAGE_UP,
+//		PAGE_DOWN,
+//		HOME,
+//		END,
+//		BACKSPACE,
+//		DEL,
+//		ENTER,
+//		TAB,
+//		ESC,
+//		F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,F11,F12
+//	};
+protected:
 	Camera cam_;
 	MovingFrame* current_frame_;
 	Transfo3d inv_cam_;
@@ -76,6 +76,7 @@ class PureGLViewer
 	float64 sensitivity_;
 	float64 last_mouse_x_;
 	float64 last_mouse_y_;
+	int32 mouse_buttons_;
 
 protected:
 	bool shift_pressed_;
@@ -85,24 +86,31 @@ protected:
 
 public:
 	PureGLViewer();
+	virtual ~PureGLViewer();
 
-	inline bool obj_mode() const { return  current_frame_ != &(cam_.frame_);}
+	inline bool obj_mode() const { return  current_frame_ != &cam_;}
 
-	inline Mat4f get_projection_matrix() const
+	inline GLMat4 get_projection_matrix() const
 	{
 		return cam_.get_projection_matrix();
 	}
 
-	inline Mat4f get_modelview_matrix() const
+	inline GLMat4 get_modelview_matrix() const
 	{
 		return cam_.get_modelview_matrix();
 	}
+
+	inline void set_scene_radius(float64 radius) { cam_.set_scene_radius(radius); }
+	inline void set_scene_center(const Vec3d& center) {cam_.set_scene_center(center); }
+	inline void center_scene() { cam_.center_scene(); }
+	inline void show_entire_scene() { cam_.show_entire_scene(); }
+
 
 	void manip(MovingFrame* fr);
 
 	virtual void mouse_press_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_release_event(int32 buttons, float64 x, float64 y);
-	virtual void mouse_move_event(int32 buttons, float64 x, float64 x)
+	virtual void mouse_move_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_dbl_click_event(int32 buttons, float64 x, float64 y);
 	virtual void mouse_wheel_event(float64 x, float64 y);
 	virtual void key_press_event(int32 key_code);
@@ -113,3 +121,7 @@ public:
 
 	virtual void draw();
 };	
+
+}
+}
+#endif
