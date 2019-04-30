@@ -41,7 +41,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 	
-class /*CGOGN_RENDERING_PURE_GL_EXPORT*/ Camera : public MovingFrame
+class CGOGN_RENDERING_PUREGL_EXPORT Camera : public MovingFrame
 {
 public:
 	enum Type { PERSPECTIVE, ORTHOGRAPHIC };
@@ -52,28 +52,28 @@ private:
 	Vec3d scene_center_;
 	float64 scene_radius_;
 
-	inline Mat4d perspective(float64 near, float64 far) const
+	inline Mat4d perspective(float64 znear, float64 zfar) const
 	{
-		float64 range_inv = 1.0 / (near - far);
+		float64 range_inv = 1.0; // / (znear - zfar);
 		float64 f = 1.0/std::tan(field_of_view_/2.0);
 		auto m05 = (asp_ratio_<1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
 		Mat4d m;
 		m << m05.first,  0,  0,  0,
 			  0, m05.second,  0,  0,
-			  0,  0, (near+far)*range_inv, -1,
-			  0,  0, 2.0*near*far*range_inv,0;
+			  0,  0, (znear+zfar)*range_inv, -1,
+			  0,  0, 2.0*znear*zfar*range_inv,0;
 		return m;
 	}
 
-	inline Mat4d ortho(float64 near, float64 far) const
+	inline Mat4d ortho(float64 znear, float64 zfar) const
 	{
-		float64 range_inv = 1.0 / (near - far);
+		float64 range_inv = 1.0 / (znear - zfar);
 		auto m05 = (asp_ratio_<1) ? std::make_pair(1.0/asp_ratio_,1.0) : std::make_pair(1.0,1.0/asp_ratio_);
 		Mat4d m;
 		m << m05.first,  0,  0,  0,
 			  0, m05.second,  0,  0,
 			  0,  0, 2*range_inv, 0,
-			  0,  0, (near+far)*range_inv,0;
+			  0,  0, (znear+zfar)*range_inv,0;
 		return m;
 	}
 

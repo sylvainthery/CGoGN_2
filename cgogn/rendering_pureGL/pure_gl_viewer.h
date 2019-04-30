@@ -33,15 +33,16 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/camera.h>
+
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 namespace cgogn
 {
 namespace rendering_pgl
 {
 
-class CGOGN_RENDERING_PUREGL_EXPORT_H PureGLViewer
+class CGOGN_RENDERING_PUREGL_EXPORT PureGLViewer
 {
 //	enum KeyCode : uint32
 //	{
@@ -86,6 +87,7 @@ protected:
 
 public:
 	PureGLViewer();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(PureGLViewer);
 	virtual ~PureGLViewer();
 
 	inline bool obj_mode() const { return  current_frame_ != &cam_;}

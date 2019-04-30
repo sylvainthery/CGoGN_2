@@ -28,21 +28,19 @@
 
 //#include <cgogn/rendering/cgogn_rendering_export.h>
 #include <cgogn/rendering_pureGL/pure_gl_viewer.h>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
 
 namespace cgogn
 {
 namespace rendering_pgl
 {
 
-class ImGUIViewer: public PureGLViewer
+class CGOGN_RENDERING_PUREGL_EXPORT ImGUIViewer: public PureGLViewer
 {
 protected:
 	bool need_draw_;
 public:
 	ImGUIViewer();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);
 	ImGUIViewer(int32 w, int32 h);
 	~ImGUIViewer();
 	virtual void mouse_press_event(int32 buttons, float64 x, float64 y);

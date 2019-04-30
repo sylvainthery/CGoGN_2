@@ -21,6 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <imgui.h>
+
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <iostream>
 
@@ -33,7 +35,6 @@
 #include <cgogn/rendering_pureGL/shaders/shader_flat.h>
 #include <cgogn/rendering_pureGL/vbo.h>
 #include <cgogn/rendering_pureGL/vbo_update.h>
-
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
@@ -145,14 +146,19 @@ std::cout<< "1------------" << std::endl;
 
 	// map rendering object (primitive creation & sending to GPU)
 	render_ = cgogn::make_unique<cgogn::rendering_pgl::MapRender>();
+	std::cout<< "2------------" << std::endl;
 	render_->init_primitives(map_, cgogn::rendering_pgl::POINTS);
 	render_->init_primitives(map_, cgogn::rendering_pgl::LINES);
 	render_->init_primitives(map_, cgogn::rendering_pgl::TRIANGLES, &vertex_position_);
+	std::cout<< "3------------" << std::endl;
 	param_flat_ = cgogn::rendering_pgl::ShaderFlat::generate_param();
+	std::cout<< "4------------" << std::endl;
 	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = cgogn::rendering_pgl::GLColor(0,0.8,0,1);
-	param_flat_->back_color_ = cgogn::rendering_pgl::GLColor(0,0,0.8,1);
-	param_flat_->ambiant_color_ = cgogn::rendering_pgl::GLColor(0.15,0.15,0.15,1.0);
+	std::cout<< "5------------" << std::endl;
+	param_flat_->front_color_ = cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
+	param_flat_->back_color_ = cgogn::rendering_pgl::GLColor(0,0,0.8f,1);
+	param_flat_->ambiant_color_ = cgogn::rendering_pgl::GLColor(0.15f,0.15f,0.15f,1);
+	std::cout<< "6------------" << std::endl;
 }
 
 
@@ -167,9 +173,11 @@ void Viewer::draw()
 	cgogn::rendering_pgl::GLMat4 view = cgogn::rendering_pgl::GLMat4::Identity();
 	//= get_modelview_matrix();
 
-
+std::cout<< "7------------" << std::endl;
 	param_flat_->bind(proj,view);
+std::cout<< "8------------" << std::endl;
 	render_->draw(cgogn::rendering_pgl::TRIANGLES);
+std::cout<< "9------------" << std::endl;
 	param_flat_->release();
 }
 
