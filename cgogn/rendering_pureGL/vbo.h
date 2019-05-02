@@ -47,23 +47,22 @@ protected:
 public:
 
 	inline VBO(int32 vec_dim = 3) :
-		id_(0),
+//		id_(0),
 		nb_vectors_(0),
 		vector_dimension_(vec_dim)
 	{
 		glGenBuffers(1, &id_);
 	}
 
-	inline void create()
-	{
-		glGenBuffers(1, &id_);
-		id_ = 0;
-	}
+//	inline void create()
+//	{
+//		glGenBuffers(1, &id_);
+//	}
 
-	inline bool is_created()
-	{
-		return id_ != 0;
-	}
+//	inline bool is_created()
+//	{
+//		return id_ != 0;
+//	}
 
 
 
@@ -98,23 +97,17 @@ public:
 	 * @param nb_vectors number of vectors
 	 * @param vector_dimension_ number of component of each vector
 	 */
-	inline void allocate(std::size_t nb_vectors, uint32 vector_dimension)
+	inline void allocate(std::size_t nb_vectors, int32 vector_dim)
 	{
-		glGenBuffers(1, &id_);
-
-		std::size_t total = nb_vectors * vector_dimension;
-		if (total != nb_vectors_ * uint64(vector_dimension_)) // only allocate when > ?
+		std::size_t total = nb_vectors * vector_dim;
+//		if (total != nb_vectors_ * uint64(vector_dim)) // only allocate when > ?
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, id_);
-			glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(total), nullptr, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, GLsizeiptr(total*4), nullptr, GL_STATIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		}
 		nb_vectors_ = nb_vectors;
-//		if (vector_dimension != vector_dimension_)
-//		{
-//			vector_dimension_ = vector_dimension;
-//			cgogn_log_warning("VBO::allocate") << "Changing the VBO vector_dimension.";
-//		}
+		vector_dimension_ = vector_dim;
 	}
 
 	/**
@@ -124,7 +117,9 @@ public:
 	inline float32* lock_pointer()
 	{
 		this->bind();
-		return reinterpret_cast<float32*>(glMapBuffer(GL_ARRAY_BUFFER,GL_READ_WRITE));
+		float32* ptr = reinterpret_cast<float32*>(glMapBuffer(GL_ARRAY_BUFFER,GL_READ_WRITE));
+		this->release();
+		return ptr;
 	}
 
 	/**

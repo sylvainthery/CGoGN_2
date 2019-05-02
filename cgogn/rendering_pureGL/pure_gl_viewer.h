@@ -71,19 +71,20 @@ protected:
 	Transfo3d inv_cam_;
 	int32 vp_x_;
 	int32 vp_y_;
-	int32 width_;
-	int32 height_;
+	int32 vp_w_;
+	int32 vp_h_;
 	float64 spinning_speed_;
 	float64 sensitivity_;
 	float64 last_mouse_x_;
 	float64 last_mouse_y_;
-	int32 mouse_buttons_;
+	uint32 mouse_buttons_;
 
 protected:
 	bool shift_pressed_;
 	bool control_pressed_;
 	bool alt_pressed_;
 	bool meta_pressed_;
+	void spin();
 
 public:
 	PureGLViewer();
@@ -110,18 +111,17 @@ public:
 
 	void manip(MovingFrame* fr);
 
-	virtual void mouse_press_event(int32 buttons, float64 x, float64 y);
-	virtual void mouse_release_event(int32 buttons, float64 x, float64 y);
-	virtual void mouse_move_event(int32 buttons, float64 x, float64 y);
-	virtual void mouse_dbl_click_event(int32 buttons, float64 x, float64 y);
+	virtual void mouse_press_event(int32 button, float64 x, float64 y);
+	virtual void mouse_release_event(int32 button, float64 x, float64 y);
+	virtual void mouse_dbl_click_event(int32 button, float64 x, float64 y);
+	virtual void mouse_move_event(float64 x, float64 y);
 	virtual void mouse_wheel_event(float64 x, float64 y);
 	virtual void key_press_event(int32 key_code);
 	virtual void key_release_event(int32 key_code);
 	virtual void close_event();
 
-	virtual void init();
-
-	virtual void draw();
+	virtual bool init() = 0;
+	virtual void draw() = 0;
 };	
 
 }

@@ -205,6 +205,7 @@ public:
 
 	inline void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
+		shader_->bind();
 		vao_->bind();
 		// position
 		vbo_pos->bind();
@@ -217,26 +218,31 @@ public:
 		glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
 		vbo_color->release();
 		vao_->release();
+		shader_->release();
 	}
 
 	inline void set_position_vbo(VBO* vbo_pos)
 	{
+		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
 		glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_POS);
 		glVertexAttribPointer(ShaderFlatGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
 		vbo_pos->release();
 		vao_->release();
+		shader_->release();
 	}
 
 	inline void set_color_vbo(VBO* vbo_color)
 	{
+		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
 		glEnableVertexAttribArray(ShaderFlatGen::ATTRIB_COLOR);
 		glVertexAttribPointer(ShaderFlatGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
 		vbo_color->release();
 		vao_->release();
+		shader_->release();
 	}
 };
 

@@ -2,7 +2,7 @@ project(cgogn_rendering_pureGL
 	LANGUAGES CXX
 )
 
-add_library(${PROJECT_NAME} SHARED "")
+add_library(${PROJECT_NAME} STATIC "")
 
 add_library(cgogn::renderingPGL ALIAS cgogn_rendering_pureGL)
 
@@ -47,6 +47,8 @@ target_sources(${PROJECT_NAME}
 ]]
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_flat.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_flat.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_circle.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_circle.cpp"
 #[[		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_vector_per_vertex.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_vector_per_vertex.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong.h"

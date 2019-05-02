@@ -25,7 +25,7 @@
 #ifndef CGOGN_RENDERING_CAMERA_H_
 #define CGOGN_RENDERING_CAMERA_H_
 
-//#include <GL/gl3w.h>
+#include <iostream>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Eigen>
@@ -54,14 +54,18 @@ private:
 
 	inline Mat4d perspective(float64 znear, float64 zfar) const
 	{
-		float64 range_inv = 1.0; // / (znear - zfar);
+		float64 range_inv = 1.0 / (znear - zfar);
 		float64 f = 1.0/std::tan(field_of_view_/2.0);
 		auto m05 = (asp_ratio_<1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
 		Mat4d m;
+//		m << m05.first,  0,  0,  0,
+//			  0, m05.second,  0,  0,
+//			  0,  0, (znear+zfar)*range_inv, -1,
+//			  0,  0, 2.0*znear*zfar*range_inv,0;
 		m << m05.first,  0,  0,  0,
 			  0, m05.second,  0,  0,
-			  0,  0, (znear+zfar)*range_inv, -1,
-			  0,  0, 2.0*znear*zfar*range_inv,0;
+			  0,  0, (znear+zfar)*range_inv, 2*znear*zfar*range_inv,
+			  0,  0, -1 ,0;
 		return m;
 	}
 
@@ -81,7 +85,7 @@ private:
 public:
 	inline Camera():
 		type_(PERSPECTIVE),
-		field_of_view_(1.57),
+		field_of_view_(0.78),
 		asp_ratio_(1.0)
 	{}
 	inline float64 width() const { return (asp_ratio_>1.0) ? asp_ratio_ : 1.0;}
@@ -115,15 +119,20 @@ public:
 
 	inline GLMat4 get_projection_matrix() const
 	{
-		float64 d = scene_radius_/std::tan(field_of_view_) - this->frame_.translation().z();
+		float64 d = scene_radius_/std::tan(field_of_view_/2.0) - this->frame_.translation().z();
 		float64 znear = std::max(0.001, d - scene_radius_);
 		float64 zfar = d+scene_radius_;
+
 		return ((type_==PERSPECTIVE) ? perspective(znear,zfar) : ortho(znear,zfar)).cast<float>();
 	}
 
 	inline GLMat4 get_modelview_matrix() const
 	{
-		Transfo3d m = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_))) * this->frame_ * Eigen::Translation3d(-scene_center_);
+//		auto m1 = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_/2.0)));
+//		auto m2 = this->frame_;
+//		auto m3 = Eigen::Translation3d(-scene_center_);
+//		auto m = m1*m2*m3;
+		Transfo3d m = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_/2.0))) * this->frame_ * Eigen::Translation3d(-scene_center_);
 		return m.matrix().cast<float32>();
 	}
 };

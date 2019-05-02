@@ -29,6 +29,7 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
+#include <iostream>
 #include <cgogn/rendering_pureGL/pure_gl_viewer.h>
 
 namespace cgogn
@@ -36,19 +37,19 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-PureGLViewer::PureGLViewer()
-{}
+PureGLViewer::PureGLViewer():
+	vp_x_(0),
+	vp_y_(0),
+	vp_w_(0),
+	vp_h_(0)
+{
+	current_frame_ = &cam_;
+}
 
 PureGLViewer::~PureGLViewer()
 {}
 
 void PureGLViewer::close_event()
-{}
-
-void PureGLViewer::init()
-{}
-
-void PureGLViewer::draw()
 {}
 
 void PureGLViewer::manip(MovingFrame* fr)
@@ -73,75 +74,91 @@ void PureGLViewer::key_release_event(int32 key_code)
 }
 
 
-void PureGLViewer::mouse_press_event(int32 buttons, float64 x, float64 y)
+void PureGLViewer::mouse_press_event(int32 button, float64 x, float64 y)
 {
-	if (buttons & 1)
+	std::cout <<" mouse_press_event: " << button <<" : "<< x <<" , "<< y << std::endl;
+	if (button == 0)
 	{
 			current_frame_->is_moving_ = false;
 			spinning_speed_ = 0;	
 	}
-	last_mouse_x_ = x;
-	last_mouse_y_ = y;
 }
 
-void PureGLViewer::mouse_release_event(int32 buttons, float64 x, float64 y)
+void PureGLViewer::mouse_release_event(int32 button, float64 x, float64 y)
 {
-	if (buttons & 1)
+	std::cout <<" mouse_release_event: " << button <<" : "<< x <<" , "<< y << std::endl;
+	if (button == 0)
 	{
 		current_frame_->is_moving_ = (spinning_speed_ > 0.05);		
 	}
-	last_mouse_x_ = x;
-	last_mouse_y_ = y;
 }
 
 
-void PureGLViewer::mouse_move_event(int32 buttons, float64 x, float64 y)
+void PureGLViewer::mouse_move_event(float64 x, float64 y)
 {
 	float64 dx = x - last_mouse_x_;
 	float64 dy = y - last_mouse_y_;
 
-	if (buttons & 1)
+	last_mouse_x_ = x;
+	last_mouse_y_ = y;
+
+	if (mouse_buttons_ & 1)
 	{
 		Vec3d axis(dy,dx,0.0);
 		spinning_speed_ = axis.norm();
 		axis /= spinning_speed_;
-		spinning_speed_ *= 0.1;
+		spinning_speed_ *= 0.005;
 		if (obj_mode())
 		{
 			Transfo3d sm(Eigen::AngleAxisd(2.0*spinning_speed_,axis));
 			current_frame_->spin_ = inv_cam_ *  sm * cam_.frame_;
-			current_frame_->frame_ = current_frame_->spin_ * current_frame_->frame_; 
+			auto tr = current_frame_->frame_.translation().eval();
+			current_frame_->frame_.translation().setZero();
+			current_frame_->frame_ = current_frame_->spin_ * current_frame_->frame_;
+			current_frame_->frame_.translation() = tr;
 		}
 		else
 		{
 			current_frame_->spin_ = Eigen::AngleAxisd(0.2*spinning_speed_,axis);
+			auto tr = current_frame_->frame_.translation().eval();
+			current_frame_->frame_.translation().setZero();
 			current_frame_->frame_ = Eigen::AngleAxisd(spinning_speed_,axis) * current_frame_->frame_;
+			current_frame_->frame_.translation() = tr;
 		}	
 	}
 	
-	if (buttons & 2)
+	if (mouse_buttons_ & 2)
 	{
-		float64 zcam = 1.0/std::tan(cam_.field_of_view());
+		float64 zcam = 1.0/std::tan(cam_.field_of_view()/2.0);
 		float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/ zcam;
 		if (obj_mode())
 		{
 			
-			float64 tx = dx / width_ * cam_.width() * a;
-			float64 ty = - dy / height_ * cam_.height() * a;
+			float64 tx = dx / vp_w_ * cam_.width() * a;
+			float64 ty = - dy / vp_h_ * cam_.height() * a;
 			Transfo3d ntr = inv_cam_ * Eigen::Translation3d(Vec3d(tx,ty,0.0)) * cam_.frame_;
 			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
 		{
-			float64 nx = float64(dx) / width_ * cam_.width() * a;
-			float64 ny = - 1.0 * float64(dy) / height_ * cam_.height() * a;
-			cam_.frame_.translation().x() += nx;
-			cam_.frame_.translation().y() += ny;
+			float64 nx = float64(dx) / vp_w_ * cam_.width() * a;
+			float64 ny = - 1.0 * float64(dy) / vp_h_ * cam_.height() * a;
+			cam_.frame_.translation().x() += 2*nx;
+			cam_.frame_.translation().y() += 2*ny;
 		}
 	}
 }
 
-
+void PureGLViewer::spin()
+{
+	if (current_frame_->is_moving_)
+	{
+		auto tr = current_frame_->frame_.translation().eval();
+		current_frame_->frame_.translation().setZero();
+		current_frame_->frame_ = current_frame_->spin_ * current_frame_->frame_;
+		current_frame_->frame_.translation() = tr;
+	}
+}
 
 
 void PureGLViewer::mouse_dbl_click_event(int32 buttons, float64 x, float64 y)
@@ -151,7 +168,7 @@ void PureGLViewer::mouse_dbl_click_event(int32 buttons, float64 x, float64 y)
 
 void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 {
-	if (dy>0)
+	if (dy!=0.0)
 	{
 		if (obj_mode())
 		{
@@ -160,7 +177,7 @@ void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 		}
 		else
 		{
-			float64 zcam = 1.0/std::tan(cam_.field_of_view());
+			float64 zcam = 1.0/std::tan(cam_.field_of_view()/2.0);
 			float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/zcam/cam_.scene_radius();
 			cam_.frame_.translation().z() += 0.0025*dy*a;
 		}

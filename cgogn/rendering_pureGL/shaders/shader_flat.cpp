@@ -63,12 +63,10 @@ const char* ShaderFlatGen::fragment_shader_source_ =
 "	vec3 L = normalize(lightPosition-pos);\n"
 "	float lambert = dot(N,L);\n"
 "	if (gl_FrontFacing)\n"
-"		fragColor = vec4(ambiant_color.rgba+lambert*front_color.rgba, front_color.a);\n"
-//"		fragColor = ambiant_color+lambert*front_color;\n"
+"		fragColor = vec4(ambiant_color.rgb+lambert*front_color.rgb, front_color.a);\n"
 "	else\n"
 "		if (cull_back_face) discard;\n"
-//"		else fragColor = ambiant_color+lambert*back_color;\n"
-"		else fragColor = vec4(ambiant_color.rgba+lambert*back_color.rgba, back_color.a);\n"
+"		else fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
 "}\n";
 
 const char* ShaderFlatGen::vertex_shader_source2_ =
@@ -115,7 +113,11 @@ void ShaderFlatGen::set_locations()
 ShaderFlatGen::ShaderFlatGen(bool color_per_vertex) :
 	cpv_(color_per_vertex)
 {
-	this->load(vertex_shader_source2_,fragment_shader_source2_);
+	if (color_per_vertex)
+		this->load(vertex_shader_source2_,fragment_shader_source2_);
+	else
+		this->load(vertex_shader_source_,fragment_shader_source_);
+
 	get_matrices_uniforms();
 	unif_front_color_ = uniform_location("front_color");
 	unif_back_color_ = uniform_location("back_color");

@@ -88,6 +88,64 @@ public:
 		const char* csrc = src.c_str();
 		glShaderSource(id_, 1, &csrc, nullptr);
 		glCompileShader(id_);
+
+
+		int infologLength = 0;
+			int charsWritten  = 0;
+			char *infoLog;
+
+			glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
+
+			if(infologLength > 1)
+			{
+				infoLog = (char *)malloc(infologLength+1);
+				glGetShaderInfoLog(id_, infologLength, &charsWritten, infoLog);
+
+				std::cerr << "----------------------------------------" << std::endl << "compilation de " << "msg" <<  " : "<<std::endl << infoLog <<std::endl<< "--------"<< std::endl;
+
+				std::string errors(infoLog);
+				std::istringstream sserr(errors);
+				std::vector<int> error_lines;
+				std::string line;
+				std::getline(sserr, line);
+				while (! sserr.eof())
+				{
+					std::size_t a =0;
+					while ((a<line.size()) && (line[a]>='0') && (line[a]<='9')) a++;
+					std::size_t b =a+1;
+					while ((b<line.size()) && (line[b]>='0') && (line[b]<='9')) b++;
+					if (b<line.size())
+					{
+						int ln = std::stoi(line.substr(a+1, b-a-1));
+						error_lines.push_back(ln);
+					}
+					std::getline(sserr, line);
+				}
+
+				free(infoLog);
+
+				char* source = new char[16*1024];
+				GLsizei length;
+				glGetShaderSource(id_,16*1024,&length,source);
+				std::string src(source);
+				std::istringstream sssrc(src);
+				int l = 1;
+				while (! sssrc.eof())
+				{
+					std::getline(sssrc, line);
+					std::cerr.width(3);
+					auto it = std::find(error_lines.begin(),error_lines.end(),l);
+					if (it != error_lines.end())
+						std::cerr << "\033[41m\033[37m" << "EEEEEE" << line <<"\033[m" << std::endl;
+					else
+						std::cerr<< l << " : " << line << std::endl;
+					l++;
+				}
+				std::cerr << "----------------------------------------" << std::endl;
+		}
+
+
+
 	}
 
 };
@@ -131,7 +189,10 @@ public:
 
 	inline void release()			{ glUseProgram(0); }
 
-	inline GLint uniform_location(const GLchar* str) const { return glGetUniformLocation(id_,str); }
+	inline GLint uniform_location(const GLchar* str) const
+	{
+		return glGetUniformLocation(id_,str);
+	}
 
 	inline void set_uniform_value(GLint u, const float32 v) { glUniform1f(u,v);}
 	inline void set_uniform_value(GLint u, const GLVec2& v) { glUniform2fv(u,1,v.data());}

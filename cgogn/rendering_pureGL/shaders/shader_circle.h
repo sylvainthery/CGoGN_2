@@ -21,12 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
-#define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
+#ifndef CGOGN_RENDERING_SHADERS_CIRCLE_H_
+#define CGOGN_RENDERING_SHADERS_CIRCLE_H_
 
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/shaders/shader_program.h>
-#include <cgogn/rendering_pureGL/vbo.h>
-
+//#include <cgogn/rendering_pureGL/vbo.h>
 
 namespace cgogn
 {
@@ -34,79 +34,77 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class ShaderParamSimpleColor;
+// forward
+class ShaderParamCircle;
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderSimpleColor : public ShaderProgram
+
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderCircle : public ShaderProgram
 {
-	friend class ShaderParamSimpleColor;
+	friend class ShaderParamCircle;
 
 protected:
 
 	static const char* vertex_shader_source_;
 	static const char* fragment_shader_source_;
-
-	// uniform ids
 	GLint unif_color_;
 	void set_locations();
-
 public:
 
-	enum
-	{
-		ATTRIB_POS = 0
-	};
+	using Self = ShaderCircle;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderCircle);
 
-	using Param = ShaderParamSimpleColor;
+	using Param = ShaderParamCircle;
 	static std::unique_ptr<Param> generate_param();
 
-	/**
-	 * @brief set current color
-	 * @param rgba
-	 */
 	void set_color(const GLColor& rgba);
 
-protected:
+private:
 
-	ShaderSimpleColor();
-	static ShaderSimpleColor* instance_;
+	ShaderCircle();
+	static ShaderCircle* instance_;
 };
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamSimpleColor : public ShaderParam
+
+// COLOR UNIFORM PARAM
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamCircle : public ShaderParam
 {
 protected:
 
 	inline void set_uniforms() override
 	{
-		ShaderSimpleColor* sh = static_cast<ShaderSimpleColor*>(this->shader_);
+		ShaderCircle* sh = static_cast<ShaderCircle*>(this->shader_);
 		sh->set_color(color_);
 	}
 
+
+
 public:
+	inline void set_color_vbo(VBO* vbo_color)
+	{
+		shader_->bind();
+		vao_->bind();
+		vbo_color->bind();
+		glEnableVertexAttribArray(4);
+		glVertexAttribPointer(4, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
+		vbo_color->release();
+		vao_->release();
+		shader_->release();
+	}
 
-	using ShaderType = ShaderSimpleColor;
-
+	using ShaderType = ShaderCircle;
 	GLColor color_;
 
-	ShaderParamSimpleColor(ShaderSimpleColor* sh) :
+	inline ShaderParamCircle(ShaderCircle* sh) :
 		ShaderParam(sh),
 		color_(1.0, 1.0, 1.0,1.0)
 	{}
 
-	inline void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
-	{
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderSimpleColor::ATTRIB_POS);
-		glVertexAttribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
-	}
+	inline virtual ~ShaderParamCircle() override {}
+
 };
 
 } // namespace rendering_pgl
 
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
+#endif // CGOGN_RENDERING_SHADERS_FLAT_H_

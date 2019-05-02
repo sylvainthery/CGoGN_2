@@ -86,6 +86,18 @@ void ShaderProgram::load(const std::string& vert_src, const std::string& frag_sr
 	// puis detache (?)
 	glDetachShader(id_, frag_shader_->shaderId());
 	glDetachShader(id_, vert_shader_->shaderId());
+
+	//Print log if needed
+	int infologLength = 0;
+	glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
+	if (infologLength > 1)
+	{
+		char* infoLog = new char[infologLength];
+		int charsWritten  = 0;
+		glGetProgramInfoLog(id_, infologLength, &charsWritten, infoLog);
+		std::cerr << "Link message :" << infoLog <<std::endl;
+		delete [] infoLog;
+	}
 }
 
 
