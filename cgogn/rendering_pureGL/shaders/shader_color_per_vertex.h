@@ -93,13 +93,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -111,8 +111,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -124,8 +124,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderColorPerVertex::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderColorPerVertex::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();

@@ -176,10 +176,10 @@ ShaderPhongGen::ShaderPhongGen(bool color_per_vertex)
 	//default param
 	bind();
 	set_light_position(QVector3D(10.0f, 100.0f, 1000.0f));
-	set_front_color(QColor(250, 0, 0));
-	set_back_color(QColor(0, 250, 5));
-	set_ambiant_color(QColor(5, 5, 5));
-	set_specular_color(QColor(100, 100, 100));
+	set_front_color(GLColor(250, 0, 0));
+	set_back_color(GLColor(0, 250, 5));
+	set_ambiant_color(GLColor(5, 5, 5));
+	set_specular_color(GLColor(100, 100, 100));
 	set_specular_coef(50.0f);
 	set_double_side(true);
 	release();
@@ -192,28 +192,28 @@ void ShaderPhongGen::set_light_position(const QVector3D& l)
 
 void ShaderPhongGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
+	GLVec4 loc4 = view_matrix.map(GLVec4(l, 1.0));
 	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
 }
 
-void ShaderPhongGen::set_front_color(const QColor& rgb)
+void ShaderPhongGen::set_front_color(const GLColor& rgb)
 {
 	if (unif_front_color_ >= 0)
 		prg_.setUniformValue(unif_front_color_, rgb);
 }
 
-void ShaderPhongGen::set_back_color(const QColor& rgb)
+void ShaderPhongGen::set_back_color(const GLColor& rgb)
 {
 	if (unif_back_color_ >= 0)
 		prg_.setUniformValue(unif_back_color_, rgb);
 }
 
-void ShaderPhongGen::set_ambiant_color(const QColor& rgb)
+void ShaderPhongGen::set_ambiant_color(const GLColor& rgb)
 {
 	prg_.setUniformValue(unif_ambiant_color_, rgb);
 }
 
-void ShaderPhongGen::set_specular_color(const QColor& rgb)
+void ShaderPhongGen::set_specular_color(const GLColor& rgb)
 {
 	prg_.setUniformValue(unif_spec_color_, rgb);
 }

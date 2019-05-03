@@ -29,7 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 #include <QVector3D>
 
 #include <type_traits>
@@ -75,13 +75,13 @@ public:
 		ATTRIB_SIZE
 	};
 
-	void set_color(const QColor& rgb);
+	void set_color(const GLColor& rgb);
 
 	/**
 	* @brief set ambiant color
 	* @param rgb
 	*/
-	void set_ambiant(const QColor& rgb);
+	void set_ambiant(const GLColor& rgb);
 
 	/**
 	* @brief set light position relative to screen
@@ -106,13 +106,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const GLVec4& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const GLVec4& plane);
 
 
 protected:
@@ -151,12 +151,12 @@ protected:
 
 public:
 
-	QColor color_;
-	QColor ambiant_color_;
+	GLColor color_;
+	GLColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
 		ShaderParam(sh),
@@ -176,8 +176,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -201,11 +201,11 @@ protected:
 
 public:
 
-	QColor color_;
-	QColor ambiant_color_;
+	GLColor color_;
+	GLColor ambiant_color_;
 	QVector3D light_pos_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
@@ -226,13 +226,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// size vbo
 		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_size->release();
 		vao_->release();
 		shader_->release();
@@ -244,8 +244,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -257,8 +257,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_size->release();
 		vao_->release();
 		shader_->release();
@@ -282,11 +282,11 @@ protected:
 
 public:
 
-	QColor ambiant_color_;
+	GLColor ambiant_color_;
 	QVector3D light_pos_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
@@ -307,13 +307,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -325,8 +325,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -338,8 +338,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -362,10 +362,10 @@ protected:
 
 public:
 
-	QColor ambiant_color_;
+	GLColor ambiant_color_;
 	QVector3D light_pos_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 
 	ShaderParamPointSprite(ShaderPointSpriteGen* sh) :
@@ -385,18 +385,18 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		// size vbo
 		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_size->release();
 		vao_->release();
 		shader_->release();
@@ -408,8 +408,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -421,8 +421,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -434,8 +434,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_size->bind();
-		ogl->glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
-		ogl->glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPointSpriteGen::ATTRIB_SIZE);
+		glVertexAttribPointer(ShaderPointSpriteGen::ATTRIB_SIZE, vbo_size->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_size->release();
 		vao_->release();
 		shader_->release();

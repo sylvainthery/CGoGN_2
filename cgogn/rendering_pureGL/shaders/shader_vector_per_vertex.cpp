@@ -26,7 +26,7 @@
 
 #include <cgogn/rendering/shaders/shader_vector_per_vertex.h>
 
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -99,11 +99,11 @@ ShaderVectorPerVertex::ShaderVectorPerVertex()
 	unif_length_ = prg_.uniformLocation("length");
 
 	//default param
-	set_color(QColor(255, 255, 255));
+	set_color(GLColor(255, 255, 255));
 	set_length(1.0);
 }
 
-void ShaderVectorPerVertex::set_color(const QColor& rgb)
+void ShaderVectorPerVertex::set_color(const GLColor& rgb)
 {
 	prg_.setUniformValue(unif_color_, rgb);
 }

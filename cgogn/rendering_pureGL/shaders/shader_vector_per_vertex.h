@@ -29,7 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -66,7 +66,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const QColor& rgb);
+	void set_color(const GLColor& rgb);
 
 	/**
 	 * @brief set length of normal
@@ -95,7 +95,7 @@ public:
 
 	using ShaderType = ShaderVectorPerVertex;
 
-	QColor color_;
+	GLColor color_;
 	float32 length_;
 
 	ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh) :
@@ -111,13 +111,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// vector vbo
 		vbo_vect->bind();
-		ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
-		ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
+		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_vect->release();
 		vao_->release();
 		shader_->release();
@@ -129,8 +129,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -142,8 +142,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_vect->bind();
-		ogl->glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
-		ogl->glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
+		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_vect->release();
 		vao_->release();
 		shader_->release();

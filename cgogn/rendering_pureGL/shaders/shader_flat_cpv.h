@@ -21,11 +21,12 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_FLAT_H_
-#define CGOGN_RENDERING_SHADERS_FLAT_H_
+#ifndef CGOGN_RENDERING_SHADERS_FLAT_COLOR_H_
+#define CGOGN_RENDERING_SHADERS_FLAT_COLOR_H_
 
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/shaders/shader_program.h>
+
 
 namespace cgogn
 {
@@ -34,46 +35,51 @@ namespace rendering_pgl
 {
 
 // forward
-class ShaderParamFlat;
+class ShaderParamFlatColor;
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlat : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlatColor : public ShaderProgram
 {
+	friend class ShaderParamFlatColor;
+
 public:
-	using Self  = ShaderFlat;
-	using Param = ShaderParamFlat;
-	friend Param;
+	using Self  = ShaderFlatColor;
+	using Param = ShaderParamFlatColor;
+
 protected:
-	ShaderFlat();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlat);
+	ShaderFlatColor();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlatColor);
 	void set_locations();
 	static Self* instance_;
 
 	/// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
 	GLint unif_ambiant_color_;
 	GLint unif_light_position_;
 	GLint unif_bf_culling_;
 
 public:
 
-	static std::unique_ptr<Param> generate_param();
+	inline static std::unique_ptr<Param> generate_param()
+	{
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 };
 
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlat : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlatColor : public ShaderParam
 {
 
 public:
-	using LocalShader = ShaderFlat;
-
-	GLColor front_color_;
-	GLColor back_color_;
+	using LocalShader = ShaderFlatColor;
 	GLColor ambiant_color_;
 	GLVec3 light_pos_;
 	bool bf_culling_;
 
-	ShaderParamFlat(LocalShader* sh) :
+	ShaderParamFlatColor(LocalShader* sh) :
 		ShaderParam(sh),
 		ambiant_color_(0.25, 0.25, 0.25,1.0),
 		light_pos_(10, 100, 1000),
@@ -81,16 +87,16 @@ public:
 	{}
 
 
-	inline virtual ~ShaderParamFlat() override
+	inline virtual ~ShaderParamFlatColor() override
 	{}
 
-	inline void set_vbos(VBO* vbo_pos)
+	inline void set_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
 		vao_->bind();
 		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		vbo_color->associate(ShaderProgram::ATTRIB_COLOR);
 		vao_->release();
 	}
-
 protected:
 	inline LocalShader* get_shader()
 	{
@@ -99,8 +105,6 @@ protected:
 
 	inline void set_uniforms() override
 	{
-		ShaderProgram::set_uniform_value(get_shader()->unif_front_color_, front_color_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_back_color_, back_color_);
 		ShaderProgram::set_uniform_value(get_shader()->unif_ambiant_color_, ambiant_color_);
 		ShaderProgram::set_uniform_value(get_shader()->unif_light_position_, light_pos_);
 		ShaderProgram::set_uniform_value(get_shader()->unif_bf_culling_, bf_culling_);

@@ -24,27 +24,24 @@
 #ifndef CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 #define CGOGN_RENDERING_SHADERS_BOLDLINE_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
-#include <QColor>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 // forward
-template <bool CPV>
-class ShaderParamBoldLine : public ShaderParam
-{};
+class ShaderParamBoldLine;
+class ShaderParamBoldLineColor;
 
-class CGOGN_RENDERING_EXPORT ShaderBoldLineGen : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderBoldLineGen : public ShaderProgram
 {
-	template <bool CPV> friend class ShaderParamBoldLine;
+	friend class ShaderParamBoldLine;
+	friend class ShaderParamBoldLineColor;
 
 protected:
 
@@ -75,9 +72,9 @@ public:
 
 	/**
 	 * @brief set current color
-	 * @param rgb
+	 * @param rgba
 	 */
-	void set_color(const QColor& rgb);
+	void set_color(const GLColor& rgba);
 
 	/**
 	 * @brief set the width of lines (call before each draw)
@@ -89,13 +86,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const GLVec4& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const GLVec4& plane);
 
 
 protected:
@@ -118,7 +115,7 @@ private:
 
 // COLOR UNIFORM VERSION
 template <>
-class CGOGN_RENDERING_EXPORT ShaderParamBoldLine<false> : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamBoldLine<false> : public ShaderParam
 {
 protected:
 
@@ -133,15 +130,14 @@ protected:
 
 public:
 
-	QColor color_;
+	GLColor color_;
 	float32 width_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 	inline ShaderParamBoldLine(ShaderBoldLineGen* sh) :
-		ShaderParam(sh),
-		color_(255, 255, 255),
-		width_(2.0f),
+		color_(col3i(255, 255, 255)),
+		width_(2),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
@@ -155,8 +151,8 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -183,12 +179,12 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderParamBoldLine);
 
 	float32 width_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 	inline ShaderParamBoldLine(ShaderBoldLineGen* sh) :
 		ShaderParam(sh),
-		width_(2.0f),
+		width_(2),
 		plane_clip_(0,0,0,0),
 		plane_clip2_(0,0,0,0)
 	{}
@@ -197,18 +193,17 @@ public:
 
 	inline void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 		shader_->bind();
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -220,8 +215,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -233,8 +228,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderBoldLineGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderBoldLineGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -268,3 +263,4 @@ extern template class CGOGN_RENDERING_EXPORT ShaderBoldLineTpl<true>;
 } // namespace cgogn
 
 #endif // CGOGN_RENDERING_SHADERS_BOLDLINE_H_
+		ShaderParam(sh),

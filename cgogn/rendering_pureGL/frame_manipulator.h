@@ -143,7 +143,7 @@ protected:
 
 	void set_length_axes();
 
-	uint32 pick_frame(const QVector4D& PP, const QVector4D& QQ);
+	uint32 pick_frame(const GLVec4& PP, const GLVec4& QQ);
 
 	void store_projection(uint32 ax);
 
@@ -174,7 +174,7 @@ public:
 	 * @param yc y position [-1/1] (default 0)
 	 * @param r radius (default 1)
 	 */
-	void z_plane_param(const QColor& color, float32 xc, float32 yc, float32 r);
+	void z_plane_param(const GLColor& color, float32 xc, float32 yc, float32 r);
 
 	/**
 	 * get the size of frame
@@ -340,8 +340,8 @@ void FrameManipulator::pick(int x, int y, const VEC& PP, const VEC& QQ)
 	beg_X_ = x;
 	beg_Y_ = y;
 
-	QVector4D P(PP[0],PP[1],PP[2],1.0);
-	QVector4D Q(QQ[0],QQ[1],QQ[2],1.0);
+	GLVec4 P(PP[0],PP[1],PP[2],1.0);
+	GLVec4 Q(QQ[0],QQ[1],QQ[2],1.0);
 	highlighted_ = pick_frame(P,Q);
 
 	if (highlighted_ != NONE)

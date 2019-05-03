@@ -30,8 +30,8 @@
 
 #include <QOpenGLFunctions>
 #include <QVector3D>
-#include <QVector4D>
-#include <QColor>
+#include <GLVec4>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -69,9 +69,9 @@ public:
 	static std::unique_ptr<Param> generate_param();
 
 	void set_explode_volume(float32 x);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
+	void set_plane_clip(const GLVec4& plane);
+	void set_plane_clip2(const GLVec4& plane);
+	void set_color(const GLColor& rgb);
 
 protected:
 
@@ -96,9 +96,9 @@ public:
 
 	using ShaderType = ShaderExplodeVolumesLine;
 
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLColor color_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 	float32 explode_factor_;
 
 	ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh) :
@@ -115,8 +115,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesLine::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesLine::ATTRIB_POS);
+		glVertexAttribPointer(ShaderExplodeVolumesLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
