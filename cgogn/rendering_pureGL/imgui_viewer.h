@@ -42,8 +42,8 @@ class CGOGN_RENDERING_PUREGL_EXPORT ImGUIViewer: public PureGLViewer
 {
 protected:
 	bool need_draw_;
-	bool imgui_capture_mouse_;
 	GLFWwindow* window;
+	std::string win_name_;
 public:
 	ImGUIViewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);
@@ -55,9 +55,10 @@ public:
 	virtual void draw()=0;
 	virtual void interface();
 
-	bool launch(const std::string&  name);
+	void set_window_title(const std::string&  name);
 
-};	
+	bool launch();
+};
 
 }
 }

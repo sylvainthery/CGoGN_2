@@ -56,12 +56,8 @@ private:
 	{
 		float64 range_inv = 1.0 / (znear - zfar);
 		float64 f = 1.0/std::tan(field_of_view_/2.0);
-		auto m05 = (asp_ratio_<1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
+		auto m05 = (asp_ratio_>1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
 		Mat4d m;
-//		m << m05.first,  0,  0,  0,
-//			  0, m05.second,  0,  0,
-//			  0,  0, (znear+zfar)*range_inv, -1,
-//			  0,  0, 2.0*znear*zfar*range_inv,0;
 		m << m05.first,  0,  0,  0,
 			  0, m05.second,  0,  0,
 			  0,  0, (znear+zfar)*range_inv, 2*znear*zfar*range_inv,
@@ -111,6 +107,12 @@ public:
 		this->frame_.matrix().block<3,1>(0,0).normalize();
 		this->frame_.matrix().block<3,1>(0,1).normalize();
 		this->frame_.matrix().block<3,1>(0,2).normalize();
+	}
+
+	inline void reset()
+	{
+		this->frame_ = Transfo3d::Identity();
+		this->spin_ = Transfo3d::Identity();
 	}
 
 	inline float64 scene_radius() const { return scene_radius_; }

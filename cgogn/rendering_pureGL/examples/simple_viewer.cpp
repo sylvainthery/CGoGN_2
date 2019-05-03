@@ -91,8 +91,30 @@ public:
 	void interface() override;
 	void draw() override;
 	bool init() override;
+	void key_press_event(int k) override;
 };
 
+void Viewer::key_press_event(int k)
+{
+	std::cout << "key_press_event "<< k << std::endl;
+	switch(k)
+	{
+		case int(' '):
+			std::cout << "Reset"<< std::endl;
+			cam_.reset();
+			break;
+		case int('C'):
+			std::cout << "Center"<< std::endl;
+			cam_.center_scene();
+			break;
+		case int('S'):
+			std::cout << "Entire"<< std::endl;
+			cam_.show_entire_scene();
+			break;
+		default:
+			break;
+	}
+}
 
 void Viewer::interface()
 {
@@ -216,10 +238,9 @@ int main(int argc, char** argv)
 
 	// Instantiate the viewer.
 	Viewer view;
-//	viewer.setWindowTitle("simple_viewer");
 	view.import(surface_mesh);
-	// show?
-	view.launch("SimpleViewerIMGUI");
+	view.set_window_title("SimpleViewerIMGUI");
+	view.launch();
 	return 0;
 }
 

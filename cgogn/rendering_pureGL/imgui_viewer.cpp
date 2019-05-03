@@ -31,7 +31,9 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-ImGUIViewer::ImGUIViewer()
+ImGUIViewer::ImGUIViewer():
+	window(nullptr),
+	win_name_("CGoGN")
 {
 	vp_w_ = 512;
 	vp_h_ = 512;
@@ -46,6 +48,13 @@ ImGUIViewer::ImGUIViewer(int32 w, int32 h)
 	need_draw_ = true;
 }
 
+void ImGUIViewer::set_window_title(const std::string&  name)
+{
+	win_name_ = name;
+	if (window)
+		glfwSetWindowTitle(window,win_name_.c_str());
+}
+
 ImGUIViewer::~ImGUIViewer()
 {}
 
@@ -55,18 +64,21 @@ void ImGUIViewer::close_event()
 void ImGUIViewer::interface()
 {}
 
-bool ImGUIViewer::launch(const std::string& name)
+void ImGUIViewer::resize_event(int32 w, int32 h)
+{}
+
+bool ImGUIViewer::launch()
 {
 	if (!glfwInit())
 		return false;
 
 	// GL 3.3 + GLSL 130
-	const char* glsl_version = "#version 330";
+	const char* glsl_version = "#version 150";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(vp_w_, vp_h_, name.c_str(), nullptr, nullptr);
+	window = glfwCreateWindow(vp_w_, vp_h_, win_name_.c_str(), nullptr, nullptr);
 	if (window == nullptr)
 		return false;
 
@@ -95,6 +107,8 @@ bool ImGUIViewer::launch(const std::string& name)
 	{
 		if (ImGui::GetIO().WantCaptureMouse) return;
 		ImGUIViewer* that= static_cast<ImGUIViewer*>(glfwGetWindowUserPointer(w));
+		glfwGetCursorPos(that->window,&(that->last_mouse_x_),&(that->last_mouse_y_));
+
 		switch(a)
 		{
 			case GLFW_PRESS:

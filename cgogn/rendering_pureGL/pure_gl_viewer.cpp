@@ -80,7 +80,9 @@ void PureGLViewer::mouse_press_event(int32 button, float64 x, float64 y)
 	if (button == 0)
 	{
 			current_frame_->is_moving_ = false;
-			spinning_speed_ = 0;	
+			spinning_speed_ = 0;
+			current_frame_->spin_ = Transfo3d::Identity();
+
 	}
 }
 
@@ -89,7 +91,13 @@ void PureGLViewer::mouse_release_event(int32 button, float64 x, float64 y)
 	std::cout <<" mouse_release_event: " << button <<" : "<< x <<" , "<< y << std::endl;
 	if (button == 0)
 	{
-		current_frame_->is_moving_ = (spinning_speed_ > 0.05);		
+		current_frame_->is_moving_ = (spinning_speed_ > 0.025);
+		if (! current_frame_->is_moving_)
+		{
+			spinning_speed_ = 0;
+			current_frame_->spin_ = Transfo3d::Identity();
+		}
+
 	}
 }
 
