@@ -168,7 +168,22 @@ protected:
 	GLint unif_projection_matrix_;
 	GLint unif_normal_matrix_;
 
+	std::vector<GLint> uniforms_;
 public:
+
+	enum Attrib_Indices: GLuint
+	{
+		ATTRIB_POS     = 1u,
+		ATTRIB_COLOR   = 2u,
+		ATTRIB_NORM    = 3u,
+		ATTRIB_TC      = 4u,
+		ATTRIB_SIZE    = 5u,
+		ATTRIB_CUSTOM1 = 5u,
+		ATTRIB_CUSTOM2 = 6u,
+		ATTRIB_CUSTOM3 = 7u,
+		ATTRIB_CUSTOM4 = 8u,
+	};
+
 	static void register_instance(ShaderProgram* sh);
 
 	static void clean_all();
@@ -194,12 +209,18 @@ public:
 		return glGetUniformLocation(id_,str);
 	}
 
-	inline void set_uniform_value(GLint u, const float32 v) { glUniform1f(u,v);}
-	inline void set_uniform_value(GLint u, const GLVec2& v) { glUniform2fv(u,1,v.data());}
-	inline void set_uniform_value(GLint u, const GLVec3& v) { glUniform3fv(u,1,v.data());}
-	inline void set_uniform_value(GLint u, const GLVec4& v) { glUniform4fv(u,1,v.data());}
-	inline void set_uniform_value(GLint u, const int32 v)   { glUniform1i(u,v);}
-	inline void set_uniform_value(GLint u, const bool v)  { glUniform1i(u,int32(v));}
+	inline void bind_attrib_location(GLuint attrib, const char* str_var)
+	{
+		glBindAttribLocation(id_, attrib, str_var);
+	}
+
+
+	inline static void set_uniform_value(GLint u, const float32 v) { glUniform1f(u,v);}
+	inline static void set_uniform_value(GLint u, const GLVec2& v) { glUniform2fv(u,1,v.data());}
+	inline static void set_uniform_value(GLint u, const GLVec3& v) { glUniform3fv(u,1,v.data());}
+	inline static void set_uniform_value(GLint u, const GLVec4& v) { glUniform4fv(u,1,v.data());}
+	inline static void set_uniform_value(GLint u, const int32 v)   { glUniform1i(u,v);}
+	inline static void set_uniform_value(GLint u, const bool v)  { glUniform1i(u,int32(v));}
 
 	void get_matrices_uniforms();
 
@@ -227,10 +248,10 @@ public:
 	ShaderParam& operator=(const ShaderParam&) = delete;
 	virtual ~ShaderParam();
 
-	inline ShaderProgram* get_shader()
-	{
-		return shader_;
-	}
+//	inline ShaderProgram* get_shader()
+//	{
+//		return shader_;
+//	}
 
 	/**
 	 * @brief bind vao (and set uniform)

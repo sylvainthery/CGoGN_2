@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -22,38 +21,66 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_MFRAME_H_
-#define CGOGN_RENDERING_MFRAME_H_
+#include <cgogn/rendering_pureGL/shaders/shader_flat_cpv.h>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Eigen>
-#include <Eigen/Geometry>
-#include <Eigen/SVD>
-
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/types.h>
 
 namespace cgogn
 {
+
 namespace rendering_pgl
 {
 
-struct CGOGN_RENDERING_PUREGL_EXPORT MovingFrame
+ShaderFlatColor* ShaderFlatColor::instance_ = nullptr;
+
+void ShaderFlatColor::set_locations()
 {
-	Transfo3d frame_;
-	Transfo3d spin_;
-	bool is_moving_;
-
-	MovingFrame():
-		frame_(Transfo3d::Identity()),
-		spin_(Transfo3d::Identity()),
-		is_moving_(false)
-	{}
-
-	//Vec3d local_coordinates(Vec3d glob);
-};
-
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
 }
+
+ShaderFlatColor::ShaderFlatColor()
+{
+	const char* vertex_shader_source =
+	"#version 150\n"
+	"in vec3 vertex_pos;\n"
+	"in vec3 vertex_col;\n"
+	"uniform mat4 projection_matrix;\n"
+	"uniform mat4 model_view_matrix;\n"
+	"out vec3 pos;\n"
+	"out vec3 col;\n"
+	"void main()\n"
+	"{\n"
+	"	vec4 pos4 = model_view_matrix * vec4(vertex_pos,1.0);\n"
+	"	pos = pos4.xyz;\n"
+	"	col = vertex_col;\n"
+	"   gl_Position = projection_matrix * pos4;\n"
+	"}\n";
+
+	const char* fragment_shader_source =
+	"#version 150\n"
+	"out vec4 fragColor;\n"
+	"uniform vec4 ambiant_color;\n"
+	"uniform vec3 lightPosition;\n"
+	"uniform bool cull_back_face;\n"
+	"in vec3 pos;\n"
+	"in vec3 col;\n"
+	"void main()\n"
+	"{\n"
+	"	vec3 N = normalize(cross(dFdx(pos),dFdy(pos)));\n"
+	"	vec3 L = normalize(lightPosition-pos);\n"
+	"	float lambert = dot(N,L);\n"
+	"	if ((gl_FrontFacing==false) && cull_back_face) discard;\n"
+	"	else fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
+	"}\n";
+
+	load(vertex_shader_source,fragment_shader_source);
+	get_matrices_uniforms();
+	unif_ambiant_color_ = uniform_location("ambiant_color");
+	unif_light_position_ = uniform_location("lightPosition");
+	unif_bf_culling_ = uniform_location("cull_back_face");
 }
-#endif
+
+
+} // namespace rendering_pgl
+
+} // namespace cgogn

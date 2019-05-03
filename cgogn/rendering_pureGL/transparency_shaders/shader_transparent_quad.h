@@ -29,7 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 #include <QOpenGLFramebufferObject>
 
 namespace cgogn

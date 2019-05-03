@@ -28,7 +28,7 @@
 #include <cgogn/rendering/shaders/shader_point_sprite.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -247,9 +247,9 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 
 
 	if (!color_per_vertex)
-		set_color(QColor(250, 0, 0));
+		set_color(GLColor(250, 0, 0));
 
-	set_ambiant(QColor(5, 5, 5));
+	set_ambiant(GLColor(5, 5, 5));
 
 	if (!size_per_vertex)
 		set_size(1.0f);
@@ -257,7 +257,7 @@ ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_
 	set_light_position(QVector3D(10, 10, 1000));
 }
 
-void ShaderPointSpriteGen::set_color(const QColor& rgb)
+void ShaderPointSpriteGen::set_color(const GLColor& rgb)
 {
 	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
@@ -267,7 +267,7 @@ void ShaderPointSpriteGen::set_color(const QColor& rgb)
 * @brief set ambiant color
 * @param rgb
 */
-void ShaderPointSpriteGen::set_ambiant(const QColor& rgb)
+void ShaderPointSpriteGen::set_ambiant(const GLColor& rgb)
 {
 	if (unif_ambiant_ >= 0)
 		prg_.setUniformValue(unif_ambiant_, rgb);
@@ -289,7 +289,7 @@ void ShaderPointSpriteGen::set_light_position(const QVector3D& l)
 */
 void ShaderPointSpriteGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
 {
-	QVector4D loc4 = view_matrix.map(QVector4D(l, 1.0));
+	GLVec4 loc4 = view_matrix.map(GLVec4(l, 1.0));
 	prg_.setUniformValue(unif_light_pos_, QVector3D(loc4) / loc4.w());
 }
 
@@ -304,12 +304,12 @@ void ShaderPointSpriteGen::set_size(float32 w)
 		prg_.setUniformValue(unif_size_, w);
 }
 
-void ShaderPointSpriteGen::set_plane_clip(const QVector4D& plane)
+void ShaderPointSpriteGen::set_plane_clip(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
-void ShaderPointSpriteGen::set_plane_clip2(const QVector4D& plane)
+void ShaderPointSpriteGen::set_plane_clip2(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }

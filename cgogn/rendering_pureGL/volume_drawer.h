@@ -35,7 +35,7 @@
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -72,10 +72,10 @@ protected:
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_col_;
 
-	QColor face_color_;
+	GLColor face_color_;
 
 	std::unique_ptr<VBO> vbo_pos2_;
-	QColor edge_color_;
+	GLColor edge_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -103,11 +103,11 @@ public:
 		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview);
 		void set_explode_volume(float32 x);
-		void set_face_color(const QColor& rgb);
-		void set_edge_color(const QColor& rgb);
-		void set_clipping_plane(const QVector4D& pl);
-		void set_clipping_plane2(const QVector4D& pl);
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+		void set_face_color(const GLColor& rgb);
+		void set_edge_color(const GLColor& rgb);
+		void set_clipping_plane(const GLVec4& pl);
+		void set_clipping_plane2(const GLVec4& pl);
+		void set_thick_clipping_plane(const GLVec4& p, float32 th);
 
 	};
 

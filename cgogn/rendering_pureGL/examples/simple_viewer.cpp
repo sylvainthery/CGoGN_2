@@ -33,7 +33,6 @@
 #include <cgogn/rendering_pureGL/map_render.h>
 #include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
 #include <cgogn/rendering_pureGL/shaders/shader_flat.h>
-#include <cgogn/rendering_pureGL/shaders/shader_circle.h>
 #include <cgogn/rendering_pureGL/vbo.h>
 #include <cgogn/rendering_pureGL/vbo_update.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
@@ -82,7 +81,6 @@ private:
 	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_norm_;
 	std::unique_ptr<cgogn::rendering_pgl::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<cgogn::rendering_pgl::ShaderSimpleColor::Param> param_col_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderCircle::Param> param_circle_;
 
 	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_col_;
 public:
@@ -169,7 +167,7 @@ bool Viewer::init()
 	render_->init_primitives(map_, cgogn::rendering_pgl::LINES);
 	render_->init_primitives(map_, cgogn::rendering_pgl::TRIANGLES, &vertex_position_);
 	param_flat_ = cgogn::rendering_pgl::ShaderFlat::generate_param();
-	param_flat_->set_position_vbo(vbo_pos_.get());
+	param_flat_->set_vbos(vbo_pos_.get());
 	param_flat_->front_color_ = cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
 	param_flat_->back_color_ = cgogn::rendering_pgl::GLColor(0,0,0.8f,1);
 	param_flat_->ambiant_color_ = cgogn::rendering_pgl::GLColor(0.15f,0.15f,0.15f,1);
@@ -178,9 +176,6 @@ bool Viewer::init()
 	param_col_->color_ = cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
 	param_col_->set_position_vbo(vbo_pos_.get());
 
-	param_circle_ = cgogn::rendering_pgl::ShaderCircle::generate_param();
-	param_circle_->color_ = cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
-	param_circle_->set_color_vbo(vbo_col_.get());
 //	set_scene_radius(1.0);
 //	set_scene_center(Vec3(0,0,0));
 
@@ -203,10 +198,6 @@ void Viewer::draw()
 	param_flat_->bind(proj,view);
 	render_->draw(cgogn::rendering_pgl::TRIANGLES);
 	param_flat_->release();
-	glPointSize(5.0);
-	param_circle_->bind(proj,view);
-	glDrawArrays(GL_POINTS,0,1000);
-	param_circle_->release();
 }
 
 

@@ -28,7 +28,7 @@
 #include <cgogn/rendering/shaders/shader_program.h>
 #include <cgogn/rendering/shaders/vbo.h>
 
-#include <QColor>
+#include <GLColor>
 #include <QVector3D>
 #include <QOpenGLFunctions>
 
@@ -80,25 +80,25 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const QColor& rgb);
+	void set_front_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const QColor& rgb);
+	void set_back_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const QColor& rgb);
+	void set_ambiant_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current specular color
 	 * @param rgb
 	 */
-	void set_specular_color(const QColor& rgb);
+	void set_specular_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current specular coefficient
@@ -170,10 +170,10 @@ protected:
 public:
 
 	QVector3D light_position_;
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
-	QColor specular_color_;
+	GLColor front_color_;
+	GLColor back_color_;
+	GLColor ambiant_color_;
+	GLColor specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
@@ -195,13 +195,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// normal vbo
 		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_norm->release();
 		vao_->release();
 		shader_->release();
@@ -213,8 +213,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -226,8 +226,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_norm->release();
 		vao_->release();
 		shader_->release();
@@ -253,8 +253,8 @@ protected:
 public:
 
 	QVector3D light_position_;
-	QColor ambiant_color_;
-	QColor specular_color_;
+	GLColor ambiant_color_;
+	GLColor specular_color_;
 	float32 specular_coef_;
 	bool double_side_;
 
@@ -274,18 +274,18 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// normal vbo
 		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_norm->release();
 		// color  vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -297,8 +297,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -310,8 +310,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_norm->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_NORM);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_NORM, vbo_norm->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_norm->release();
 		vao_->release();
 		shader_->release();
@@ -323,8 +323,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderPhongGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderPhongGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();

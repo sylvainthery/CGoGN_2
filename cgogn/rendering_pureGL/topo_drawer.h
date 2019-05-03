@@ -36,7 +36,7 @@
 #include <cgogn/geometry/functions/distance.h>
 
 #include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -70,9 +70,9 @@ protected:
 	std::unique_ptr<VBO> vbo_relations_;
 	std::unique_ptr<VBO> vbo_color_darts_;
 
-	QColor dart_color_;
-	QColor phi2_color_;
-	QColor phi3_color_;
+	GLColor dart_color_;
+	GLColor phi2_color_;
+	GLColor phi3_color_;
 
 	float32 shrink_v_;
 	float32 shrink_f_;
@@ -113,11 +113,11 @@ public:
 		 */
 		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending = true);
 
-		void set_clipping_plane(const QVector4D& p);
+		void set_clipping_plane(const GLVec4& p);
 
-		void set_clipping_plane2(const QVector4D& p);
+		void set_clipping_plane2(const GLVec4& p);
 
-		void set_thick_clipping_plane(const QVector4D& p, float32 th);
+		void set_thick_clipping_plane(const GLVec4& p, float32 th);
 	};
 
 	using Self = TopoDrawer;
@@ -173,7 +173,7 @@ public:
 	 * @param d the dart
 	 * @param rgb the color
 	 */
-	void update_color(Dart d, const QColor& rgb);
+	void update_color(Dart d, const GLColor& rgb);
 
 	/**
 	 * @brief pick the closest dart to a given ray

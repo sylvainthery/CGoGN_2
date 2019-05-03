@@ -34,7 +34,7 @@
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
 #include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
+#include <GLColor>
 #include <QOpenGLFramebufferObject>
 
 namespace cgogn
@@ -55,9 +55,9 @@ public:
 
 	using ShaderType = ShaderTransparentVolumes;
 
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLColor color_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
@@ -105,9 +105,9 @@ public:
 
 	void set_explode_volume(float32 x);
 	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
+	void set_plane_clip(const GLVec4& plane);
+	void set_plane_clip2(const GLVec4& plane);
+	void set_color(const GLColor& rgb);
 
 	void set_bf_culling(bool cull);
 	void set_lighted(bool lighted);

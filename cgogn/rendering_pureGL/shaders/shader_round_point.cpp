@@ -176,12 +176,12 @@ ShaderRoundPointGen::ShaderRoundPointGen(bool color_per_vertex)
 	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 
 	set_size(3.0f);
-	set_color(QColor(255, 255, 255));
-	set_plane_clip(QVector4D(0,0,0,0));
-	set_plane_clip2(QVector4D(0,0,0,0));
+	set_color(GLColor(255, 255, 255));
+	set_plane_clip(GLVec4(0,0,0,0));
+	set_plane_clip2(GLVec4(0,0,0,0));
 }
 
-void ShaderRoundPointGen::set_color(const QColor& rgb)
+void ShaderRoundPointGen::set_color(const GLColor& rgb)
 {
 	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
@@ -191,18 +191,18 @@ void ShaderRoundPointGen::set_size(float32 wpix)
 {
 	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	int viewport[4];
-	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(wpix / float32(viewport[2]), wpix / float32(viewport[3]));
 	prg_.setUniformValue(unif_size_, wd);
 }
 
 
-void ShaderRoundPointGen::set_plane_clip(const QVector4D& plane)
+void ShaderRoundPointGen::set_plane_clip(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
-void ShaderRoundPointGen::set_plane_clip2(const QVector4D& plane)
+void ShaderRoundPointGen::set_plane_clip2(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }

@@ -153,15 +153,24 @@ public:
 		return vector_dimension_;
 	}
 
-	uint32 size() const
+	inline uint32 size() const
 	{
 		return uint32(nb_vectors_);
 	}
 
-	GLuint id() const
+	inline GLuint id() const
 	{
 		return id_;
 	}
+
+	inline void associate(GLuint attrib)
+	{
+		bind();
+		glEnableVertexAttribArray(attrib);
+		glVertexAttribPointer(attrib, vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
+		release();
+	}
+
 };
 
 } // namespace rendering_pgl

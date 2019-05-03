@@ -91,14 +91,14 @@ void ShaderParamTexture::set_vbo(VBO* vbo_pos, VBO* vbo_tc)
 
 	// position vbo
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(ShaderTexture::ATTRIB_POS);
+	glVertexAttribPointer(ShaderTexture::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_pos->release();
 
 	// color  vbo
 	vbo_tc->bind();
-	ogl->glEnableVertexAttribArray(ShaderTexture::ATTRIB_TC);
-	ogl->glVertexAttribPointer(ShaderTexture::ATTRIB_TC, vbo_tc->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(ShaderTexture::ATTRIB_TC);
+	glVertexAttribPointer(ShaderTexture::ATTRIB_TC, vbo_tc->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 	vbo_tc->release();
 
 	vao_->release();

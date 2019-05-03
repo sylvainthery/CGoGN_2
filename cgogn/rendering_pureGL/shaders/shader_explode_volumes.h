@@ -29,8 +29,8 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QVector3D>
-#include <QVector4D>
-#include <QColor>
+#include <GLVec4>
+#include <GLColor>
 #include <QOpenGLFunctions>
 
 namespace cgogn
@@ -78,9 +78,9 @@ public:
 
 	void set_explode_volume(float32 x);
 	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const QVector4D& plane);
-	void set_plane_clip2(const QVector4D& plane);
-	void set_color(const QColor& rgb);
+	void set_plane_clip(const GLVec4& plane);
+	void set_plane_clip2(const GLVec4& plane);
+	void set_color(const GLColor& rgb);
 
 protected:
 
@@ -119,9 +119,9 @@ protected:
 
 public:
 
-	QColor color_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLColor color_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
@@ -140,8 +140,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -165,8 +165,8 @@ protected:
 
 public:
 
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 	QVector3D light_position_;
 	float32 explode_factor_;
 
@@ -185,13 +185,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -203,8 +203,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -216,8 +216,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_color->release();
 		vao_->release();
 		shader_->release();

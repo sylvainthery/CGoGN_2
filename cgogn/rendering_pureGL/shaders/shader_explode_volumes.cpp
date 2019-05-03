@@ -173,13 +173,13 @@ ShaderExplodeVolumesGen::ShaderExplodeVolumesGen(bool color_per_vertex)
 	bind();
 	set_light_position(QVector3D(10.0f,100.0f,1000.0f));
 	set_explode_volume(0.8f);
-	set_color(QColor(255,0,0));
-	set_plane_clip(QVector4D(0,0,0,0));
-	set_plane_clip2(QVector4D(0,0,0,0));
+	set_color(GLColor(255,0,0));
+	set_plane_clip(GLVec4(0,0,0,0));
+	set_plane_clip2(GLVec4(0,0,0,0));
 	release();
 }
 
-void ShaderExplodeVolumesGen::set_color(const QColor& rgb)
+void ShaderExplodeVolumesGen::set_color(const GLColor& rgb)
 {
 	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
@@ -195,13 +195,13 @@ void ShaderExplodeVolumesGen::set_explode_volume(float32 x)
 	prg_.setUniformValue(unif_expl_v_, x);
 }
 
-void ShaderExplodeVolumesGen::set_plane_clip(const QVector4D& plane)
+void ShaderExplodeVolumesGen::set_plane_clip(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
 
-void ShaderExplodeVolumesGen::set_plane_clip2(const QVector4D& plane)
+void ShaderExplodeVolumesGen::set_plane_clip2(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }

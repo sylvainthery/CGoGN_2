@@ -228,7 +228,7 @@ ShaderBoldLineGen::ShaderBoldLineGen(bool color_per_vertex)
 	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
 }
 
-void ShaderBoldLineGen::set_color(const QColor& rgb)
+void ShaderBoldLineGen::set_color(const GLColor& rgb)
 {
 	if (unif_color_ >= 0)
 		prg_.setUniformValue(unif_color_, rgb);
@@ -238,17 +238,17 @@ void ShaderBoldLineGen::set_width(float32 w)
 {
 	QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
 	GLint viewport[4];
-	ogl->glGetIntegerv(GL_VIEWPORT, viewport);
+	glGetIntegerv(GL_VIEWPORT, viewport);
 	QSizeF wd(w / float32(viewport[2]), w / float32(viewport[3]));
 	prg_.setUniformValue(unif_width_, wd);
 }
 
-void ShaderBoldLineGen::set_plane_clip(const QVector4D& plane)
+void ShaderBoldLineGen::set_plane_clip(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip_, plane);
 }
 
-void ShaderBoldLineGen::set_plane_clip2(const QVector4D& plane)
+void ShaderBoldLineGen::set_plane_clip2(const GLVec4& plane)
 {
 	prg_.setUniformValue(unif_plane_clip2_, plane);
 }

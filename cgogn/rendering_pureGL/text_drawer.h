@@ -32,7 +32,7 @@
 #include <cgogn/geometry/types/geometry_traits.h>
 
 #include <QOpenGLFunctions_3_3_Core>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -79,11 +79,11 @@ protected:
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;
-	std::vector<QColor> colors_;
+	std::vector<GLColor> colors_;
 	std::vector<float32> sizes_;
 
 	Vec3f current_pos_;
-	QColor current_color_;
+	GLColor current_color_;
 	float32 current_size_;
 	bool next_pos_;
 
@@ -118,7 +118,7 @@ public:
 		return *this;
 	}
 
-	Self& operator << (const QColor& col);
+	Self& operator << (const GLColor& col);
 
 	Self& operator << (float32 sz);
 

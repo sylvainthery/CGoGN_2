@@ -110,12 +110,12 @@ public:
 		float size = float(bb_.max_size()) / 500.0f;
 
 		param_point_sprite_ = cgogn::rendering::ShaderPointSprite::generate_param();
-		param_point_sprite_->color_ = QColor(180,180,180);
+		param_point_sprite_->color_ = GLColor(180,180,180);
 		param_point_sprite_->size_ = size;
 		param_point_sprite_->set_position_vbo(vbo_pos_.get());
 
 		param_edge_ = cgogn::rendering::ShaderBoldLine::generate_param();
-		param_edge_->color_ = QColor(10,10,80);
+		param_edge_->color_ = GLColor(10,10,80);
 		param_edge_->width_= 1.5f;
 		param_edge_->set_position_vbo(vbo_pos_.get());
 

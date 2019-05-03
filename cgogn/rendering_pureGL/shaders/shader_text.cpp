@@ -93,7 +93,7 @@ ShaderText::ShaderText()
 
 void ShaderText::set_italic(float32 i)
 {
-		prg_.setUniformValue(unif_italic_, QVector4D(-i,-i,i,i));
+		prg_.setUniformValue(unif_italic_, GLVec4(-i,-i,i,i));
 }
 
 std::unique_ptr<ShaderText::Param> ShaderText::generate_param()
@@ -132,21 +132,21 @@ void ShaderParamText::set_vbo(VBO* vbo_pos, VBO* vbo_char, VBO* vbo_colsize)
 	vao_->bind();
 
 	vbo_pos->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_POS);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_POS,1u);
+	glEnableVertexAttribArray(ShaderText::ATTRIB_POS);
+	glVertexAttribPointer(ShaderText::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribDivisor(ShaderText::ATTRIB_POS,1u);
 	vbo_pos->release();
 
 	vbo_char->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_CHAR);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_CHAR, vbo_char->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_CHAR,1u);
+	glEnableVertexAttribArray(ShaderText::ATTRIB_CHAR);
+	glVertexAttribPointer(ShaderText::ATTRIB_CHAR, vbo_char->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribDivisor(ShaderText::ATTRIB_CHAR,1u);
 	vbo_char->release();
 
 	vbo_colsize->bind();
-	ogl->glEnableVertexAttribArray(ShaderText::ATTRIB_COLSZ);
-	ogl->glVertexAttribPointer(ShaderText::ATTRIB_COLSZ, vbo_colsize->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-	ogl->glVertexAttribDivisor(ShaderText::ATTRIB_COLSZ, 1u);
+	glEnableVertexAttribArray(ShaderText::ATTRIB_COLSZ);
+	glVertexAttribPointer(ShaderText::ATTRIB_COLSZ, vbo_colsize->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribDivisor(ShaderText::ATTRIB_COLSZ, 1u);
 	vbo_colsize->release();
 
 	vao_->release();

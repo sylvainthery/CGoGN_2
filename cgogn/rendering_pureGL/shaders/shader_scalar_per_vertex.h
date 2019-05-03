@@ -168,13 +168,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		// scalar vbo
 		vbo_scalar->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
+		glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_scalar->release();
 		vao_->release();
 		shader_->release();
@@ -186,8 +186,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_POS);
+		glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -199,8 +199,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_scalar->bind();
-		ogl->glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
-		ogl->glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(ShaderScalarPerVertex::ATTRIB_SCALAR);
+		glVertexAttribPointer(ShaderScalarPerVertex::ATTRIB_SCALAR, vbo_scalar->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
 		vbo_scalar->release();
 		vao_->release();
 		shader_->release();

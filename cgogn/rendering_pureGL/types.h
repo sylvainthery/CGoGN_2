@@ -51,7 +51,27 @@ using GLVec2  = Eigen::Vector2f;
 using GLVec3  = Eigen::Vector3f;
 using GLVec4  = Eigen::Vector4f;
 
+
+inline GLColor col4i(uint8 R, uint8 G, uint8 B, uint8 A)
+{
+	return GLColor(R/255.0f, G/255.0f, B/255.0f, A/255.0f);
+}
+
+inline GLColor col3i(uint8 R, uint8 G, uint8 B)
+{
+	return GLColor(R/255.0f, G/255.0f, B/255.0f, 1.0f);
+}
+
+inline GLColor col1i(uint8 R)
+{
+	return GLColor(R/255.0f, R/255.0f, R/255.0f, 1.0f);
+}
+
+
+
 } // namespace rendering_pgl
 } // namespace cgogn
+
+
 
 #endif // CGOGN_RENDERING_SHADERS_SHADERPROGRAM_H_

@@ -29,7 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 
 namespace cgogn
 {
@@ -78,7 +78,7 @@ public:
 	 * @brief set current color
 	 * @param rgb
 	 */
-	void set_color(const QColor& rgb);
+	void set_color(const GLColor& rgb);
 
 	/**
 	 * @brief set the width of lines (call before each draw)
@@ -90,13 +90,13 @@ public:
 	 * @brief set_plane_clip
 	 * @param plane
 	 */
-	void set_plane_clip(const QVector4D& plane);
+	void set_plane_clip(const GLVec4& plane);
 
 	/**
 	 * @brief set_plane_clip2
 	 * @param plane
 	 */
-	void set_plane_clip2(const QVector4D& plane);
+	void set_plane_clip2(const GLVec4& plane);
 
 
 protected:
@@ -137,10 +137,10 @@ protected:
 
 public:
 
-	QColor color_;
+	GLColor color_;
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 	ShaderParamRoundPoint(ShaderRoundPointGen* sh) :
 		ShaderParam(sh),
@@ -159,8 +159,8 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -184,8 +184,8 @@ protected:
 public:
 
 	float32 size_;
-	QVector4D plane_clip_;
-	QVector4D plane_clip2_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
 	ShaderParamRoundPoint(ShaderRoundPointGen* sh) :
 		ShaderParam(sh),
@@ -203,13 +203,13 @@ public:
 		vao_->bind();
 		// position vbo
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
 		vbo_pos->release();
 		// color vbo
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
+		glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
 		vbo_color->release();
 		vao_->release();
 		shader_->release();
@@ -221,8 +221,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_pos->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
+		glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_POS);
+		glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
 		vbo_pos->release();
 		vao_->release();
 		shader_->release();
@@ -234,8 +234,8 @@ public:
 		shader_->bind();
 		vao_->bind();
 		vbo_color->bind();
-		ogl->glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
-		ogl->glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
+		glEnableVertexAttribArray(ShaderRoundPointGen::ATTRIB_COLOR);
+		glVertexAttribPointer(ShaderRoundPointGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_color->vector_dimension() * 4, void_ptr(first * vbo_color->vector_dimension() * 4));
 		vbo_color->release();
 		vao_->release();
 		shader_->release();

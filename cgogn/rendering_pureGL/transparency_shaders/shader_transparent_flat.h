@@ -29,7 +29,7 @@
 #include <cgogn/rendering/shaders/vbo.h>
 
 #include <QOpenGLFunctions>
-#include <QColor>
+#include <GLColor>
 #include <QOpenGLFramebufferObject>
 
 namespace cgogn
@@ -50,9 +50,9 @@ protected:
 public:
 	using ShaderType = ShaderFlatTransp;
 
-	QColor front_color_;
-	QColor back_color_;
-	QColor ambiant_color_;
+	GLColor front_color_;
+	GLColor back_color_;
+	GLColor ambiant_color_;
 	QVector3D light_pos_;
 	bool bf_culling_;
 	bool lighted_;
@@ -101,19 +101,19 @@ public:
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_front_color(const QColor& rgb);
+	void set_front_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current front color
 	 * @param rgb
 	 */
-	void set_back_color(const QColor& rgb);
+	void set_back_color(const GLColor& rgb);
 
 	/**
 	 * @brief set current ambiant color
 	 * @param rgb
 	 */
-	void set_ambiant_color(const QColor& rgb);
+	void set_ambiant_color(const GLColor& rgb);
 
 	/**
 	 * @brief set light position relative to screen
