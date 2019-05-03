@@ -49,6 +49,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);
 	ImGUIViewer(int32 w, int32 h);
 	~ImGUIViewer();
+	virtual void resize_event(int32 w, int32 h);
 	virtual void close_event();
 	virtual bool init()=0;
 	virtual void draw()=0;

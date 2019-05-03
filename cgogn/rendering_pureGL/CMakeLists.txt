@@ -2,7 +2,7 @@ project(cgogn_rendering_pureGL
 	LANGUAGES CXX
 )
 
-add_library(${PROJECT_NAME} STATIC "")
+add_library(${PROJECT_NAME} SHARED "")
 
 add_library(cgogn::renderingPGL ALIAS cgogn_rendering_pureGL)
 

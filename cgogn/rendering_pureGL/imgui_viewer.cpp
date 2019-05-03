@@ -152,8 +152,16 @@ bool ImGUIViewer::launch(const std::string& name)
 		interface();
 		ImGui::Render();
 		glfwMakeContextCurrent(window);
-		glfwGetFramebufferSize(window, &vp_w_, &vp_h_);
+		int32 nw,nh;
+		glfwGetFramebufferSize(window, &nw, &nh);
+		if ((nw!=vp_w_)||(nh!=vp_h_))
+		{
+			vp_w_ = nw;
+			vp_h_ = nh;
+			resize_event(nw,nh);
+		}
 		glfwMakeContextCurrent(window);
+		cam_.set_aspect_ratio(double(vp_w_)/vp_h_);
 		glViewport(0,0, vp_w_, vp_h_);
 		if (need_draw_)
 		{
@@ -161,7 +169,6 @@ bool ImGUIViewer::launch(const std::string& name)
 			draw();
 		}
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-//		glfwMakeContextCurrent(window);
 		glfwSwapBuffers(window);
 	}
 	return true;
