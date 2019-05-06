@@ -22,32 +22,16 @@
 *******************************************************************************/
 
 
-#include <iostream>
+#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_line.h>
 
-#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
-
-#include <GLColor>
-#include <QOpenGLFunctions>
 
 namespace cgogn
 {
 
-namespace rendering
+
+namespace rendering_pgl
 {
-
-ShaderExplodeVolumesLine* ShaderExplodeVolumesLine::instance_ = nullptr;
-
-std::unique_ptr<ShaderExplodeVolumesLine::Param> ShaderExplodeVolumesLine::generate_param()
-{
-	if (!instance_)
-	{
-		instance_ = new ShaderExplodeVolumesLine();
-		ShaderProgram::register_instance(instance_);
-	}
-	return cgogn::make_unique<Param>(instance_);
-}
-
-const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
+static const char* vertex_shader_source =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "void main()\n"
@@ -55,7 +39,7 @@ const char* ShaderExplodeVolumesLine::vertex_shader_source_ =
 "   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
-const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
+static const char* geometry_shader_source =
 "#version 150\n"
 "layout (triangles) in;\n"
 "layout (line_strip, max_vertices=2) out;\n"
@@ -80,7 +64,7 @@ const char* ShaderExplodeVolumesLine::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
+static const char* fragment_shader_source =
 "#version 150\n"
 "uniform vec4 color;\n"
 "out vec4 fragColor;\n"
@@ -89,47 +73,17 @@ const char* ShaderExplodeVolumesLine::fragment_shader_source_ =
 "   fragColor = color;\n"
 "}\n";
 
+ShaderExplodeVolumesLine* ShaderExplodeVolumesLine::instance_ = nullptr;
+
+void ShaderExplodeVolumesLine::set_locations()
+{
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+}
+
 ShaderExplodeVolumesLine::ShaderExplodeVolumesLine()
 {
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, geometry_shader_source_);
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-	prg_.link();
-	get_matrices_uniforms();
-	unif_expl_v_ = prg_.uniformLocation("explode_vol");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
-	unif_color_ = prg_.uniformLocation("color");
-
-	// default param
-	bind();
-	set_explode_volume(0.8f);
-	set_color(GLColor(255, 255, 255));
-	set_plane_clip(GLVec4(0, 0, 0, 0));
-	set_plane_clip2(GLVec4(0, 0, 0, 0));
-	release();
-}
-
-void ShaderExplodeVolumesLine::set_color(const GLColor& rgb)
-{
-	if (unif_color_ >= 0)
-		prg_.setUniformValue(unif_color_, rgb);
-}
-
-void ShaderExplodeVolumesLine::set_explode_volume(float32 x)
-{
-	prg_.setUniformValue(unif_expl_v_, x);
-}
-
-void ShaderExplodeVolumesLine::set_plane_clip(const GLVec4& plane)
-{
-	prg_.setUniformValue(unif_plane_clip_, plane);
-}
-
-void ShaderExplodeVolumesLine::set_plane_clip2(const GLVec4& plane)
-{
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	load(vertex_shader_source,fragment_shader_source,geometry_shader_source);
+	add_uniforms("color","explode_vol","plane_clip","plane_clip2");
 }
 
 } // namespace rendering

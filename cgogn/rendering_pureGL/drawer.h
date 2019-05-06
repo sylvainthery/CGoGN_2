@@ -24,19 +24,19 @@
 #ifndef CGOGN_RENDERING_DRAWER_H_
 #define CGOGN_RENDERING_DRAWER_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 #include <cgogn/rendering_pureGL/shaders/shader_color_per_vertex.h>
 #include <cgogn/rendering_pureGL/shaders/shader_flat.h>
-#include <cgogn/rendering_pureGL/shaders/shader_bold_line.h>
-#include <cgogn/rendering_pureGL/shaders/shader_round_point.h>
+#include <cgogn/rendering_pureGL/shaders/shader_bold_line_color.h>
+#include <cgogn/rendering_pureGL/shaders/shader_round_point_color.h>
 #include <cgogn/rendering_pureGL/shaders/shader_point_sprite.h>
-#include <cgogn/rendering_pureGL/vbo.h>
+#include <array>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 /**
  * @brief DisplayListDrawer revival of old GL display-list
@@ -61,18 +61,18 @@ namespace rendering
  * draw:
  *  drawer_rend_->draw(proj,view,this);
  */
-class CGOGN_RENDERING_EXPORT DisplayListDrawer
+class CGOGN_RENDERING_PUREGL_EXPORT DisplayListDrawer
 {
 	struct PrimParam
 	{
-		uint32 begin;
+		GLint begin;
 		GLenum mode;
 		float32 width;
-		uint32 nb;
+		GLsizei nb;
 		bool aa;
 
 		PrimParam(std::size_t b, GLenum m, float32 w, bool a) :
-			begin(uint32(b)), mode(m), width(w), nb(0), aa(a)
+			begin(GLint(b)), mode(m), width(w), nb(0), aa(a)
 		{}
 	};
 
@@ -102,7 +102,7 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_EXPORT Renderer
+	class CGOGN_RENDERING_PUREGL_EXPORT Renderer
 	{
 		friend class DisplayListDrawer;
 
@@ -123,7 +123,7 @@ public:
 		 * @param projection projection matrix
 		 * @param modelview modelview matrix
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw(const GLMat4& projection, const GLMat4& modelview);
 	};
 
 	using Self = DisplayListDrawer;

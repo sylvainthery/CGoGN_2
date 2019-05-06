@@ -74,7 +74,11 @@ protected:
 	int32 vp_w_;
 	int32 vp_h_;
 	float64 spinning_speed_;
-	float64 sensitivity_;
+
+	float64 wheel_sensitivity_;
+	float64 mouse_sensitivity_;
+	float64 spin_sensitivity_;
+
 	float64 last_mouse_x_;
 	float64 last_mouse_y_;
 	uint32 mouse_buttons_;
@@ -93,6 +97,8 @@ public:
 
 	inline bool obj_mode() const { return  current_frame_ != &cam_;}
 
+	inline Camera camera() {return cam_;}
+
 	inline GLMat4 get_projection_matrix() const
 	{
 		return cam_.get_projection_matrix();
@@ -105,9 +111,9 @@ public:
 
 	inline void set_scene_radius(float64 radius) { cam_.set_scene_radius(radius); }
 	inline void set_scene_center(const Vec3d& center) {cam_.set_scene_center(center); }
+
 	inline void center_scene() { cam_.center_scene(); }
 	inline void show_entire_scene() { cam_.show_entire_scene(); }
-
 
 	void manip(MovingFrame* fr);
 
@@ -119,6 +125,10 @@ public:
 	virtual void key_press_event(int32 key_code);
 	virtual void key_release_event(int32 key_code);
 	virtual void close_event();
+
+	inline void set_wheel_sensitivity(float64 s) { wheel_sensitivity_ = s*0.005; }
+	inline void set_mouse_sensitivity(float64 s) { mouse_sensitivity_ = s*0.005; }
+	inline void set_spin_sensitivity(float64 s) { spin_sensitivity_ = s*0.025; }
 
 	virtual bool init() = 0;
 	virtual void draw() = 0;

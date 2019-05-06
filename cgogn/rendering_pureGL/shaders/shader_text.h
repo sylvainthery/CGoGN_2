@@ -24,75 +24,82 @@
 #ifndef CGOGN_RENDERING_SHADERS_TEXT_H_
 #define CGOGN_RENDERING_SHADERS_TEXT_H_
 
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <QOpenGLTexture>
 
-class QOpenGLTexture;
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/texture.h>
+
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-class ShaderText;
+// forward
+class ShaderParamText;
 
-class CGOGN_RENDERING_EXPORT ShaderParamText : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderText : public ShaderProgram
 {
-protected:
-
-	void set_uniforms();
-
 public:
-	using ShaderType = ShaderText;
-
-	QOpenGLTexture* texture_;
-
-	float32 italic_;
-
-	ShaderParamText(ShaderText* sh);
-
-	void set_vbo(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize);
-};
-
-class CGOGN_RENDERING_EXPORT ShaderText : public ShaderProgram
-{
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-	GLint unif_italic_;
-
-public:
-
-	enum
-	{
-		ATTRIB_POS = 0,
-		ATTRIB_CHAR,
-		ATTRIB_COLSZ
-	};
-
-	using Param = ShaderParamText;
-
-	/**
-	 * @brief generate shader parameter object
-	 * @return pointer
-	 */
-	static std::unique_ptr<Param> generate_param();
-
-	/**
-	 * @brief set_italic
-	 * @param i %
-	 */
-	void set_italic(float32 i);
+	using  Self  = ShaderText;
+	using  Param = ShaderParamText;
+	friend Param;
 
 protected:
 	ShaderText();
-	static ShaderText* instance_;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderText);
+	void set_locations() override;
+	static Self* instance_;
+
+public:
+	inline static std::unique_ptr<Param> generate_param()
+	{
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
+
 };
 
-} // namespace rendering
 
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamText : public ShaderParam
+{
+	inline void set_uniforms() override
+	{
+		shader_->set_uniforms_values(texture_->bind(0),italic_);
+	}
+
+public:
+	Texture2D* texture_;
+	float32 italic_;
+
+
+	using LocalShader = ShaderText;
+
+	ShaderParamText(LocalShader* sh) :
+		ShaderParam(sh),
+		italic_(0)
+	{}
+
+	inline ~ShaderParamText() override {}
+
+	inline void set_vbos(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize)
+	{
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		vbo_str->associate(ShaderProgram::ATTRIB_CUSTOM1);
+		vbo_colsize->associate(ShaderProgram::ATTRIB_CUSTOM2);
+		release_vao();
+	}
+
+};
+
+
+} // namespace rendering_pgl
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_TEXTURE_H_
+#endif

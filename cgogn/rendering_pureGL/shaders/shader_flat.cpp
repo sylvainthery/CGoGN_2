@@ -32,16 +32,6 @@ namespace rendering_pgl
 
 ShaderFlat* ShaderFlat::instance_ = nullptr;
 
-std::unique_ptr<ShaderFlat::Param> ShaderFlat::generate_param()
-{
-	if (!instance_)
-	{
-		instance_ = new Self();
-		ShaderProgram::register_instance(instance_);
-	}
-	return cgogn::make_unique<Param>(instance_);
-}
-
 void ShaderFlat::set_locations()
 {
 	bind_attrib_location(ATTRIB_POS, "vertex_pos");
@@ -83,18 +73,13 @@ ShaderFlat::ShaderFlat()
 	"		else fragColor = vec4(ambiant_color.rgb+lambert*back_color.rgb, back_color.a);\n"
 	"}\n";
 
-
-
 	load(vertex_shader_source,fragment_shader_source);
-	get_matrices_uniforms();
-	unif_front_color_ = uniform_location("front_color");
-	unif_back_color_ = uniform_location("back_color");
-	unif_ambiant_color_ = uniform_location("ambiant_color");
-	unif_light_position_ = uniform_location("lightPosition");
-	unif_bf_culling_ = uniform_location("cull_back_face");
+	add_uniforms("front_color",
+				 "back_color",
+				 "ambiant_color",
+				 "lightPosition",
+				 "cull_back_face");
 }
 
-
-} // namespace rendering_pgl
-
-} // namespace cgogn
+}
+}

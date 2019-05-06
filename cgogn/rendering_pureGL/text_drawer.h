@@ -24,20 +24,16 @@
 #ifndef CGOGN_RENDERING_TEXT_DRAWER_H_
 #define CGOGN_RENDERING_TEXT_DRAWER_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
-#include <cgogn/rendering/shaders/shader_text.h>
-#include <cgogn/rendering/shaders/vbo.h>
-
+#include <cgogn/rendering_pureGL/shaders/shader_text.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 
-#include <QOpenGLFunctions_3_3_Core>
-#include <GLColor>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 //class CGOGN_RENDERING_EXPORT TextDrawerEnd {};
@@ -64,7 +60,7 @@ namespace rendering
  *  text_rend_->draw(proj, view, this);
  *
  */
-class CGOGN_RENDERING_EXPORT TextDrawer
+class CGOGN_RENDERING_PUREGL_EXPORT TextDrawer
 {
 protected:
 
@@ -75,7 +71,7 @@ protected:
 	std::unique_ptr<VBO> vbo_char_;
 	std::unique_ptr<VBO> vbo_colsz_;
 
-	static QOpenGLTexture* texture_;
+	static Texture2D* texture_;
 	
 	std::vector<Vec3f> positions_;
 	std::vector<std::string> strings_;
@@ -136,7 +132,7 @@ public:
 
 
 
-	class CGOGN_RENDERING_EXPORT Renderer
+	class CGOGN_RENDERING_PUREGL_EXPORT Renderer
 	{
 		friend class TextDrawer;
 		std::unique_ptr<ShaderText::Param> param_text_;
@@ -146,7 +142,7 @@ public:
 	public:
 		~Renderer();
 
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw(const GLMat4& projection, const GLMat4& modelview);
 
 		/**
 		 * @brief set italic %

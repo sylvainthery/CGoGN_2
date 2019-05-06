@@ -21,95 +21,40 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
-#define CGOGN_RENDERING_SHADERS_PHONG_H_
 
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/types.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <cgogn/rendering_pureGL/stb_image.h>
 
 namespace cgogn
 {
-
 namespace rendering_pgl
 {
 
-class ShaderParamPhong;
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhong : public ShaderProgram
+GLImage::GLImage(int32 w, int32 h, int32 d):
+	width_(w), height_(h),bpp_(d),stb_(false)
 {
-public:
-	using  Self  = ShaderPhong;
-	using  Param = ShaderParamPhong;
-	friend Param;
+	data_ = new uint8[d*h*w];
+}
 
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-protected:
-	ShaderPhong();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhong);
-	void set_locations() override;
-	static Self* instance_;
-};
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhong : public ShaderParam
+GLImage::GLImage(const std::string& filename):
+	stb_(true)
 {
-protected:
+	data_ = stbi_load(filename.c_str(), &width_, &height_, &bpp_, 0);
+}
 
-	inline void set_uniforms() override
-	{
-		shader_->set_uniforms_values(light_position_,
-					front_color_,
-					back_color_,
-					ambiant_color_,
-					specular_color_,
-					specular_coef_,
-					double_side_);
-	}
-
-public:
-
-	GLVec3 light_position_;
-	GLColor front_color_;
-	GLColor back_color_;
-	GLColor ambiant_color_;
-	GLColor specular_color_;
-	float32 specular_coef_;
-	bool double_side_;
-
-	using ShaderType = ShaderPhong;
-
-	ShaderParamPhong(ShaderType* sh) :
-		ShaderParam(sh),
-		light_position_(),
-		front_color_(),
-		back_color_(),
-		ambiant_color_(),
-		specular_color_(),
-		specular_coef_(),
-		double_side_()
-	{}
-
-	inline ~ShaderParamPhong() override {}
-
-	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
-	{
-		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
-		release_vao();
-	}
-
-};
+GLImage::~GLImage()
+{
+	if (stb_)
+		stbi_image_free(data_);
+	else
+		delete [] data_;
+}
 
 
-} // namespace rendering
+
+} // namespace rendering_pgl
 } // namespace cgogn
-#endif // CGOGN_RENDERING_SHADERS_PHONG_H_
+
+

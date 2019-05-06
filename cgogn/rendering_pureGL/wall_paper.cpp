@@ -22,29 +22,25 @@
 *******************************************************************************/
 
 
-#include <cgogn/rendering/wall_paper.h>
-
-#include <QOpenGLFunctions>
-#include <QColor>
+#include <cgogn/rendering_pureGL/wall_paper.h>
 #include <iostream>
-
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-void WallPaper::init(const QImage& img)
+void WallPaper::init(const GLImage& img)
 {
 	if (vbo_pos_ == nullptr)
 	{
-		vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
+		vbo_pos_ = cgogn::make_unique<VBO>(3);
 		vbo_pos_->allocate(4, 3);
 	}
 	if (vbo_tc_ == nullptr)
 	{
-		vbo_tc_ = cgogn::make_unique<cgogn::rendering::VBO>(2);
+		vbo_tc_ = cgogn::make_unique<VBO>(2);
 		vbo_tc_->allocate(4, 2);
 		float32* ptr_tc = vbo_tc_->lock_pointer();
 		*ptr_tc++ = 0.0f;
@@ -57,11 +53,12 @@ void WallPaper::init(const QImage& img)
 		*ptr_tc++ = 1.0f;
 		vbo_tc_->release_pointer();
 	}
-	texture_ = cgogn::make_unique<QOpenGLTexture>(img,QOpenGLTexture::DontGenerateMipMaps);
+	texture_ = cgogn::make_unique<Texture2D>();
+	texture_->load(img);
 	set_full_screen(false);
 }
 
-WallPaper::WallPaper(const QImage& img):
+WallPaper::WallPaper(const GLImage& img):
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
@@ -69,67 +66,32 @@ WallPaper::WallPaper(const QImage& img):
 	init(img);
 }
 
-WallPaper::WallPaper(const QColor& col) :
+WallPaper::WallPaper(const GLColor& col) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
-	QImage img(1, 1, QImage::Format_RGB32);
-	img.setPixel(0, 0, col.rgba());
+	GLImage img(1, 1, 3);
+	img.set_pixel(0, 0, col);
 	init(img);
 }
 
-WallPaper::WallPaper(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br) :
+WallPaper::WallPaper(const GLColor& col_tl, const GLColor& col_tr, const GLColor& col_bl, const GLColor& col_br) :
 	vbo_pos_(nullptr),
 	vbo_tc_(nullptr),
 	texture_(nullptr)
 {
-	QImage img(2, 2, QImage::Format_RGB32);
-	img.setPixel(0, 1, col_bl.rgba());
-	img.setPixel(1, 1, col_br.rgba());
-	img.setPixel(1, 0, col_tr.rgba());
-	img.setPixel(0, 0, col_tl.rgba());
+	GLImage img(2, 2, 3);
+	img.set_pixel(0, 1, col_bl);
+	img.set_pixel(1, 1, col_br);
+	img.set_pixel(1, 0, col_tr);
+	img.set_pixel(0, 0, col_tl);
 	init(img);
-	texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
 }
 
 
 WallPaper::~WallPaper()
 {
-}
-
-
-void WallPaper::change_color(const QColor& col)
-{
-	if ((texture_->width()==1)&&(texture_->height()==1))
-	{
-		float32 color[3] = {float32(col.red()), float32(col.green()), float32(col.blue())};
-		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, color);
-	}
-	else
-	{
-		cgogn_log_warning("change colors")<< "Attemping to change color with a wall paper initialized with more than one color";
-	}
-}
-
-void WallPaper::change_colors(const QColor& col_tl, const QColor& col_tr, const QColor& col_bl, const QColor& col_br)
-{
-	if ((texture_->width()==2)&&(texture_->height()==2))
-	{
-		float32 colors[12] =
-		{float32(col_tl.red()), float32(col_tl.green()), float32(col_tl.blue()),
-		 float32(col_tr.red()), float32(col_tr.green()), float32(col_tr.blue()),
-		 float32(col_bl.red()), float32(col_bl.green()), float32(col_bl.blue()),
-		 float32(col_br.red()), float32(col_br.green()), float32(col_br.blue())
-		 };
-
-		texture_->setData(QOpenGLTexture::RGB, QOpenGLTexture::Float32, colors);
-		texture_->setWrapMode(QOpenGLTexture::ClampToEdge);
-	}
-	else
-	{
-		cgogn_log_warning("change colors")<< "Attemping to change colors with a wall paper not initialized with 4 colors";
-	}
 }
 
 
@@ -216,7 +178,7 @@ WallPaper::Renderer::Renderer(WallPaper* wp) :
 	wall_paper_data_(wp)
 {
 	param_texture_ = ShaderTexture::generate_param();
-	param_texture_->set_vbo(wp->vbo_pos_.get(), wp->vbo_tc_.get());
+	param_texture_->set_vbos(wp->vbo_pos_.get(), wp->vbo_tc_.get());
 	param_texture_->texture_ = wp->texture_.get();
 }
 
@@ -225,11 +187,8 @@ WallPaper::Renderer::~Renderer()
 
 void WallPaper::Renderer::draw()
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
-	QMatrix4x4 id;
-	param_texture_->bind(id, id);
-	ogl33->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	param_texture_->bind(GLMat4::Identity(),GLMat4::Identity());
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	param_texture_->release();
 }
 

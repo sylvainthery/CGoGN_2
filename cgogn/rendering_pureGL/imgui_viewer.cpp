@@ -67,15 +67,23 @@ void ImGUIViewer::interface()
 void ImGUIViewer::resize_event(int32 w, int32 h)
 {}
 
+
+static void glfw_error_callback(int error, const char* description)
+{
+	std::cerr <<"Glfw Error "<<error << ": " << description << std::endl;
+}
+
+
 bool ImGUIViewer::launch()
 {
+	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return false;
 
-	// GL 3.3 + GLSL 130
+	// GL 3.3 + GLSL 150 + Core Profile
 	const char* glsl_version = "#version 150";
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = glfwCreateWindow(vp_w_, vp_h_, win_name_.c_str(), nullptr, nullptr);
@@ -94,7 +102,7 @@ bool ImGUIViewer::launch()
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-//	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 	ImGui::StyleColorsDark();//ImGui::StyleColorsClassic();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);

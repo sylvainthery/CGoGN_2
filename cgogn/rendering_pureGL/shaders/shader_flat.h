@@ -1,4 +1,4 @@
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -39,77 +39,68 @@ class ShaderParamFlat;
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlat : public ShaderProgram
 {
 public:
-	using Self  = ShaderFlat;
-	using Param = ShaderParamFlat;
+	using  Self  = ShaderFlat;
+	using  Param = ShaderParamFlat;
 	friend Param;
+
 protected:
 	ShaderFlat();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlat);
-	void set_locations();
+	void set_locations() override;
 	static Self* instance_;
 
-	/// uniform ids
-	GLint unif_front_color_;
-	GLint unif_back_color_;
-	GLint unif_ambiant_color_;
-	GLint unif_light_position_;
-	GLint unif_bf_culling_;
-
 public:
+	inline static std::unique_ptr<Param> generate_param()
+	{
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 
-	static std::unique_ptr<Param> generate_param();
 };
 
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlat : public ShaderParam
 {
+	inline void set_uniforms() override
+	{
+		shader_->set_uniforms_values(front_color_,back_color_,ambiant_color_,light_pos_,bf_culling_);
+	}
 
 public:
-	using LocalShader = ShaderFlat;
-
 	GLColor front_color_;
 	GLColor back_color_;
 	GLColor ambiant_color_;
 	GLVec3 light_pos_;
 	bool bf_culling_;
 
+	using LocalShader = ShaderFlat;
+
 	ShaderParamFlat(LocalShader* sh) :
 		ShaderParam(sh),
-		ambiant_color_(0.25, 0.25, 0.25,1.0),
+		front_color_(0.9f,0,0,1),
+		back_color_(0,0,0.9f,1),
+		ambiant_color_(0.05f, 0.05f,0.05f,1),
 		light_pos_(10, 100, 1000),
 		bf_culling_(false)
 	{}
 
-
-	inline virtual ~ShaderParamFlat() override
-	{}
+	inline ~ShaderParamFlat() override {}
 
 	inline void set_vbos(VBO* vbo_pos)
 	{
-		vao_->bind();
+		bind_vao();
 		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vao_->release();
+		release_vao();
 	}
 
-protected:
-	inline LocalShader* get_shader()
-	{
-		return static_cast<LocalShader*>(shader_);
-	}
-
-	inline void set_uniforms() override
-	{
-		ShaderProgram::set_uniform_value(get_shader()->unif_front_color_, front_color_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_back_color_, back_color_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_ambiant_color_, ambiant_color_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_light_position_, light_pos_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_bf_culling_, bf_culling_);
-	}
 };
 
 
 } // namespace rendering_pgl
-
 } // namespace cgogn
 
 #endif // CGOGN_RENDERING_SHADERS_FLAT_H_

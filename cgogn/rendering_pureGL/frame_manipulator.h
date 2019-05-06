@@ -24,10 +24,8 @@
 #ifndef CGOGN_RENDERING_FRAMEMANIPULATOR_H_
 #define CGOGN_RENDERING_FRAMEMANIPULATOR_H_
 
-#include <cgogn/rendering/shaders/shader_simple_color.h>
-#include <cgogn/rendering/shaders/shader_bold_line.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <QOpenGLFunctions_3_3_Core>
+#include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
+#include <cgogn/rendering_pureGL/shaders/shader_bold_line.h>
 #include <cgogn/geometry/functions/distance.h>
 #include <cgogn/geometry/functions/intersection.h>
 #include <cgogn/geometry/types/vec.h>
@@ -36,7 +34,7 @@
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 /**
@@ -65,7 +63,7 @@ namespace rendering
  *   frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
  *   float32 d = -(position.dot(axis_z));
   */
-class CGOGN_RENDERING_EXPORT FrameManipulator
+class CGOGN_RENDERING_PUREGL_EXPORT FrameManipulator
 {
 	std::unique_ptr<VBO> vbo_grid_;
 	std::unique_ptr<ShaderSimpleColor::Param> param_grid_;
@@ -115,29 +113,29 @@ protected:
 
 	bool axis_orientation_;
 
-	QMatrix4x4 rotations_;
+	GLMat4 rotations_;
 
 	float32 scale_rendering_;
 
-	QVector3D trans_;
+	GLVec3 trans_;
 
-	QVector3D scale_;
+	GLVec3 scale_;
 
-	QVector3D length_axes_;
+	GLVec3 length_axes_;
 
-	QVector3D projected_selected_axis_;
+	GLVec3 projected_selected_axis_;
 
-	QVector3D projected_origin_;
+	GLVec3 projected_origin_;
 
-	QMatrix4x4 proj_mat_;
-	QMatrix4x4 view_mat_;
+	GLMat4 proj_mat_;
+	GLMat4 view_mat_;
 	GLint viewport_[4];
 
 	// last mouse position
 	int beg_X_;
 	int beg_Y_;
 
-	QMatrix4x4 transfo_render_frame();
+	GLMat4 transfo_render_frame();
 
 	inline bool axis_pickable(uint32 a) { return (!locked_axis_[a]) && (!locked_picking_axis_[a]);}
 
@@ -188,7 +186,7 @@ public:
 	 * @param proj projection matrix
 	 * @param view model-view matrix
 	 */
-	void draw(bool frame, bool zplane, const QMatrix4x4& proj, const QMatrix4x4& view);
+	void draw(bool frame, bool zplane, const GLMat4& proj, const GLMat4& view);
 
 	/**
 	 * @brief try picking the frame
@@ -277,7 +275,7 @@ public:
 	/**
 	 * get the matrix transformation
 	 */
-	QMatrix4x4 transfo();
+	GLMat4 transfo();
 
 	/**
 	 * set the position of frame
@@ -286,14 +284,14 @@ public:
 	template <typename VEC3>
 	void set_position(const VEC3& P);
 
-	inline QVector3D get_position() { return trans_; }
+	inline GLVec3 get_position() { return trans_; }
 
 	/**
 	 * @brief get an axis
 	 * @param ax (Xr,Yr,Zr)
 	 * @return the axis
 	 */
-	QVector3D get_axis(uint32 ax);
+	GLVec3 get_axis(uint32 ax);
 
 	/// get position in a non-QVector3 vector
 	template <typename VEC3>
@@ -308,7 +306,7 @@ public:
 	 * set the scale of frame
 	 * @param P the vector of scale factors
 	 */
-	void set_scale(const QVector3D& S);
+	void set_scale(const GLVec3& S);
 
 	/**
 	 * set the orientation of frame (Z is deduced)
@@ -316,12 +314,12 @@ public:
 	 * @param Y the vector Y of frame
 	 * @return return false if parameters are not unit orthogonal vectors
 	 */
-	bool set_orientation(const QVector3D& X, const QVector3D& Y);
+	bool set_orientation(const GLVec3& X, const GLVec3& Y);
 
 	/**
 	 * set transformation matrix
 	 */
-	void set_transformation( const QMatrix4x4& transfo);
+	void set_transformation( const GLMat4& transfo);
 
 
 	inline static bool rotation_axis(uint32 axis) { return (axis >= Xr) && (axis <= Zr); }
@@ -370,7 +368,7 @@ void FrameManipulator::get_position(VEC3& pos)
 template <typename VEC3>
 void FrameManipulator::get_axis(uint32 ax,VEC3& axis)
 {
-	QVector3D A = get_axis(ax);
+	GLVec3 A = get_axis(ax);
 	axis[0] = A[0];
 	axis[1] = A[1];
 	axis[2] = A[2];

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
-#define CGOGN_RENDERING_SHADERS_PHONG_H_
+#ifndef CGOGN_RENDERING_SHADERS_ROUND_POINT_COLOR_H_
+#define CGOGN_RENDERING_SHADERS_ROUND_POINT_COLOR_H_
 
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/shaders/shader_program.h>
@@ -33,15 +33,23 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class ShaderParamPhong;
+// forward
+class ShaderParamRoundPointColor;
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhong : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderRoundPointColor : public ShaderProgram
 {
 public:
-	using  Self  = ShaderPhong;
-	using  Param = ShaderParamPhong;
+	using  Self  = ShaderRoundPointColor;
+	using  Param = ShaderParamRoundPointColor;
 	friend Param;
 
+protected:
+	ShaderRoundPointColor();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderRoundPointColor);
+	void set_locations() override;
+	static Self* instance_;
+
+public:
 	inline static std::unique_ptr<Param> generate_param()
 	{
 		if (!instance_)
@@ -52,64 +60,47 @@ public:
 		return cgogn::make_unique<Param>(instance_);
 	}
 
-protected:
-	ShaderPhong();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhong);
-	void set_locations() override;
-	static Self* instance_;
 };
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhong : public ShaderParam
-{
-protected:
 
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamRoundPointColor : public ShaderParam
+{
 	inline void set_uniforms() override
 	{
-		shader_->set_uniforms_values(light_position_,
-					front_color_,
-					back_color_,
-					ambiant_color_,
-					specular_color_,
-					specular_coef_,
-					double_side_);
+		int viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		GLVec2 wd(size_ / float32(viewport[2]), size_ / float32(viewport[3]));
+		shader_->set_uniforms_values(wd,plane_clip_, plane_clip2_);
 	}
 
 public:
+	GLColor color_;
+	float32 size_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
 
-	GLVec3 light_position_;
-	GLColor front_color_;
-	GLColor back_color_;
-	GLColor ambiant_color_;
-	GLColor specular_color_;
-	float32 specular_coef_;
-	bool double_side_;
+	using LocalShader = ShaderRoundPointColor;
 
-	using ShaderType = ShaderPhong;
-
-	ShaderParamPhong(ShaderType* sh) :
+	ShaderParamRoundPointColor(LocalShader* sh) :
 		ShaderParam(sh),
-		light_position_(),
-		front_color_(),
-		back_color_(),
-		ambiant_color_(),
-		specular_color_(),
-		specular_coef_(),
-		double_side_()
+		size_(2),
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
-	inline ~ShaderParamPhong() override {}
+	inline ~ShaderParamRoundPointColor() override {}
 
-	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
+	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
 	{
 		bind_vao();
 		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
+		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
 		release_vao();
-	}
-
+	}	
 };
 
 
-} // namespace rendering
+} // namespace rendering_pgl
 } // namespace cgogn
-#endif // CGOGN_RENDERING_SHADERS_PHONG_H_
+
+#endif

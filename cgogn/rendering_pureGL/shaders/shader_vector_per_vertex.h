@@ -24,134 +24,76 @@
 #ifndef CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 #define CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
-
-#include <QOpenGLFunctions>
-#include <GLColor>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
+// forward
 class ShaderParamVectorPerVertex;
 
-class CGOGN_RENDERING_EXPORT ShaderVectorPerVertex : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderVectorPerVertex : public ShaderProgram
 {
-	friend class ShaderParamVectorPerVertex;
+public:
+	using  Self  = ShaderVectorPerVertex;
+	using  Param = ShaderParamVectorPerVertex;
+	friend Param;
 
-	static const char* vertex_shader_source_;
-	static const char* geometry_shader_source_;
-	static const char* fragment_shader_source_;
-
-	// uniform ids
-	GLint unif_color_;
-	GLint unif_length_;
+protected:
+	ShaderVectorPerVertex();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderVectorPerVertex);
+	void set_locations() override;
+	static Self* instance_;
 
 public:
-
-	enum
+	inline static std::unique_ptr<Param> generate_param()
 	{
-		ATTRIB_POS = 0,
-		ATTRIB_NORMAL
-	};
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 
-	using Param = ShaderParamVectorPerVertex;
-	static std::unique_ptr<Param> generate_param();
-
-	/**
-	 * @brief set current color
-	 * @param rgb
-	 */
-	void set_color(const GLColor& rgb);
-
-	/**
-	 * @brief set length of normal
-	 * @param l length
-	 */
-	void set_length(float32 l);
-
-protected:
-
-	ShaderVectorPerVertex();
-	static ShaderVectorPerVertex* instance_;
 };
 
-class CGOGN_RENDERING_EXPORT ShaderParamVectorPerVertex : public ShaderParam
-{
-protected:
 
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamVectorPerVertex : public ShaderParam
+{
 	inline void set_uniforms() override
 	{
-		ShaderVectorPerVertex* sh = static_cast<ShaderVectorPerVertex*>(this->shader_);
-		sh->set_color(color_);
-		sh->set_length(length_);
+		shader_->set_uniforms_values(color_,length_);
 	}
 
 public:
-
-	using ShaderType = ShaderVectorPerVertex;
-
 	GLColor color_;
 	float32 length_;
 
-	ShaderParamVectorPerVertex(ShaderVectorPerVertex* sh) :
+	using LocalShader = ShaderVectorPerVertex;
+
+	ShaderParamVectorPerVertex(LocalShader* sh) :
 		ShaderParam(sh),
-		color_(255, 255, 255),
-		length_(1.0)
+		color_(1,1,1,1),
+		length_(1)
 	{}
 
-	void set_all_vbos(VBO* vbo_pos, VBO* vbo_vect)
+	inline ~ShaderParamVectorPerVertex() override {}
+
+	inline void set_vbos(VBO* vbo_pos, VBO* vbo_normal)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
-		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// vector vbo
-		vbo_vect->bind();
-		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
-		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_vect->release();
-		vao_->release();
-		shader_->release();
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		vbo_normal->associate(ShaderProgram::ATTRIB_NORM);
+		release_vao();
 	}
 
-	void set_position_vbo(VBO* vbo_pos)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_POS);
-		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
-	}
-
-	void set_vector_vbo(VBO* vbo_vect)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_vect->bind();
-		glEnableVertexAttribArray(ShaderVectorPerVertex::ATTRIB_NORMAL);
-		glVertexAttribPointer(ShaderVectorPerVertex::ATTRIB_NORMAL, vbo_vect->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_vect->release();
-		vao_->release();
-		shader_->release();
-	}
 };
 
-} // namespace rendering
-
-} // namespace cgogn
-
+}
+}
 #endif // CGOGN_RENDERING_SHADERS_VECTORPERVERTEX_H_

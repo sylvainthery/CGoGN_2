@@ -32,12 +32,14 @@
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
+#include <string>
 
 
 namespace cgogn
 {
 namespace rendering_pgl
 {
+
 using Vec2d = Eigen::Vector2d;
 using Vec3d = Eigen::Vector3d;
 using Mat3d = Eigen::Matrix3d;
@@ -68,6 +70,30 @@ inline GLColor col1i(uint8 R)
 }
 
 
+class GLImage
+{
+	uint8* data_;
+	int32 width_;
+	int32 height_;
+	int32 bpp_; // 1:grey, 3 RGB, 4 RGBA
+	bool stb_;
+
+public:
+	GLImage(int32 w, int32 h, int32 d);
+	GLImage(const std::string& filename);
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(GLImage);
+	~GLImage();
+	inline int32 width() const { return width_; }
+	inline int32 height() const { return height_; }
+	inline int32 depth() const { return bpp_; }
+	inline const uint8* data() const { return data_; }
+	inline void set_pixel(int32 x, int32 y, const GLColor& col)
+	{
+		uint8* ptr = data_+ (bpp_*(y*width_+x));
+		for (int32 i=0; i<bpp_; ++i)
+			*ptr++ = uint8(255*col[i]);
+	}
+};
 
 } // namespace rendering_pgl
 } // namespace cgogn

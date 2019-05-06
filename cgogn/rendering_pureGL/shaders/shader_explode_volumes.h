@@ -24,230 +24,84 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
 
-#include <QVector3D>
-#include <GLVec4>
-#include <GLColor>
-#include <QOpenGLFunctions>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 // forward
-template <bool CPV>
-class ShaderParamExplodeVolumes
-{};
+class ShaderParamExplodeVolumes;
 
-class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesGen : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderExplodeVolumes : public ShaderProgram
 {
-	template <bool CPV> friend class ShaderParamExplodeVolumes;
+public:
+	using  Self  = ShaderExplodeVolumes;
+	using  Param = ShaderParamExplodeVolumes;
+	friend Param;
 
 protected:
-
-	static const char* vertex_shader_source_;
-	static const char* geometry_shader_source_;
-	static const char* fragment_shader_source_;
-
-	static const char* vertex_shader_source2_;
-	static const char* geometry_shader_source2_;
-	static const char* fragment_shader_source2_;
-
-	// uniform ids
-	GLint unif_expl_v_;
-	GLint unif_light_position_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
-	GLint unif_color_;
+	ShaderExplodeVolumes();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderExplodeVolumes);
+	void set_locations() override;
+	static Self* instance_;
 
 public:
-
-	using Self = ShaderExplodeVolumesGen;
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderExplodeVolumesGen);
-
-	enum
+	inline static std::unique_ptr<Param> generate_param()
 	{
-		ATTRIB_POS = 0,
-		ATTRIB_COLOR
-	};
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 
-	void set_explode_volume(float32 x);
-	void set_light_position(const QVector3D& l);
-	void set_plane_clip(const GLVec4& plane);
-	void set_plane_clip2(const GLVec4& plane);
-	void set_color(const GLColor& rgb);
-
-protected:
-
-	ShaderExplodeVolumesGen(bool color_per_vertex);
-};
-
-template <bool CPV>
-class ShaderExplodeVolumesTpl : public ShaderExplodeVolumesGen
-{
-public:
-
-	using Param = ShaderParamExplodeVolumes<CPV>;
-	static std::unique_ptr<Param> generate_param();
-
-private:
-
-	ShaderExplodeVolumesTpl() : ShaderExplodeVolumesGen(CPV) {}
 };
 
 
-// COLOR UNIFORM PARAM
-template <>
-class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<false> : public ShaderParam
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamExplodeVolumes : public ShaderParam
 {
-protected:
-
-	void set_uniforms() override
+	inline void set_uniforms() override
 	{
-		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
-		sh->set_color(color_);
-		sh->set_explode_volume(explode_factor_);
-		sh->set_light_position(light_position_);
-		sh->set_plane_clip(plane_clip_);
-		sh->set_plane_clip2(plane_clip2_);
+		shader_->set_uniforms_values(color_,light_pos_,explode_vol_,plane_clip_,plane_clip2_);
 	}
 
 public:
-
 	GLColor color_;
+	GLVec3 light_pos_;
+	float32 explode_vol_;
 	GLVec4 plane_clip_;
 	GLVec4 plane_clip2_;
-	QVector3D light_position_;
-	float32 explode_factor_;
 
-	ShaderParamExplodeVolumes(ShaderExplodeVolumesGen* sh) :
+	using LocalShader = ShaderExplodeVolumes;
+
+	ShaderParamExplodeVolumes(LocalShader* sh) :
 		ShaderParam(sh),
-		color_(255, 0, 0),
-		plane_clip_(0, 0, 0, 0),
-		plane_clip2_(0, 0, 0, 0),
-		light_position_(10.0f, 100.0f, 1000.0f),
-		explode_factor_(0.8f)
+		color_(color_front_default),
+		light_pos_(10, 100, 1000),
+		explode_vol_(0.8f),
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
-	void set_position_vbo(VBO* vbo_pos)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
-	}
-};
+	inline ~ShaderParamExplodeVolumes() override {}
 
-// COLOR PER VERTEX PARAM
-template <>
-class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumes<true> : public ShaderParam
-{
-protected:
-
-	void set_uniforms() override
+	inline void set_vbos(VBO* vbo_pos)
 	{
-		ShaderExplodeVolumesGen* sh = static_cast<ShaderExplodeVolumesGen*>(this->shader_);
-		sh->set_explode_volume(explode_factor_);
-		sh->set_light_position(light_position_);
-		sh->set_plane_clip(plane_clip_);
-		sh->set_plane_clip2(plane_clip2_);
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		release_vao();
 	}
 
-public:
-
-	GLVec4 plane_clip_;
-	GLVec4 plane_clip2_;
-	QVector3D light_position_;
-	float32 explode_factor_;
-
-	ShaderParamExplodeVolumes(ShaderExplodeVolumesGen* sh) :
-		ShaderParam(sh),
-		plane_clip_(0, 0, 0, 0),
-		plane_clip2_(0, 0, 0, 0),
-		light_position_(10.0f, 100.0f, 1000.0f),
-		explode_factor_(0.8f)
-	{}
-
-	void set_all_vbos(VBO* vbo_pos, VBO* vbo_color)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		// position vbo
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		// color vbo
-		vbo_color->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-		vao_->release();
-		shader_->release();
-	}
-
-	void set_position_vbo(VBO* vbo_pos)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_POS);
-		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
-	}
-
-	void set_color_vbo(VBO* vbo_color)
-	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_color->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesGen::ATTRIB_COLOR);
-		glVertexAttribPointer(ShaderExplodeVolumesGen::ATTRIB_COLOR, vbo_color->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_color->release();
-		vao_->release();
-		shader_->release();
-	}
 };
 
 
-template <bool CPV>
-std::unique_ptr<typename ShaderExplodeVolumesTpl<CPV>::Param> ShaderExplodeVolumesTpl<CPV>::generate_param()
-{
-	static ShaderExplodeVolumesTpl* instance_ = nullptr;
-	if (!instance_)
-	{
-		instance_ = new ShaderExplodeVolumesTpl<CPV>();
-		ShaderProgram::register_instance(instance_);
-	}
-	return cgogn::make_unique<Param>(instance_);
-}
-
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES) && !defined(CGOGN_RENDER_SHADERS_EXPLODE_VOLUME_CPP_)
-extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<false>;
-extern template class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesTpl<true>;
-#endif
-
-using ShaderExplodeVolumes = ShaderExplodeVolumesTpl<false>;
-using ShaderExplodeVolumesColor = ShaderExplodeVolumesTpl<true>;
-
-
-} // namespace rendering
-
+} // namespace rendering_pgl
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_H_
+#endif

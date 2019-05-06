@@ -23,21 +23,18 @@
 
 #define CGOGN_RENDERING_TEXT_RENDER_CPP_
 
-#include <cgogn/rendering/text_drawer.h>
-
-#include <QOpenGLFunctions>
+#include <cgogn/rendering_pureGL/text_drawer.h>
 #include <iostream>
-#include<QColor>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 TextDrawer::End TextDrawer::end = TextDrawer::End();
 
-QOpenGLTexture* TextDrawer::texture_ = nullptr;
+Texture2D* TextDrawer::texture_ = nullptr;
 
 
 TextDrawer::TextDrawer() :
@@ -46,20 +43,23 @@ TextDrawer::TextDrawer() :
 	vbo_colsz_(nullptr)
 {
 //	Q_INIT_RESOURCE(fonte);
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
-	vbo_char_ = cgogn::make_unique<cgogn::rendering::VBO>(1);
-	vbo_colsz_ = cgogn::make_unique<cgogn::rendering::VBO>(4);
-	QImage img(":fonte4064.png");
+	vbo_pos_ = cgogn::make_unique<VBO>(4);
+	vbo_char_ = cgogn::make_unique<VBO>(1);
+	vbo_colsz_ = cgogn::make_unique<VBO>(4);
+	GLImage img("fonte4064.png");
 	if (texture_ == nullptr)
-		texture_ = new QOpenGLTexture(img, QOpenGLTexture::DontGenerateMipMaps);
-	//	cgogn::make_unique<QOpenGLTexture>(img, QOpenGLTexture::DontGenerateMipMaps);
+	{
+		texture_ = new Texture2D();
+		texture_->load(img);
+	}
+
 }
 
 TextDrawer::~TextDrawer()
 {}
 
 
-TextDrawer& TextDrawer::operator << (const QColor& col)
+TextDrawer& TextDrawer::operator << (const GLColor& col)
 {
 	current_color_ = col;
 	return *this;
@@ -106,14 +106,14 @@ TextDrawer& TextDrawer::operator << (TextDrawer::End)
 	for (const auto& s : strings_)
 	{
 		Vec4f p{ (*it)[0], (*it)[1], (*it)[2], 0 };
-		Vec4f cs{ float32(jt->redF()), float32(jt->greenF()), float32(jt->blueF()), *kt++ };
+		Vec4f cs{ jt->x(), jt->y(), jt->z(), *kt++ };
 		it++;
 		jt++;
 		for (auto c : s)
 		{
 			chars.push_back(float32(c - ' ') / 95.0f);
 			pos.push_back(p);
-			p[3] += 1.0;
+			p[3] += 1;
 			colsz.push_back(cs);
 		}
 
@@ -182,19 +182,17 @@ TextDrawer::Renderer::Renderer(TextDrawer* tr) :
 	param_text_ = ShaderText::generate_param();
 	param_text_->texture_ = text_drawer_data_->texture_;
 	param_text_->italic_ = 0;
-	param_text_->set_vbo(text_drawer_data_->vbo_pos_.get(), text_drawer_data_->vbo_char_.get(), text_drawer_data_->vbo_colsz_.get());
+	param_text_->set_vbos(text_drawer_data_->vbo_pos_.get(), text_drawer_data_->vbo_char_.get(), text_drawer_data_->vbo_colsz_.get());
 }
 
 TextDrawer::Renderer::~Renderer()
 {}
 
 
-void TextDrawer::Renderer::draw(const QMatrix4x4& projection, const QMatrix4x4& modelview)
+void TextDrawer::Renderer::draw(const GLMat4& projection, const GLMat4& modelview)
 {
-	QOpenGLFunctions_3_3_Core * ogl33 = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
 	param_text_->bind(projection, modelview);
-	ogl33->glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, text_drawer_data_->vbo_pos_->size());
+	glDrawArraysInstanced(GL_TRIANGLE_FAN, 0, 4, text_drawer_data_->vbo_pos_->size());
 	param_text_->release();
 }
 

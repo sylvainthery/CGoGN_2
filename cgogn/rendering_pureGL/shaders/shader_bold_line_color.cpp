@@ -26,7 +26,7 @@
 #include <iostream>
 
 #include <cgogn/core/utils/logger.h>
-#include <cgogn/rendering_pureGL/shaders/shader_bold_line.h>
+#include <cgogn/rendering_pureGL/shaders/shader_bold_line_color.h>
 
 namespace cgogn
 {
@@ -34,27 +34,30 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-ShaderBoldLine* ShaderBoldLine::instance_ = nullptr;
+ShaderBoldLineColor* ShaderBoldLineColor::instance_ = nullptr;
 
 
 static const char* vertex_shader_source =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
+"in vec3 vertex_color;\n"
+"out vec3 color_v;\n"
 "void main()\n"
 "{\n"
-"   gl_Position =  vec4(vertex_pos,1.0);\n"
+"   color_v = vertex_color;\n"
+"   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
 static const char* geometry_shader_source =
 "#version 150\n"
 "layout (lines) in;\n"
 "layout (triangle_strip, max_vertices=6) out;\n"
+"in vec3 color_v[];\n"
 "out vec4 color_f;\n"
 "out vec4 posi_clip;\n"
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform vec2 lineWidths;\n"
-"uniform vec4 lineColor;\n"
 "void main()\n"
 "{\n"
 "	vec4 A = model_view_matrix * gl_in[0].gl_Position;\n"
@@ -68,43 +71,42 @@ static const char* geometry_shader_source =
 "			A = B + (A-B)*(nearZ-B.z)/(A.z-B.z);\n"
 "		if (B.z >= nearZ)\n"
 "			B = A + (B-A)*(nearZ-A.z)/(B.z-A.z);\n"
-
 "		A = projection_matrix*A;\n"
 "		B = projection_matrix*B;\n"
 "		A = A/A.w;\n"
 "		B = B/B.w;\n"
 "		vec2 U2 = normalize(vec2(lineWidths[1],lineWidths[0])*(B.xy - A.xy));\n"
 "		vec2 LWCorr =lineWidths * max(abs(U2.x),abs(U2.y));\n"
-"		vec3 U = vec3(0.5*LWCorr*U2,0.0);\n"
+"		vec3 U = vec3(LWCorr*U2,0.0);\n"
 "		vec3 V = vec3(LWCorr*vec2(U2[1], -U2[0]), 0.0);	\n"
-"		vec3 color3 = lineColor.rgb;\n"
-"		color_f = vec4(color3,0.0);\n"
+"		color_f = vec4(color_v[0],0.0);\n"
 "		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vec4(color3,0.0);\n"
+"		color_f = vec4(color_v[1],0.0);\n"
 "		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz-V, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vec4(color3,1.0);\n"
+"		color_f = vec4(color_v[0],1.0);\n"
 "		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz-U, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vec4(color3,1.0);\n"
+"		color_f = vec4(color_v[1],1.0);\n"
 "		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+U, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vec4(color3,0.0);\n"
+"		color_f = vec4(color_v[0],0.0);\n"
 "		posi_clip = gl_in[0].gl_Position;\n"
 "		gl_Position = vec4(A.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
-"		color_f = vec4(color3,0.0);\n"
+"		color_f = vec4(color_v[1],0.0);\n"
 "		posi_clip = gl_in[1].gl_Position;\n"
 "		gl_Position = vec4(B.xyz+V, 1.0);\n"
 "		EmitVertex();\n"
 "		EndPrimitive();\n"
 "	}\n"
 "}\n";
+
 
 static const char* fragment_shader_source =
 "#version 150\n"
@@ -122,18 +124,19 @@ static const char* fragment_shader_source =
 "}\n";
 
 
-void ShaderBoldLine::set_locations()
+
+void ShaderBoldLineColor::set_locations()
 {
 	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_color");
 }
 
-ShaderBoldLine::ShaderBoldLine()
+ShaderBoldLineColor::ShaderBoldLineColor()
 {
 	load(vertex_shader_source,fragment_shader_source, geometry_shader_source);
-	add_uniforms("lineColor","lineWidths","plane_clip","plane_clip2");
+	add_uniforms("lineWidths","plane_clip","plane_clip2");
 }
 
 
-} // namespace rendering
-
+}
 } // namespace cgogn

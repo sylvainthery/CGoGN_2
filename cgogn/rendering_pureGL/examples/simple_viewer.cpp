@@ -196,7 +196,7 @@ bool Viewer::init()
 
 	param_col_ = cgogn::rendering_pgl::ShaderSimpleColor::generate_param();
 	param_col_->color_ = cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
-	param_col_->set_position_vbo(vbo_pos_.get());
+	param_col_->set_vbos(vbo_pos_.get());
 
 //	set_scene_radius(1.0);
 //	set_scene_center(Vec3(0,0,0));

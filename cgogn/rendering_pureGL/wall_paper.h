@@ -24,15 +24,14 @@
 #ifndef CGOGN_RENDERING_WALL_PAPER_H_
 #define CGOGN_RENDERING_WALL_PAPER_H_
 
-#include <cgogn/rendering/shaders/shader_texture.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <QOpenGLFunctions_3_3_Core>
+#include <cgogn/rendering_pureGL/shaders/shader_texture.h>
+#include <cgogn/rendering_pureGL/vbo.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 /**
@@ -52,18 +51,18 @@ namespace rendering
  *  wp_rend_->draw(proj,view,this);
  *
  */
-class CGOGN_RENDERING_EXPORT WallPaper
+class CGOGN_RENDERING_PUREGL_EXPORT WallPaper
 {
 protected:
 
 	std::unique_ptr<VBO> vbo_pos_;
 	std::unique_ptr<VBO> vbo_tc_;
-	std::unique_ptr<QOpenGLTexture> texture_;
-	void init(const QImage& img);
+	std::unique_ptr<Texture2D> texture_;
+	void init(const GLImage& img);
 
 public:
 
-	class CGOGN_RENDERING_EXPORT Renderer
+	class CGOGN_RENDERING_PUREGL_EXPORT Renderer
 	{
 		friend class WallPaper;
 
@@ -86,7 +85,7 @@ public:
 	 * @param img image
 	 * @warning need OpenGL context
 	 */
-	WallPaper(const QImage& img);
+	WallPaper(const GLImage& img);
 
 	/**
 	 * @brief constructor, init all buffers (data and OpenGL) and shader
@@ -107,7 +106,7 @@ public:
 	 * @brief change color for unique color image
 	 * @param col color
 	 */
-	void change_color(const GLColor& col);
+//	void change_color(const GLColor& col);
 
 	/**
 	 * @brief change colors for 4 colors image only
@@ -116,7 +115,7 @@ public:
 	 * @param col_bl bottom left color
 	 * @param col_br botton right color
 	 */
-	void change_colors(const GLColor& col_tl, const GLColor& col_tr, const GLColor& col_bl, const GLColor& col_br);
+//	void change_colors(const GLColor& col_tl, const GLColor& col_tr, const GLColor& col_bl, const GLColor& col_br);
 
 	/**
 	 * release buffers and shader

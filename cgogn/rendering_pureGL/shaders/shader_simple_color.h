@@ -24,9 +24,8 @@
 #ifndef CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 #define CGOGN_RENDERING_SHADERS_SIMPLECOLOR_H_
 
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/shaders/shader_program.h>
-#include <cgogn/rendering_pureGL/vbo.h>
-
 
 namespace cgogn
 {
@@ -38,37 +37,27 @@ class ShaderParamSimpleColor;
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderSimpleColor : public ShaderProgram
 {
-	friend class ShaderParamSimpleColor;
-
-protected:
-
-	static const char* vertex_shader_source_;
-	static const char* fragment_shader_source_;
-
-	// uniform ids
-	GLint unif_color_;
-	void set_locations();
-
 public:
+	using  Self  = ShaderSimpleColor;
+	using  Param = ShaderParamSimpleColor;
+	friend Param;
 
-	enum
+	inline static std::unique_ptr<Param> generate_param()
 	{
-		ATTRIB_POS = 0
-	};
-
-	using Param = ShaderParamSimpleColor;
-	static std::unique_ptr<Param> generate_param();
-
-	/**
-	 * @brief set current color
-	 * @param rgba
-	 */
-	void set_color(const GLColor& rgba);
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 
 protected:
-
 	ShaderSimpleColor();
-	static ShaderSimpleColor* instance_;
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderSimpleColor);
+	void set_locations() override;
+	static Self* instance_;
+
 };
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamSimpleColor : public ShaderParam
@@ -77,31 +66,27 @@ protected:
 
 	inline void set_uniforms() override
 	{
-		ShaderSimpleColor* sh = static_cast<ShaderSimpleColor*>(this->shader_);
-		sh->set_color(color_);
+		shader_->set_uniforms_values(color_);
 	}
 
 public:
 
-	using ShaderType = ShaderSimpleColor;
-
 	GLColor color_;
 
-	ShaderParamSimpleColor(ShaderSimpleColor* sh) :
+	using ShaderType = ShaderSimpleColor;
+
+	ShaderParamSimpleColor(ShaderType* sh) :
 		ShaderParam(sh),
 		color_(1.0, 1.0, 1.0,1.0)
 	{}
 
-	inline void set_position_vbo(VBO* vbo_pos, uint32 stride = 0, uint32 first = 0)
+	inline ~ShaderParamSimpleColor() override {}
+
+	inline void set_vbos(VBO* vbo_pos)
 	{
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderSimpleColor::ATTRIB_POS);
-		glVertexAttribPointer(ShaderSimpleColor::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, stride * vbo_pos->vector_dimension() * 4, void_ptr(first * vbo_pos->vector_dimension() * 4));
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		release_vao();
 	}
 };
 

@@ -25,20 +25,24 @@
 
 #include <iostream>
 
-#include <cgogn/rendering_pureGL/shaders/shader_round_point.h>
+#include <cgogn/rendering_pureGL/shaders/shader_round_point_color.h>
 
 
 namespace cgogn
 {
 
-namespace rendering_pgl
+namespace rendering
 {
+
 static const char* vertex_shader_source =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
+"in vec3 vertex_color;\n"
+"out vec3 color_v;\n"
 "void main()\n"
 "{\n"
-"   gl_Position =  vec4(vertex_pos,1.0);\n"
+"   color_v = vertex_color;\n"
+"   gl_Position = vec4(vertex_pos,1.0);\n"
 "}\n";
 
 static const char* geometry_shader_source =
@@ -50,7 +54,9 @@ static const char* geometry_shader_source =
 "uniform vec2 pointSizes;\n"
 "uniform vec4 plane_clip;\n"
 "uniform vec4 plane_clip2;\n"
+"in vec3 color_v[];\n"
 "out vec2 local;\n"
+"out vec3 color_f;\n"
 "void main()\n"
 "{\n"
 "	float d = dot(plane_clip,gl_in[0].gl_Position);\n"
@@ -59,6 +65,7 @@ static const char* geometry_shader_source =
 "	{\n"
 "		vec4 A = projection_matrix*model_view_matrix * gl_in[0].gl_Position;\n"
 "		A = A/A.w;\n"
+"		color_f = color_v[0];\n"
 "		local = vec2(-1.0,-1.0);\n"
 "		gl_Position = vec4(A.xyz-vec3(-pointSizes[0],-pointSizes[1],0.0), 1.0);\n"
 "		EmitVertex();\n"
@@ -77,29 +84,31 @@ static const char* geometry_shader_source =
 
 static const char* fragment_shader_source =
 "#version 150\n"
-"uniform vec4 color;\n"
 "in vec2 local;\n"
+"in vec3 color_f;\n"
 "out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
-
 "	float r2 = dot(local,local);\n"
 "   if (r2 > 1.0) discard;\n"
-"   fragColor = vec4(color.rgb,(1.0-r2*r2));\n"
+"   fragColor = vec4(color_f,(1.0-r2*r2));\n"
 "}\n";
 
-ShaderRoundPoint* ShaderRoundPoint::instance_ = nullptr;
 
-void ShaderRoundPoint::set_locations()
+ShaderRoundPointColor* ShaderRoundPointColor::instance_ = nullptr;
+
+void ShaderRoundPointColor::set_locations()
 {
 	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_pos");
 }
 
-ShaderRoundPoint::ShaderRoundPoint()
+ShaderRoundPointColor::ShaderRoundPointColor()
 {
 	load(vertex_shader_source,fragment_shader_source,geometry_shader_source);
-	add_uniforms("color","pointSizes","plane_clip","plane_clip2");
+	add_uniforms("pointSizes","plane_clip","plane_clip2");
 }
 
-}
-}
+} // namespace rendering
+
+} // namespace cgogn

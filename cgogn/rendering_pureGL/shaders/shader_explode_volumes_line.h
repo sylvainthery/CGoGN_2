@@ -24,108 +24,82 @@
 #ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 #define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
-#include <cgogn/rendering/shaders/shader_program.h>
-#include <cgogn/rendering/shaders/vbo.h>
 
-#include <QOpenGLFunctions>
-#include <QVector3D>
-#include <GLVec4>
-#include <GLColor>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 // forward
 class ShaderParamExplodeVolumesLine;
 
-class CGOGN_RENDERING_EXPORT ShaderExplodeVolumesLine : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderExplodeVolumesLine : public ShaderProgram
 {
-	friend class ShaderParamExplodeVolumesLine;
+public:
+	using  Self  = ShaderExplodeVolumesLine;
+	using  Param = ShaderParamExplodeVolumesLine;
+	friend Param;
 
 protected:
-
-	static const char* vertex_shader_source_;
-	static const char* geometry_shader_source_;
-	static const char* fragment_shader_source_;
-
-	// uniform ids
-	GLint unif_expl_v_;
-	GLint unif_plane_clip_;
-	GLint unif_plane_clip2_;
-	GLint unif_color_;
+	ShaderExplodeVolumesLine();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderExplodeVolumesLine);
+	void set_locations() override;
+	static Self* instance_;
 
 public:
-
-	enum
+	inline static std::unique_ptr<Param> generate_param()
 	{
-		ATTRIB_POS = 0,
-	};
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
 
-	using Param = ShaderParamExplodeVolumesLine;
-	static std::unique_ptr<Param> generate_param();
-
-	void set_explode_volume(float32 x);
-	void set_plane_clip(const GLVec4& plane);
-	void set_plane_clip2(const GLVec4& plane);
-	void set_color(const GLColor& rgb);
-
-protected:
-
-	ShaderExplodeVolumesLine();
-	static ShaderExplodeVolumesLine* instance_;
 };
 
-class CGOGN_RENDERING_EXPORT ShaderParamExplodeVolumesLine : public ShaderParam
-{
-protected:
 
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamExplodeVolumesLine : public ShaderParam
+{
 	inline void set_uniforms() override
 	{
-		ShaderExplodeVolumesLine* sh = static_cast<ShaderExplodeVolumesLine*>(this->shader_);
-		sh->set_color(color_);
-		sh->set_explode_volume(explode_factor_);
-		sh->set_plane_clip(plane_clip_);
-		sh->set_plane_clip2(plane_clip2_);
+		shader_->set_uniforms_values(color_,explode_factor_,plane_clip_,plane_clip2_);
 	}
 
 public:
-
-	using ShaderType = ShaderExplodeVolumesLine;
-
 	GLColor color_;
+	float32 explode_factor_;
 	GLVec4 plane_clip_;
 	GLVec4 plane_clip2_;
-	float32 explode_factor_;
 
-	ShaderParamExplodeVolumesLine(ShaderExplodeVolumesLine* sh) :
+	using LocalShader = ShaderExplodeVolumesLine;
+
+	ShaderParamExplodeVolumesLine(LocalShader* sh) :
 		ShaderParam(sh),
-		color_(255, 255, 255),
-		plane_clip_(0, 0, 0, 0),
-		plane_clip2_(0, 0, 0, 0),
-		explode_factor_(0.8f)
+		color_(color_front_default),
+		explode_factor_(0.8f),
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
 	{}
 
-	void set_position_vbo(VBO* vbo_pos)
+	inline ~ShaderParamExplodeVolumesLine() override {}
+
+	inline void set_vbos(VBO* vbo_pos)
 	{
-		QOpenGLFunctions* ogl = QOpenGLContext::currentContext()->functions();
-		shader_->bind();
-		vao_->bind();
-		vbo_pos->bind();
-		glEnableVertexAttribArray(ShaderExplodeVolumesLine::ATTRIB_POS);
-		glVertexAttribPointer(ShaderExplodeVolumesLine::ATTRIB_POS, vbo_pos->vector_dimension(), GL_FLOAT, GL_FALSE, 0, 0);
-		vbo_pos->release();
-		vao_->release();
-		shader_->release();
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		release_vao();
 	}
+
 };
 
 
-} // namespace rendering
-
+} // namespace rendering_pgl
 } // namespace cgogn
 
-#endif // CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_LINE_H_
+#endif

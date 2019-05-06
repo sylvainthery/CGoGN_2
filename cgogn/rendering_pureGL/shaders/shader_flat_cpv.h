@@ -39,11 +39,10 @@ class ShaderParamFlatColor;
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlatColor : public ShaderProgram
 {
-	friend class ShaderParamFlatColor;
-
 public:
 	using Self  = ShaderFlatColor;
 	using Param = ShaderParamFlatColor;
+	friend Param;
 
 protected:
 	ShaderFlatColor();
@@ -51,13 +50,7 @@ protected:
 	void set_locations();
 	static Self* instance_;
 
-	/// uniform ids
-	GLint unif_ambiant_color_;
-	GLint unif_light_position_;
-	GLint unif_bf_culling_;
-
 public:
-
 	inline static std::unique_ptr<Param> generate_param()
 	{
 		if (!instance_)
@@ -72,42 +65,34 @@ public:
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlatColor : public ShaderParam
 {
+	inline void set_uniforms() override
+	{
+		shader_->set_uniforms_values(ambiant_color_,light_pos_,bf_culling_);
+	}
+
 
 public:
-	using LocalShader = ShaderFlatColor;
 	GLColor ambiant_color_;
 	GLVec3 light_pos_;
 	bool bf_culling_;
 
+	using LocalShader = ShaderFlatColor;
+
 	ShaderParamFlatColor(LocalShader* sh) :
 		ShaderParam(sh),
-		ambiant_color_(0.25, 0.25, 0.25,1.0),
+		ambiant_color_(0.05f, 0.05f, 0.5f, 1),
 		light_pos_(10, 100, 1000),
 		bf_culling_(false)
 	{}
 
-
-	inline virtual ~ShaderParamFlatColor() override
-	{}
+	inline ~ShaderParamFlatColor() override {}
 
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
-		vao_->bind();
+		bind_vao();
 		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
 		vbo_color->associate(ShaderProgram::ATTRIB_COLOR);
-		vao_->release();
-	}
-protected:
-	inline LocalShader* get_shader()
-	{
-		return static_cast<LocalShader*>(shader_);
-	}
-
-	inline void set_uniforms() override
-	{
-		ShaderProgram::set_uniform_value(get_shader()->unif_ambiant_color_, ambiant_color_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_light_position_, light_pos_);
-		ShaderProgram::set_uniform_value(get_shader()->unif_bf_culling_, bf_culling_);
+		release_vao();
 	}
 };
 

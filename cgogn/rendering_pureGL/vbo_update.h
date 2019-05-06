@@ -139,9 +139,9 @@ void update_vbo(const ATTR& attr, VBO* vbo)
 			const Scalar* src = reinterpret_cast<const Scalar*>(chunk_addr[i]);
 			for (uint32 j = 0; j < ATTR::CHUNK_SIZE; ++j)
 			{
-				*fit++ = *src++;
-				*fit++ = *src++;
-				*fit++ = *src++;
+				*fit++ = float32(*src++);
+				*fit++ = float32(*src++);
+				*fit++ = float32(*src++);
 				++src;
 			}
 			vbo->bind();

@@ -34,34 +34,6 @@ namespace rendering_pgl
 
 ShaderSimpleColor* ShaderSimpleColor::instance_ = nullptr;
 
-std::unique_ptr<ShaderSimpleColor::Param> ShaderSimpleColor::generate_param()
-{
-	if (!instance_)
-	{
-		instance_ = new ShaderSimpleColor();
-		ShaderProgram::register_instance(instance_);
-	}
-	return cgogn::make_unique<Param>(instance_);
-}
-
-const char* ShaderSimpleColor::vertex_shader_source_ =
-"#version 150\n"
-"in vec3 vertex_pos;\n"
-"uniform mat4 projection_matrix;\n"
-"uniform mat4 model_view_matrix;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
-"}\n";
-
-const char* ShaderSimpleColor::fragment_shader_source_ =
-"#version 150\n"
-"out vec4 fragColor;\n"
-"uniform vec4 color;\n"
-"void main()\n"
-"{\n"
-"   fragColor = color;\n"
-"}\n";
 
 void ShaderSimpleColor::set_locations()
 {
@@ -70,19 +42,29 @@ void ShaderSimpleColor::set_locations()
 
 ShaderSimpleColor::ShaderSimpleColor()
 {
+	const char* vertex_shader_source_ =
+	"#version 150\n"
+	"in vec3 vertex_pos;\n"
+	"uniform mat4 projection_matrix;\n"
+	"uniform mat4 model_view_matrix;\n"
+	"void main()\n"
+	"{\n"
+	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+	"}\n";
+
+	const char* fragment_shader_source_ =
+	"#version 150\n"
+	"out vec4 fragColor;\n"
+	"uniform vec4 color;\n"
+	"void main()\n"
+	"{\n"
+	"   fragColor = color;\n"
+	"}\n";
+
 	this->load(vertex_shader_source_,fragment_shader_source_);
 	get_matrices_uniforms();
 
-	unif_color_ = uniform_location("color");
-
-	// default param
-	set_color(GLColor(1.0,1.0,1.,1.0));
-}
-
-
-void ShaderSimpleColor::set_color(const GLColor& rgba)
-{
-	set_uniform_value(unif_color_, rgba);
+	add_uniforms("color");
 }
 
 } // namespace rendering_pgl

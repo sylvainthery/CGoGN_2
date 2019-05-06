@@ -24,24 +24,22 @@
 #ifndef CGOGN_RENDERING_TOPO_DRAWER_H_
 #define CGOGN_RENDERING_TOPO_DRAWER_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
-#include <cgogn/rendering/shaders/shader_simple_color.h>
-#include <cgogn/rendering/shaders/shader_bold_line.h>
-#include <cgogn/rendering/shaders/shader_round_point.h>
-#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
+#include <cgogn/rendering_pureGL/shaders/shader_bold_line.h>
+#include <cgogn/rendering_pureGL/shaders/shader_bold_line_color.h>
+#include <cgogn/rendering_pureGL/shaders/shader_round_point_color.h>
 
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/functions/distance.h>
-
-#include <QOpenGLFunctions_3_3_Core>
-#include <GLColor>
+#include <array>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 /**
  * @brief Rendering of the topology
@@ -60,7 +58,7 @@ namespace rendering
  *  topo_rend_->draw(proj,view,this);
  *
  */
-class CGOGN_RENDERING_EXPORT TopoDrawer
+class CGOGN_RENDERING_PUREGL_EXPORT TopoDrawer
 {
 	using Vec3f = geometry::Vec_T<std::array<float32,3>>;
 
@@ -90,7 +88,7 @@ public:
 	auto update(const MAP& m, const VERTEX_ATTR& position)
 	-> typename std::enable_if<MAP::DIMENSION == 3, void>::type;
 
-	class CGOGN_RENDERING_EXPORT Renderer
+	class CGOGN_RENDERING_PUREGL_EXPORT Renderer
 	{
 		friend class TopoDrawer;
 
@@ -111,7 +109,7 @@ public:
 		 * @param modelview model-view matrix
 		 * @param with_blending
 		 */
-		void draw(const QMatrix4x4& projection, const QMatrix4x4& modelview, bool with_blending = true);
+		void draw(const GLMat4& projection, const GLMat4& modelview, bool with_blending = true);
 
 		void set_clipping_plane(const GLVec4& p);
 

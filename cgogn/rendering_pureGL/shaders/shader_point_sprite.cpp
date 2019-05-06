@@ -21,29 +21,17 @@
 *                                                                              *
 *******************************************************************************/
 
-#define CGOGN_RENDER_SHADERS_POINT_SPRITE_CPP_
 
-#include <iostream>
-
-#include <cgogn/rendering/shaders/shader_point_sprite.h>
-
-#include <QOpenGLFunctions>
-#include <GLColor>
+#include <cgogn/rendering_pureGL/shaders/shader_point_sprite.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-#if defined(CGOGN_USE_EXTERNAL_TEMPLATES)
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, false>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, false>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<false, true>;
-template class CGOGN_RENDERING_EXPORT ShaderPointSpriteTpl<true, true>;
-#endif
-
-const char* ShaderPointSpriteGen::vertex_shader_source_ =
+ShaderPointSprite* ShaderPointSprite::instance_ = nullptr;
+static const char* vertex_shader_source =
 "in vec3 vertex_pos;\n"
 "#if WITH_COLOR == 1\n"
 "in vec3 vertex_col;\n"
@@ -64,7 +52,7 @@ const char* ShaderPointSpriteGen::vertex_shader_source_ =
 "   gl_Position =  vec4(vertex_pos,1.0);\n"
 "}\n";
 
-const char* ShaderPointSpriteGen::geometry_shader_source_ =
+static const char* geometry_shader_source =
 "layout (points) in;\n"
 "layout (triangle_strip, max_vertices=4) out;\n"
 "uniform mat4 projection_matrix;\n"
@@ -142,7 +130,7 @@ const char* ShaderPointSpriteGen::geometry_shader_source_ =
 "	}\n"
 "}\n";
 
-const char* ShaderPointSpriteGen::fragment_shader_source_ =
+static const char* fragment_shader_source =
 "uniform mat4 projection_matrix;\n"
 "uniform vec4 ambiant;\n"
 "uniform vec3 lightPos;\n"
@@ -188,143 +176,79 @@ const char* ShaderPointSpriteGen::fragment_shader_source_ =
 "	fragColor = result.rgba;\n"
 "}\n";
 
-ShaderPointSpriteGen::ShaderPointSpriteGen(bool color_per_vertex, bool size_per_vertex)
+void ShaderPointSprite::set_locations()
 {
-	std::string vs("#version 150\n");
-	std::string fs("#version 150\n");
-	std::string gs("#version 150\n");
-
-	if (color_per_vertex)
-	{
-		vs += std::string("#define WITH_COLOR 1\n");
-		gs += std::string("#define WITH_COLOR 1\n");
-		fs += std::string("#define WITH_COLOR 1\n");
-	}
-	else
-	{
-		vs += std::string("#define WITH_COLOR 0\n");
-		gs += std::string("#define WITH_COLOR 0\n");
-		fs += std::string("#define WITH_COLOR 0\n");
-	}
-
-	if (size_per_vertex)
-	{
-		vs += std::string("#define WITH_SIZE 1\n");
-		gs += std::string("#define WITH_SIZE 1\n");
-		fs += std::string("#define WITH_SIZE 1\n");
-	}
-	else
-	{
-		vs += std::string("#define WITH_SIZE 0\n");
-		gs += std::string("#define WITH_SIZE 0\n");
-		fs += std::string("#define WITH_SIZE 0\n");
-	}
-
-	vs += std::string(vertex_shader_source_);
-	gs += std::string(geometry_shader_source_);
-	fs += std::string(fragment_shader_source_);
-
-	prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vs.c_str());
-	prg_.addShaderFromSourceCode(QOpenGLShader::Geometry, gs.c_str());
-	prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fs.c_str());
-	prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-
-	if (color_per_vertex)
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-
-	if (size_per_vertex)
-		prg_.bindAttributeLocation("vertex_size", ATTRIB_SIZE);
-
-	prg_.link();
-	get_matrices_uniforms();
-
-	unif_color_ = prg_.uniformLocation("color");
-	unif_ambiant_ = prg_.uniformLocation("ambiant");
-	unif_light_pos_ = prg_.uniformLocation("lightPos");
-	unif_size_ = prg_.uniformLocation("point_size");
-	unif_plane_clip_ = prg_.uniformLocation("plane_clip");
-	unif_plane_clip2_ = prg_.uniformLocation("plane_clip2");
-
-
-	if (!color_per_vertex)
-		set_color(GLColor(250, 0, 0));
-
-	set_ambiant(GLColor(5, 5, 5));
-
-	if (!size_per_vertex)
-		set_size(1.0f);
-
-	set_light_position(QVector3D(10, 10, 1000));
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
 }
 
-void ShaderPointSpriteGen::set_color(const GLColor& rgb)
+ShaderPointSprite::ShaderPointSprite()
 {
-	if (unif_color_ >= 0)
-		prg_.setUniformValue(unif_color_, rgb);
+	std::string bs("#version 150\n#define WITH_COLOR 0\n#define WITH_SIZE 0\n");
+
+	std::string vs = bs + std::string(vertex_shader_source);
+	std::string gs = bs + std::string(geometry_shader_source);
+	std::string fs = bs + std::string(fragment_shader_source);
+
+	load(vs,fs,gs);
+	add_uniforms("color","ambiant","lightPos","point_size","plane_clip","plane_clip2");
 }
 
-/**
-* @brief set ambiant color
-* @param rgb
-*/
-void ShaderPointSpriteGen::set_ambiant(const GLColor& rgb)
+
+void ShaderPointSpriteColor::set_locations()
 {
-	if (unif_ambiant_ >= 0)
-		prg_.setUniformValue(unif_ambiant_, rgb);
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
 }
 
-/**
-* @brief set light position relative to screen
-* @param l
-*/
-void ShaderPointSpriteGen::set_light_position(const QVector3D& l)
+ShaderPointSpriteColor::ShaderPointSpriteColor()
 {
-	prg_.setUniformValue(unif_light_pos_, l);
+	std::string bs("#version 150\n#define WITH_COLOR 1\n#define WITH_SIZE 0\n");
+
+	std::string vs = bs + std::string(vertex_shader_source);
+	std::string gs = bs + std::string(geometry_shader_source);
+	std::string fs = bs + std::string(fragment_shader_source);
+
+	load(vs,fs,gs);
+	add_uniforms("ambiant","lightPos","point_size","plane_clip","plane_clip2");
 }
 
-/**
-* @brief set light position relative to world
-* @param l
-* @param view_matrix
-*/
-void ShaderPointSpriteGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
+
+void ShaderPointSpriteSize::set_locations()
 {
-	GLVec4 loc4 = view_matrix.map(GLVec4(l, 1.0));
-	prg_.setUniformValue(unif_light_pos_, QVector3D(loc4) / loc4.w());
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_SIZE, "vertex_size");
 }
 
-/**
-* @brief set the size of sphere (call before each draw)
-* @param w size ofs phere
-*/
-//	template <typename std::enable_if<!SPV>::type* = nullptr>
-void ShaderPointSpriteGen::set_size(float32 w)
+ShaderPointSpriteSize::ShaderPointSpriteSize()
 {
-	if (unif_size_ >= 0)
-		prg_.setUniformValue(unif_size_, w);
+	std::string bs("#version 150\n#define WITH_COLOR 0\n#define WITH_SIZE 1\n");
+
+	std::string vs = bs + std::string(vertex_shader_source);
+	std::string gs = bs + std::string(geometry_shader_source);
+	std::string fs = bs + std::string(fragment_shader_source);
+
+	load(vs,fs,gs);
+	add_uniforms("color","ambiant","lightPos","plane_clip","plane_clip2");
 }
 
-void ShaderPointSpriteGen::set_plane_clip(const GLVec4& plane)
+void ShaderPointSpriteColorSize::set_locations()
 {
-	prg_.setUniformValue(unif_plane_clip_, plane);
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
+	bind_attrib_location(ATTRIB_SIZE, "vertex_size");
 }
 
-void ShaderPointSpriteGen::set_plane_clip2(const GLVec4& plane)
+ShaderPointSpriteColorSize::ShaderPointSpriteColorSize()
 {
-	prg_.setUniformValue(unif_plane_clip2_, plane);
+	std::string bs("#version 150\n#define WITH_COLOR 1\n#define WITH_SIZE 0\n");
+
+	std::string vs = bs + std::string(vertex_shader_source);
+	std::string gs = bs + std::string(geometry_shader_source);
+	std::string fs = bs + std::string(fragment_shader_source);
+
+	load(vs,fs,gs);
+	add_uniforms("ambiant","lightPos","plane_clip","plane_clip2");
 }
-
-ShaderParamPointSprite<false,false>::~ShaderParamPointSprite()
-{}
-
-ShaderParamPointSprite<false,true>::~ShaderParamPointSprite()
-{}
-
-ShaderParamPointSprite<true,false>::~ShaderParamPointSprite()
-{}
-
-ShaderParamPointSprite<true, true>::~ShaderParamPointSprite()
-{}
 
 
 } // namespace rendering

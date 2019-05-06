@@ -24,23 +24,21 @@
 #ifndef CGOGN_RENDERING_VOLUME_DRAWER_H_
 #define CGOGN_RENDERING_VOLUME_DRAWER_H_
 
-#include <cgogn/rendering/cgogn_rendering_export.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
-#include <cgogn/rendering/shaders/shader_explode_volumes.h>
-#include <cgogn/rendering/shaders/shader_explode_volumes_line.h>
-#include <cgogn/rendering/shaders/vbo.h>
+#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes.h>
+#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_cpv.h>
+#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_line.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
 #include <cgogn/geometry/algos/centroid.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <QOpenGLFunctions_3_3_Core>
-#include <GLColor>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 /**
@@ -63,7 +61,7 @@ namespace rendering
  *  volu_rend_->draw_edges(proj, view);
  *
  */
-class CGOGN_RENDERING_EXPORT VolumeDrawerGen
+class CGOGN_RENDERING_PUREGL_EXPORT VolumeDrawerGen
 {
 protected:
 
@@ -86,12 +84,12 @@ protected:
 
 public:
 
-	class CGOGN_RENDERING_EXPORT Renderer
+	class CGOGN_RENDERING_PUREGL_EXPORT Renderer
 	{
 		friend class VolumeDrawerGen;
 
 		std::unique_ptr<ShaderExplodeVolumes::Param> param_expl_vol_;
-		std::unique_ptr<ShaderExplodeVolumesColor::Param> param_expl_vol_col_;
+		std::unique_ptr<ShaderExplodeVolumesColorVertex::Param> param_expl_vol_col_;
 		std::unique_ptr<ShaderExplodeVolumesLine::Param> param_expl_vol_line_;
 		VolumeDrawerGen* volume_drawer_data_;
 
@@ -100,8 +98,8 @@ public:
 	public:
 
 		~Renderer();
-		void draw_faces(const QMatrix4x4& projection, const QMatrix4x4& modelview);
-		void draw_edges(const QMatrix4x4& projection, const QMatrix4x4& modelview);
+		void draw_faces(const GLMat4& projection, const GLMat4& modelview);
+		void draw_edges(const GLMat4& projection, const GLMat4& modelview);
 		void set_explode_volume(float32 x);
 		void set_face_color(const GLColor& rgb);
 		void set_edge_color(const GLColor& rgb);
@@ -193,7 +191,7 @@ class VolumeDrawerTpl : public VolumeDrawerGen
 
 
 template <>
-class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<false> : public VolumeDrawerGen
+class CGOGN_RENDERING_PUREGL_EXPORT VolumeDrawerTpl<false> : public VolumeDrawerGen
 {
 public:
 
@@ -269,7 +267,7 @@ public:
 
 
 template <>
-class CGOGN_RENDERING_EXPORT VolumeDrawerTpl<true> : public VolumeDrawerGen
+class CGOGN_RENDERING_PUREGL_EXPORT VolumeDrawerTpl<true> : public VolumeDrawerGen
 {
 public:
 

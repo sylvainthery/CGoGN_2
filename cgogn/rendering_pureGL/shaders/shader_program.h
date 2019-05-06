@@ -83,71 +83,7 @@ public:
 		return id_;
 	}
 
-	inline void compileShader(const std::string& src)
-	{
-		const char* csrc = src.c_str();
-		glShaderSource(id_, 1, &csrc, nullptr);
-		glCompileShader(id_);
-
-
-		int infologLength = 0;
-			int charsWritten  = 0;
-			char *infoLog;
-
-			glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
-
-			if(infologLength > 1)
-			{
-				infoLog = (char *)malloc(infologLength+1);
-				glGetShaderInfoLog(id_, infologLength, &charsWritten, infoLog);
-
-				std::cerr << "----------------------------------------" << std::endl << "compilation de " << "msg" <<  " : "<<std::endl << infoLog <<std::endl<< "--------"<< std::endl;
-
-				std::string errors(infoLog);
-				std::istringstream sserr(errors);
-				std::vector<int> error_lines;
-				std::string line;
-				std::getline(sserr, line);
-				while (! sserr.eof())
-				{
-					std::size_t a =0;
-					while ((a<line.size()) && (line[a]>='0') && (line[a]<='9')) a++;
-					std::size_t b =a+1;
-					while ((b<line.size()) && (line[b]>='0') && (line[b]<='9')) b++;
-					if (b<line.size())
-					{
-						int ln = std::stoi(line.substr(a+1, b-a-1));
-						error_lines.push_back(ln);
-					}
-					std::getline(sserr, line);
-				}
-
-				free(infoLog);
-
-				char* source = new char[16*1024];
-				GLsizei length;
-				glGetShaderSource(id_,16*1024,&length,source);
-				std::string src(source);
-				std::istringstream sssrc(src);
-				int l = 1;
-				while (! sssrc.eof())
-				{
-					std::getline(sssrc, line);
-					std::cerr.width(3);
-					auto it = std::find(error_lines.begin(),error_lines.end(),l);
-					if (it != error_lines.end())
-						std::cerr << "\033[41m\033[37m" << "EEEEEE" << line <<"\033[m" << std::endl;
-					else
-						std::cerr<< l << " : " << line << std::endl;
-					l++;
-				}
-				std::cerr << "----------------------------------------" << std::endl;
-		}
-
-
-
-	}
-
+	inline void compile(const std::string& src);
 };
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderProgram
@@ -209,18 +145,52 @@ public:
 		return glGetUniformLocation(id_,str);
 	}
 
+	inline void add_uniform(const GLchar* str)
+	{
+		uniforms_.push_back(glGetUniformLocation(id_,str));
+	}
+
+	template<typename T1>
+	void add_uniforms(T1 p1)
+	{
+		add_uniform(p1);
+	}
+
+	template<typename T1, typename... Ts>
+	void add_uniforms(T1 p1, Ts... pn)
+	{
+		add_uniform(p1);
+		add_uniforms(pn...);
+	}
+
+
+
 	inline void bind_attrib_location(GLuint attrib, const char* str_var)
 	{
 		glBindAttribLocation(id_, attrib, str_var);
 	}
 
 
-	inline static void set_uniform_value(GLint u, const float32 v) { glUniform1f(u,v);}
-	inline static void set_uniform_value(GLint u, const GLVec2& v) { glUniform2fv(u,1,v.data());}
-	inline static void set_uniform_value(GLint u, const GLVec3& v) { glUniform3fv(u,1,v.data());}
-	inline static void set_uniform_value(GLint u, const GLVec4& v) { glUniform4fv(u,1,v.data());}
-	inline static void set_uniform_value(GLint u, const int32 v)   { glUniform1i(u,v);}
-	inline static void set_uniform_value(GLint u, const bool v)  { glUniform1i(u,int32(v));}
+	inline void set_uniform_value(std::size_t i, const float32 v) { glUniform1f(uniforms_[i],v);}
+	inline void set_uniform_value(std::size_t i, const GLVec2& v) { glUniform2fv(uniforms_[i],1,v.data());}
+	inline void set_uniform_value(std::size_t i, const GLVec3& v) { glUniform3fv(uniforms_[i],1,v.data());}
+	inline void set_uniform_value(std::size_t i, const GLVec4& v) { glUniform4fv(uniforms_[i],1,v.data());}
+	inline void set_uniform_value(std::size_t i, const int32 v)   { glUniform1i(uniforms_[i],v);}
+	inline void set_uniform_value(std::size_t i, const uint32 v)  { glUniform1ui(uniforms_[i],v);}
+	inline void set_uniform_value(std::size_t i, const bool v)    { glUniform1i(uniforms_[i],int32(v));}
+
+	template<typename T1>
+	void set_uniforms_values(T1 p1)
+	{
+		set_uniform_value(uniforms_.size()-1,p1);
+	}
+
+	template<typename T1, typename... Ts>
+	void set_uniforms_values(T1 p1, Ts... pn)
+	{
+		set_uniform_value(uniforms_.size()-1-sizeof...(pn),p1);
+		set_uniforms_values(pn...);
+	}
 
 	void get_matrices_uniforms();
 
@@ -241,35 +211,39 @@ protected:
 	std::unique_ptr<VAO> vao_;
 	virtual void set_uniforms() = 0;
 
+	static const GLColor color_front_default;
+	static const GLColor color_back_default;
+	static const GLColor color_ambiant_default;
+	static const GLColor color_spec_default;
+	static const GLColor color_line_default;
+	static const GLColor color_point_default;
+
 public:
 
 	ShaderParam(ShaderProgram* prg);
 	ShaderParam(const ShaderParam&) = delete;
 	ShaderParam& operator=(const ShaderParam&) = delete;
-	virtual ~ShaderParam();
+	inline virtual ~ShaderParam() {}
 
-//	inline ShaderProgram* get_shader()
-//	{
-//		return shader_;
-//	}
+	inline void bind_vao()
+	{
+		vao_->bind();
+	}
 
-	/**
-	 * @brief bind vao (and set uniform)
-	 * @param with_uniforms ask to set uniforms
-	 */
-	void bind_vao_only(bool with_uniforms = true);
+	inline void release_vao()
+	{
+		vao_->release();
+	}
 
-	/**
-	 * @brief release vao
-	 */
-	void release_vao_only();
-
+	inline ShaderProgram* get_shader() { return shader_; }
 	/**
 	 * @brief bind the shader set uniforms & matrices, bind vao
 	 * @param proj projectiob matrix
 	 * @param mv model-view matrix
 	 */
 	void bind(const GLMat4& proj, const GLMat4& mv);
+
+	void bind();
 
 	/**
 	 * @brief release vao and shader

@@ -47,24 +47,11 @@ protected:
 public:
 
 	inline VBO(int32 vec_dim = 3) :
-//		id_(0),
 		nb_vectors_(0),
 		vector_dimension_(vec_dim)
 	{
 		glGenBuffers(1, &id_);
 	}
-
-//	inline void create()
-//	{
-//		glGenBuffers(1, &id_);
-//	}
-
-//	inline bool is_created()
-//	{
-//		return id_ != 0;
-//	}
-
-
 
 	inline ~VBO()
 	{
@@ -99,7 +86,7 @@ public:
 	 */
 	inline void allocate(std::size_t nb_vectors, int32 vector_dim)
 	{
-		std::size_t total = nb_vectors * vector_dim;
+		std::size_t total = nb_vectors * uint32(vector_dim);
 //		if (total != nb_vectors_ * uint64(vector_dim)) // only allocate when > ?
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, id_);
@@ -163,11 +150,11 @@ public:
 		return id_;
 	}
 
-	inline void associate(GLuint attrib)
+	inline void associate(GLuint attrib, int32 stride = 0, uint32 first = 0)
 	{
 		bind();
 		glEnableVertexAttribArray(attrib);
-		glVertexAttribPointer(attrib, vector_dimension(), GL_FLOAT, GL_FALSE, 0, nullptr);
+		glVertexAttribPointer(attrib, vector_dimension(), GL_FLOAT, GL_FALSE, stride * vector_dimension() * 4, reinterpret_cast<GLvoid *>(first * uint64(vector_dimension()) * 4u));
 		release();
 	}
 

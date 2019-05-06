@@ -32,6 +32,7 @@ namespace rendering_pgl
 
 ShaderFlatColor* ShaderFlatColor::instance_ = nullptr;
 
+
 void ShaderFlatColor::set_locations()
 {
 	bind_attrib_location(ATTRIB_POS, "vertex_pos");
@@ -75,9 +76,9 @@ ShaderFlatColor::ShaderFlatColor()
 
 	load(vertex_shader_source,fragment_shader_source);
 	get_matrices_uniforms();
-	unif_ambiant_color_ = uniform_location("ambiant_color");
-	unif_light_position_ = uniform_location("lightPosition");
-	unif_bf_culling_ = uniform_location("cull_back_face");
+	add_uniforms("ambiant_color",
+				 "lightPosition",
+				 "cull_back_face");
 }
 
 

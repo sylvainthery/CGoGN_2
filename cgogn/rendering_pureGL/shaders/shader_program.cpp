@@ -31,6 +31,79 @@ namespace cgogn
 namespace rendering_pgl
 {
 
+const GLColor ShaderParam::color_front_default    = GLColor(0,0.8f,0,1);
+const GLColor ShaderParam::color_back_default     = GLColor(0,0,0.8f,1);
+const GLColor ShaderParam::color_ambiant_default  = GLColor(0.1f,0.1f,0,1);
+const GLColor ShaderParam::color_spec_default     = GLColor(1,1,1,1);
+const GLColor ShaderParam::color_line_default     = GLColor(1,1,0,1);
+const GLColor ShaderParam::color_point_default    = GLColor(1,1,1,1);
+
+
+
+void Shader::compile(const std::string& src)
+{
+	const char* csrc = src.c_str();
+	glShaderSource(id_, 1, &csrc, nullptr);
+	glCompileShader(id_);
+
+
+	int infologLength = 0;
+	int charsWritten  = 0;
+	char *infoLog;
+
+	glGetShaderiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
+
+	if(infologLength > 1)
+	{
+		infoLog = (char *)malloc(infologLength+1);
+		glGetShaderInfoLog(id_, infologLength, &charsWritten, infoLog);
+
+		std::cerr << "----------------------------------------" << std::endl << "compilation de " << "msg" <<  " : "<<std::endl << infoLog <<std::endl<< "--------"<< std::endl;
+
+		std::string errors(infoLog);
+		std::istringstream sserr(errors);
+		std::vector<int> error_lines;
+		std::string line;
+		std::getline(sserr, line);
+		while (! sserr.eof())
+		{
+			std::size_t a =0;
+			while ((a<line.size()) && (line[a]>='0') && (line[a]<='9')) a++;
+			std::size_t b =a+1;
+			while ((b<line.size()) && (line[b]>='0') && (line[b]<='9')) b++;
+			if (b<line.size())
+			{
+				int ln = std::stoi(line.substr(a+1, b-a-1));
+				error_lines.push_back(ln);
+			}
+			std::getline(sserr, line);
+		}
+
+		free(infoLog);
+
+		char* source = new char[16*1024];
+		GLsizei length;
+		glGetShaderSource(id_,16*1024,&length,source);
+		std::string sh_src(source);
+		std::istringstream sssrc(sh_src);
+		int l = 1;
+		while (! sssrc.eof())
+		{
+			std::getline(sssrc, line);
+			std::cerr.width(3);
+			auto it = std::find(error_lines.begin(),error_lines.end(),l);
+			if (it != error_lines.end())
+				std::cerr << "\033[41m\033[37m" << "EEEEEE" << line <<"\033[m" << std::endl;
+			else
+				std::cerr<< l << " : " << line << std::endl;
+			l++;
+		}
+		std::cerr << "----------------------------------------" << std::endl;
+	}
+}
+
+
+
 ShaderProgram::ShaderProgram():
 	vert_shader_(nullptr),
 	frag_shader_(nullptr),
@@ -68,13 +141,14 @@ ShaderProgram::~ShaderProgram()
 	glDeleteProgram(id_);
 }
 
+
 void ShaderProgram::load(const std::string& vert_src, const std::string& frag_src)
 {
 	vert_shader_ = new Shader(GL_VERTEX_SHADER);
-	vert_shader_->compileShader(vert_src);
+	vert_shader_->compile(vert_src);
 
 	frag_shader_ = new Shader(GL_FRAGMENT_SHADER);
-	frag_shader_->compileShader(frag_src);
+	frag_shader_->compile(frag_src);
 
 	glAttachShader(id_, vert_shader_->shaderId());
 	glAttachShader(id_, frag_shader_->shaderId());
@@ -98,6 +172,47 @@ void ShaderProgram::load(const std::string& vert_src, const std::string& frag_sr
 		std::cerr << "Link message :" << infoLog <<std::endl;
 		delete [] infoLog;
 	}
+
+	get_matrices_uniforms();
+}
+
+void ShaderProgram::load(const std::string& vert_src, const std::string& frag_src, const std::string& geom_src)
+{
+	vert_shader_ = new Shader(GL_VERTEX_SHADER);
+	vert_shader_->compile(vert_src);
+
+	frag_shader_ = new Shader(GL_FRAGMENT_SHADER);
+	frag_shader_->compile(frag_src);
+
+	geom_shader_ = new Shader(GL_GEOMETRY_SHADER);
+	geom_shader_->compile(geom_src);
+
+	glAttachShader(id_, vert_shader_->shaderId());
+	glAttachShader(id_, frag_shader_->shaderId());
+	glAttachShader(id_, geom_shader_->shaderId());
+
+	set_locations();
+
+	glLinkProgram(id_);
+
+	// puis detache (?)
+	glDetachShader(id_, geom_shader_->shaderId());
+	glDetachShader(id_, frag_shader_->shaderId());
+	glDetachShader(id_, vert_shader_->shaderId());
+
+	//Print log if needed
+	int infologLength = 0;
+	glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
+	if (infologLength > 1)
+	{
+		char* infoLog = new char[infologLength];
+		int charsWritten  = 0;
+		glGetProgramInfoLog(id_, infologLength, &charsWritten, infoLog);
+		std::cerr << "Link message :" << infoLog <<std::endl;
+		delete [] infoLog;
+	}
+
+	get_matrices_uniforms();
 }
 
 
@@ -223,27 +338,18 @@ ShaderParam::ShaderParam(ShaderProgram* prg) :
 	vao_->create();
 }
 
-ShaderParam::~ShaderParam()
-{
-}
-
-void ShaderParam::bind_vao_only(bool with_uniforms)
-{
-	shader_->bind();
-	if (with_uniforms)
-		set_uniforms();
-	vao_->bind();
-}
-
-void ShaderParam::release_vao_only()
-{
-	vao_->release();
-}
 
 void ShaderParam::bind(const GLMat4& proj, const GLMat4& mv)
 {
 	shader_->bind();
 	shader_->set_matrices(proj,mv);
+	set_uniforms();
+	vao_->bind();
+}
+
+void ShaderParam::bind()
+{
+	shader_->bind();
 	set_uniforms();
 	vao_->bind();
 }

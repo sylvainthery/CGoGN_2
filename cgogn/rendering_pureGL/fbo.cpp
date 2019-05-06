@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -21,11 +22,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
-#define CGOGN_RENDERING_SHADERS_PHONG_H_
-
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/fbo.h>
 
 namespace cgogn
 {
@@ -33,83 +30,48 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class ShaderParamPhong;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhong : public ShaderProgram
+FBO::FBO(std::vector<Texture2D*> textures, bool add_depth, FBO* from ):
+tex_(textures)
 {
-public:
-	using  Self  = ShaderPhong;
-	using  Param = ShaderParamPhong;
-	friend Param;
+	glGenFramebuffers(1, &id_);
+	glBindFramebuffer(GL_FRAMEBUFFER, id_);
+	GLenum att = GL_COLOR_ATTACHMENT0;
+	for (auto* t: tex_)
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, att++, GL_TEXTURE_2D, t->id(), 0);
 
-	inline static std::unique_ptr<Param> generate_param()
+	if (add_depth)
 	{
-		if (!instance_)
+		if (from != nullptr)
 		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
+			depth_render_buffer_ = from->depth_render_buffer_;
+			glBindRenderbuffer( GL_RENDERBUFFER, depth_render_buffer_ );
+			glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
+			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		}
-		return cgogn::make_unique<Param>(instance_);
+		else
+		{
+			glGenRenderbuffers(1,&depth_render_buffer_);
+			glBindRenderbuffer( GL_RENDERBUFFER, depth_render_buffer_ );
+			glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, tex_[0]->width(), tex_[0]->height());
+			glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
+			glBindRenderbuffer( GL_RENDERBUFFER, 0);
+		}
 	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
-protected:
-	ShaderPhong();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhong);
-	void set_locations() override;
-	static Self* instance_;
-};
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhong : public ShaderParam
+void FBO::resize(int w, int h)
 {
-protected:
+	for (auto* t: tex_)
+		t->resize(w,h);
 
-	inline void set_uniforms() override
+	if (depth_render_buffer_ != 0)
 	{
-		shader_->set_uniforms_values(light_position_,
-					front_color_,
-					back_color_,
-					ambiant_color_,
-					specular_color_,
-					specular_coef_,
-					double_side_);
+		glBindRenderbuffer( GL_RENDERBUFFER, depth_render_buffer_ );
+		glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, w, h );
+		glBindRenderbuffer( GL_RENDERBUFFER, 0);
 	}
+}
 
-public:
-
-	GLVec3 light_position_;
-	GLColor front_color_;
-	GLColor back_color_;
-	GLColor ambiant_color_;
-	GLColor specular_color_;
-	float32 specular_coef_;
-	bool double_side_;
-
-	using ShaderType = ShaderPhong;
-
-	ShaderParamPhong(ShaderType* sh) :
-		ShaderParam(sh),
-		light_position_(),
-		front_color_(),
-		back_color_(),
-		ambiant_color_(),
-		specular_color_(),
-		specular_coef_(),
-		double_side_()
-	{}
-
-	inline ~ShaderParamPhong() override {}
-
-	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
-	{
-		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
-		release_vao();
-	}
-
-};
-
-
-} // namespace rendering
-} // namespace cgogn
-#endif // CGOGN_RENDERING_SHADERS_PHONG_H_
+}
+}

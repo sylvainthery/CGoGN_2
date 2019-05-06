@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -21,11 +22,14 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_PHONG_H_
-#define CGOGN_RENDERING_SHADERS_PHONG_H_
+#ifndef CGOGN_RENDERING_FBO_H_
+#define CGOGN_RENDERING_FBO_H_
 
+#include <GL/gl3w.h>
+#include <vector>
+#include <cgogn/core/utils/numerics.h>
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/texture.h>
 
 namespace cgogn
 {
@@ -33,83 +37,29 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class ShaderParamPhong;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhong : public ShaderProgram
+class CGOGN_RENDERING_PUREGL_EXPORT FBO
 {
 public:
-	using  Self  = ShaderPhong;
-	using  Param = ShaderParamPhong;
-	friend Param;
+	FBO(std::vector<Texture2D*> textures, bool add_depth, FBO* from );
 
-	inline static std::unique_ptr<Param> generate_param()
+	inline void bind()
 	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
+		glBindFramebuffer(GL_FRAMEBUFFER, id_);
 	}
+
+	inline static void release()
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void resize(int w, int h);
 
 protected:
-	ShaderPhong();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhong);
-	void set_locations() override;
-	static Self* instance_;
+	GLuint id_;
+	GLuint depth_render_buffer_;
+	std::vector<Texture2D*> tex_;
 };
 
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhong : public ShaderParam
-{
-protected:
-
-	inline void set_uniforms() override
-	{
-		shader_->set_uniforms_values(light_position_,
-					front_color_,
-					back_color_,
-					ambiant_color_,
-					specular_color_,
-					specular_coef_,
-					double_side_);
-	}
-
-public:
-
-	GLVec3 light_position_;
-	GLColor front_color_;
-	GLColor back_color_;
-	GLColor ambiant_color_;
-	GLColor specular_color_;
-	float32 specular_coef_;
-	bool double_side_;
-
-	using ShaderType = ShaderPhong;
-
-	ShaderParamPhong(ShaderType* sh) :
-		ShaderParam(sh),
-		light_position_(),
-		front_color_(),
-		back_color_(),
-		ambiant_color_(),
-		specular_color_(),
-		specular_coef_(),
-		double_side_()
-	{}
-
-	inline ~ShaderParamPhong() override {}
-
-	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
-	{
-		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
-		release_vao();
-	}
-
-};
-
-
-} // namespace rendering
-} // namespace cgogn
-#endif // CGOGN_RENDERING_SHADERS_PHONG_H_
+}
+}
+#endif
