@@ -339,7 +339,7 @@ void Viewer::draw()
 
 	if (vertices_rendering_)
 	{
-		std::cout << "vertices"<< std::endl;
+//		std::cout << "vertices"<< std::endl;
 		param_point_sprite_->bind(proj,view);
 		render_->draw(cgogn::rendering_pgl::POINTS);
 		param_point_sprite_->release();
@@ -347,7 +347,7 @@ void Viewer::draw()
 
 	if (edge_rendering_)
 	{
-		std::cout << "Edge"<< std::endl;
+//		std::cout << "Edge"<< std::endl;
 		param_edge_->bind(proj,view);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -358,7 +358,7 @@ void Viewer::draw()
 
 	if (normal_rendering_)
 	{
-		std::cout << "Norm"<< std::endl;
+//		std::cout << "Norm"<< std::endl;
 		param_normal_->bind(proj,view);
 		render_->draw(cgogn::rendering_pgl::POINTS);
 		param_normal_->release();
@@ -366,7 +366,7 @@ void Viewer::draw()
 
 	if (bb_rendering_)
 	{
-		std::cout << "BB"<< std::endl;
+//		std::cout << "BB"<< std::endl;
 		drawer_rend_->draw(proj,view);
 	}
 

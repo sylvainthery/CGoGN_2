@@ -274,9 +274,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.redF());
-		c[1] = float32(dart_color_.greenF());
-		c[2] = float32(dart_color_.blueF());
+		c[0] = dart_color_.x();
+		c[1] = dart_color_.y();
+		c[2] = dart_color_.z();
 	}
 
 	uint32 nbvec = std::uint32_t(darts_pos_.size());
@@ -393,9 +393,9 @@ auto TopoDrawer::update(const MAP& m, const VERTEX_ATTR& position)
 	darts_col.resize(darts_pos_.size());
 	for (auto& c: darts_col)
 	{
-		c[0] = float32(dart_color_.redF());
-		c[1] = float32(dart_color_.greenF());
-		c[2] = float32(dart_color_.blueF());
+		c[0] = dart_color_.x();
+		c[1] = dart_color_.y();
+		c[2] = dart_color_.z();
 	}
 
 	uint32 nbvec = uint32(darts_pos_.size());

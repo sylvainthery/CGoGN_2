@@ -82,10 +82,11 @@ bool ImGUIViewer::launch()
 	if (!glfwInit())
 		return false;
 
-	// GL 3.3 + GLSL 150 + Core Profile
+	// GL 3.2 + GLSL 150 + Core Profile
 	const char* glsl_version = "#version 150";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = glfwCreateWindow(vp_w_, vp_h_, win_name_.c_str(), nullptr, nullptr);
@@ -111,6 +112,12 @@ bool ImGUIViewer::launch()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	glfwSetWindowUserPointer(window,this);
+
+	std::cout << glGetString(GL_VENDOR)<< std::endl;;
+	std::cout << glGetString(GL_RENDERER)<< std::endl;;
+	std::cout << glGetString(GL_VERSION)<< std::endl;;
+	std::cout << glGetString(GL_SHADING_LANGUAGE_VERSION)<< std::endl;;
+
 
 	init();
 
