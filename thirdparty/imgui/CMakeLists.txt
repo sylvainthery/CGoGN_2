@@ -39,10 +39,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX "_d")
 install(FILES ${HEADER_FILES} DESTINATION "include/cgogn/thirdparty")
 install(FILES ${HEADER_FILES} DESTINATION "include/cgogn/thirdparty")
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_export.h
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
-    COMPONENT cgogn_rendering_headers
-)
+#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cgogn_rendering_export.h
+#    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cgogn/rendering
+#    COMPONENT cgogn_rendering_headers
+#)
 
 
 
