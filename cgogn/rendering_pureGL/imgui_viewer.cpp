@@ -21,7 +21,9 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+
 #include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
 
@@ -82,8 +84,8 @@ bool ImGUIViewer::launch()
 
 	// GL 3.3 + GLSL 150 + Core Profile
 	const char* glsl_version = "#version 150";
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	window = glfwCreateWindow(vp_w_, vp_h_, win_name_.c_str(), nullptr, nullptr);
@@ -91,14 +93,15 @@ bool ImGUIViewer::launch()
 		return false;
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(1); // Enable vsync
 
+//	bool err = gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
 	bool err = gl3wInit() != 0;
 	if (err)
 	{
 		std::cerr << "Failed to initialize OpenGL loader!" << std::endl;
 		return false;
 	}
+	glfwSwapInterval(1); // Enable vsync
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -163,7 +166,7 @@ bool ImGUIViewer::launch()
 			that->key_press_event(k);
 			break;
 			case GLFW_RELEASE:
-			that->key_press_event(k);
+			that->key_release_event(k);
 			break;
 		}
 	});
@@ -171,6 +174,9 @@ bool ImGUIViewer::launch()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
 		interface();
 		ImGui::Render();
 		glfwMakeContextCurrent(window);

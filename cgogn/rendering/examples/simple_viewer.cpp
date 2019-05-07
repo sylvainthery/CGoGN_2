@@ -49,7 +49,7 @@
 
 #include <cgogn/geometry/algos/ear_triangulation.h>
 
-#include <cgogn/rendering/drawer.h>
+
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 

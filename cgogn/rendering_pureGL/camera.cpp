@@ -1,3 +1,4 @@
+
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -21,86 +22,37 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_COL_VERT_H_
-#define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_COL_VERT_H_
-
-
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/camera.h>
 
 namespace cgogn
 {
-
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamExplodeVolumesColorVertex;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderExplodeVolumesColorVertex : public ShaderProgram
+Mat4d Camera::perspective(float64 znear, float64 zfar) const
 {
-public:
-	using  Self  = ShaderExplodeVolumesColorVertex;
-	using  Param = ShaderParamExplodeVolumesColorVertex;
-	friend Param;
+	float64 range_inv = 1.0 / (znear - zfar);
+	float64 f = 1.0/std::tan(field_of_view_/2.0);
+	auto m05 = (asp_ratio_>1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
+	Mat4d m;
+	m << m05.first,  0,  0,  0,
+		  0, m05.second,  0,  0,
+		  0,  0, (znear+zfar)*range_inv, 2*znear*zfar*range_inv,
+		  0,  0, -1 ,0;
+	return m;
+}
 
-protected:
-	ShaderExplodeVolumesColorVertex();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderExplodeVolumesColorVertex);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamExplodeVolumesColorVertex : public ShaderParam
+Mat4d Camera::ortho(float64 znear, float64 zfar) const
 {
-	inline void set_uniforms() override
-	{
-		shader_->set_uniforms_values(light_pos_,explode_vol_,plane_clip_,plane_clip2_);
-	}
-
-public:
-	GLVec3 light_pos_;
-	float32 explode_vol_;
-	GLVec4 plane_clip_;
-	GLVec4 plane_clip2_;
-
-	using LocalShader = ShaderExplodeVolumesColorVertex;
-
-	ShaderParamExplodeVolumesColorVertex(LocalShader* sh) :
-		ShaderParam(sh),
-		light_pos_(10, 100, 1000),
-		explode_vol_(0.8f),
-		plane_clip_(0,0,0,0),
-		plane_clip2_(0,0,0,0)
-	{}
-
-	inline ~ShaderParamExplodeVolumesColorVertex() override {}
-
-	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
-	{
-		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
-		release_vao();
-	}
-
-};
+	float64 range_inv = 1.0 / (znear - zfar);
+	auto m05 = (asp_ratio_<1) ? std::make_pair(1.0/asp_ratio_,1.0) : std::make_pair(1.0,1.0/asp_ratio_);
+	Mat4d m;
+	m << m05.first,  0,  0,  0,
+		  0, m05.second,  0,  0,
+		  0,  0, 2*range_inv, 0,
+		  0,  0, (znear+zfar)*range_inv,0;
+	return m;
+}
 
 
-} // namespace rendering_pgl
-} // namespace cgogn
-
-#endif
+}
+}

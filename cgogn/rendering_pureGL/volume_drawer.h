@@ -27,7 +27,7 @@
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 
 #include <cgogn/rendering_pureGL/shaders/shader_explode_volumes.h>
-#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_cpv.h>
+#include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_color.h>
 #include <cgogn/rendering_pureGL/shaders/shader_explode_volumes_line.h>
 
 #include <cgogn/geometry/types/geometry_traits.h>
@@ -89,7 +89,7 @@ public:
 		friend class VolumeDrawerGen;
 
 		std::unique_ptr<ShaderExplodeVolumes::Param> param_expl_vol_;
-		std::unique_ptr<ShaderExplodeVolumesColorVertex::Param> param_expl_vol_col_;
+		std::unique_ptr<ShaderExplodeVolumesColor::Param> param_expl_vol_col_;
 		std::unique_ptr<ShaderExplodeVolumesLine::Param> param_expl_vol_line_;
 		VolumeDrawerGen* volume_drawer_data_;
 

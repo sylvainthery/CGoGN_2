@@ -35,15 +35,7 @@ namespace rendering_pgl
 
 ShaderPhong* ShaderPhong::instance_ = nullptr;
 
-void ShaderPhong::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_POS, "vertex_normal");
-}
-
-ShaderPhong::ShaderPhong()
-{
-const char* vertex_shader_source =
+static const char* vertex_shader_source =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
 "in vec3 vertex_normal;\n"
@@ -63,7 +55,7 @@ const char* vertex_shader_source =
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 "}\n";
 
-const char* fragment_shader_source =
+static const char* fragment_shader_source =
 "#version 150\n"
 "in vec3 EyeVector;\n"
 "in vec3 Normal;\n"
@@ -94,9 +86,17 @@ const char* fragment_shader_source =
 "	vec3 R = reflect(-L, N);\n"
 "	float specular = pow( max(dot(R, E), 0.0), spec_coef );\n"
 "	finalColor += spec_color * specular;\n"
-"	frag_color=finalColor;\n"
+"	frag_color=vec4(finalColor.rgb,1.0);"
 "}\n";
 
+void ShaderPhong::set_locations()
+{
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_NORM, "vertex_normal");
+}
+
+ShaderPhong::ShaderPhong()
+{
 	load(vertex_shader_source,fragment_shader_source);
 	add_uniforms("light_position",
 				 "front_color",
@@ -105,7 +105,6 @@ const char* fragment_shader_source =
 				 "spec_color",
 				 "spec_coef",
 				 "double_side");
-
 }
 
 } // namespace rendering_pgl

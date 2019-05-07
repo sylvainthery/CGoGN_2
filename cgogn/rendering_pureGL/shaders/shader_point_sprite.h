@@ -276,10 +276,8 @@ class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPointSpriteColorSize : public Sha
 	}
 
 public:
-	GLColor color_;
 	GLColor ambiant_color_;
 	GLVec3 light_pos_;
-	float32 size_;
 	GLVec4 plane_clip_;
 	GLVec4 plane_clip2_;
 

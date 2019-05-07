@@ -31,7 +31,7 @@
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
 static const char* vertex_shader_source =

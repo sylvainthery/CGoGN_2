@@ -57,7 +57,7 @@ VolumeDrawerGen::Renderer::Renderer(VolumeDrawerGen* vr) :
 {
 	if (vr->vbo_col_)
 	{
-		param_expl_vol_col_ = ShaderExplodeVolumesColorVertex::generate_param();
+		param_expl_vol_col_ = ShaderExplodeVolumesColor::generate_param();
 		param_expl_vol_col_->explode_vol_ = vr->shrink_v_;
 		param_expl_vol_col_->set_vbos(vr->vbo_pos_.get(), vr->vbo_col_.get());
 	}

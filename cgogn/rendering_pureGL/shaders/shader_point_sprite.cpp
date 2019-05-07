@@ -31,6 +31,10 @@ namespace rendering_pgl
 {
 
 ShaderPointSprite* ShaderPointSprite::instance_ = nullptr;
+ShaderPointSpriteColor* ShaderPointSpriteColor::instance_ = nullptr;
+ShaderPointSpriteSize* ShaderPointSpriteSize::instance_ = nullptr;
+ShaderPointSpriteColorSize* ShaderPointSpriteColorSize::instance_ = nullptr;
+
 static const char* vertex_shader_source =
 "in vec3 vertex_pos;\n"
 "#if WITH_COLOR == 1\n"

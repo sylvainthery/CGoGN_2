@@ -25,25 +25,17 @@
 
 #include <iostream>
 
-#include <cgogn/rendering_pureGL/shaders/shader_phong.h>
+#include <cgogn/rendering_pureGL/shaders/shader_phong_color.h>
 
 namespace cgogn
 {
 
-namespace rendering
+namespace rendering_pgl
 {
 
-ShaderPhong* ShaderPhong::instance_ = nullptr;
+ShaderPhongColor* ShaderPhongColor::instance_ = nullptr;
 
-void ShaderPhong::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_POS, "vertex_normal");
-}
-
-ShaderFlat::ShaderPhong()
-{
-const char* vertex_shader_source_ =
+static const char* vertex_shader_source =
 	"#version 150\n"
 	"in vec3 vertex_pos;\n"
 	"in vec3 vertex_normal;\n"
@@ -66,7 +58,7 @@ const char* vertex_shader_source_ =
 	"	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 	"}\n";
 
-const char* fragment_shader_source_ =
+static const char* fragment_shader_source =
 	"#version 150\n"
 	"in vec3 EyeVector;\n"
 	"in vec3 Normal;\n"
@@ -96,6 +88,17 @@ const char* fragment_shader_source_ =
 	"	finalColor += spec_color * specular;\n"
 	"	frag_color=finalColor;\n"
 	"}\n";
+
+void ShaderPhongColor::set_locations()
+{
+	bind_attrib_location(ATTRIB_POS, "vertex_pos");
+	bind_attrib_location(ATTRIB_NORM, "vertex_normal");
+	bind_attrib_location(ATTRIB_COLOR, "vertex_color");
+}
+
+ShaderPhongColor::ShaderPhongColor()
+{
+
 	load(vertex_shader_source,fragment_shader_source);
 	add_uniforms("light_position",
 				 "ambiant_color",
@@ -106,104 +109,4 @@ const char* fragment_shader_source_ =
 }
 
 } // namespace rendering_pgl
-} // namespace cgogn
-
-const char* ShaderPhongGen::vertex_shader_source_2_ =
-
-
-const char* ShaderPhongGen::fragment_shader_source_2_ =
-
-
-
-
-ShaderPhongGen::ShaderPhongGen(bool color_per_vertex)
-{
-	if (color_per_vertex)
-	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_2_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_2_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
-		prg_.bindAttributeLocation("vertex_color", ATTRIB_COLOR);
-		prg_.link();
-		get_matrices_uniforms();
-	}
-	else
-	{
-		prg_.addShaderFromSourceCode(QOpenGLShader::Vertex, vertex_shader_source_);
-		prg_.addShaderFromSourceCode(QOpenGLShader::Fragment, fragment_shader_source_);
-		prg_.bindAttributeLocation("vertex_pos", ATTRIB_POS);
-		prg_.bindAttributeLocation("vertex_normal", ATTRIB_NORM);
-		prg_.link();
-		get_matrices_uniforms();
-	}
-
-	unif_front_color_ = prg_.uniformLocation("front_color");
-	unif_back_color_ = prg_.uniformLocation("back_color");
-	unif_ambiant_color_ = prg_.uniformLocation("ambiant_color");
-	unif_spec_color_ = prg_.uniformLocation("spec_color");
-	unif_spec_coef_ = prg_.uniformLocation("spec_coef");
-	unif_double_side_ = prg_.uniformLocation("double_side");
-	unif_light_position_ = prg_.uniformLocation("lightPosition");
-
-	//default param
-	bind();
-	set_light_position(QVector3D(10.0f, 100.0f, 1000.0f));
-	set_front_color(GLColor(250, 0, 0));
-	set_back_color(GLColor(0, 250, 5));
-	set_ambiant_color(GLColor(5, 5, 5));
-	set_specular_color(GLColor(100, 100, 100));
-	set_specular_coef(50.0f);
-	set_double_side(true);
-	release();
-}
-
-void ShaderPhongGen::set_light_position(const QVector3D& l)
-{
-	prg_.setUniformValue(unif_light_position_, l);
-}
-
-void ShaderPhongGen::set_local_light_position(const QVector3D& l, const QMatrix4x4& view_matrix)
-{
-	GLVec4 loc4 = view_matrix.map(GLVec4(l, 1.0));
-	prg_.setUniformValue(unif_light_position_, QVector3D(loc4) / loc4.w());
-}
-
-void ShaderPhongGen::set_front_color(const GLColor& rgb)
-{
-	if (unif_front_color_ >= 0)
-		prg_.setUniformValue(unif_front_color_, rgb);
-}
-
-void ShaderPhongGen::set_back_color(const GLColor& rgb)
-{
-	if (unif_back_color_ >= 0)
-		prg_.setUniformValue(unif_back_color_, rgb);
-}
-
-void ShaderPhongGen::set_ambiant_color(const GLColor& rgb)
-{
-	prg_.setUniformValue(unif_ambiant_color_, rgb);
-}
-
-void ShaderPhongGen::set_specular_color(const GLColor& rgb)
-{
-	prg_.setUniformValue(unif_spec_color_, rgb);
-}
-
-void ShaderPhongGen::set_specular_coef(float32 coef)
-{
-	prg_.setUniformValue(unif_spec_coef_, coef);
-}
-
-void ShaderPhongGen::set_double_side(bool ts)
-{
-	prg_.setUniformValue(unif_double_side_, ts);
-}
-
-template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<false>;
-template class CGOGN_RENDERING_EXPORT ShaderPhongTpl<true>;
-
-} // namespace rendering
-
 } // namespace cgogn

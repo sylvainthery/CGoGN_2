@@ -1,5 +1,5 @@
 project(cgogn_rendering_pureGL
-	LANGUAGES CXX
+	LANGUAGES CXX C
 )
 
 add_library(${PROJECT_NAME} STATIC "")
@@ -8,7 +8,8 @@ add_library(cgogn::renderingPGL ALIAS cgogn_rendering_pureGL)
 
 target_sources(${PROJECT_NAME}
 	PRIVATE
-	    "${CMAKE_CURRENT_LIST_DIR}/drawer.h"
+#	    "${CGOGN_THIRDPARTY_DIR}/imgui/gl3w.c"
+        "${CMAKE_CURRENT_LIST_DIR}/drawer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/drawer.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/topo_drawer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/topo_drawer.cpp"
@@ -34,6 +35,7 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/vbo_update.h"
 		"${CMAKE_CURRENT_LIST_DIR}/mframe.h"
 		"${CMAKE_CURRENT_LIST_DIR}/camera.h"
+		"${CMAKE_CURRENT_LIST_DIR}/camera.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/pure_gl_viewer.h"
 		"${CMAKE_CURRENT_LIST_DIR}/pure_gl_viewer.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/imgui_viewer.h"
@@ -55,16 +57,22 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_vector_per_vertex.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong_color.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_phong_color.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line_color.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_bold_line_color.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point_color.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_round_point_color.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_point_sprite.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_point_sprite.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_color.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_color.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_line.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_explode_volumes_line.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_texture.h"

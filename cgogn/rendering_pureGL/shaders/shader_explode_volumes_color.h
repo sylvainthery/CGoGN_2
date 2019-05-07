@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -22,46 +21,86 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_IMGUI_VIEWER_H_
-#define CGOGN_RENDERING_IMGUI_VIEWER_H_
+#ifndef CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_COL_VERT_H_
+#define CGOGN_RENDERING_SHADERS_EXPLODE_VOLUMES_COL_VERT_H_
 
 
-#include <cgogn/rendering_pureGL/pure_gl_viewer.h>
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 namespace cgogn
 {
+
 namespace rendering_pgl
 {
 
+// forward
+class ShaderParamExplodeVolumesColor;
 
-
-class CGOGN_RENDERING_PUREGL_EXPORT ImGUIViewer: public PureGLViewer
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderExplodeVolumesColor : public ShaderProgram
 {
-protected:
-	bool need_draw_;
-	GLFWwindow* window;
-	std::string win_name_;
 public:
-	ImGUIViewer();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);
-	ImGUIViewer(int32 w, int32 h);
-	~ImGUIViewer();
-	virtual void resize_event(int32 w, int32 h);
-	virtual void close_event();
-	virtual bool init()=0;
-	virtual void draw()=0;
-	virtual void interface();
+	using  Self  = ShaderExplodeVolumesColor;
+	using  Param = ShaderParamExplodeVolumesColor;
+	friend Param;
 
-	void set_window_title(const std::string&  name);
+protected:
+	ShaderExplodeVolumesColor();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderExplodeVolumesColor);
+	void set_locations() override;
+	static Self* instance_;
 
-	bool launch();
+public:
+	inline static std::unique_ptr<Param> generate_param()
+	{
+		if (!instance_)
+		{
+			instance_ = new Self();
+			ShaderProgram::register_instance(instance_);
+		}
+		return cgogn::make_unique<Param>(instance_);
+	}
+
 };
 
-}
-}
 
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamExplodeVolumesColor : public ShaderParam
+{
+	inline void set_uniforms() override
+	{
+		shader_->set_uniforms_values(light_pos_,explode_vol_,plane_clip_,plane_clip2_);
+	}
+
+public:
+	GLVec3 light_pos_;
+	float32 explode_vol_;
+	GLVec4 plane_clip_;
+	GLVec4 plane_clip2_;
+
+	using LocalShader = ShaderExplodeVolumesColor;
+
+	ShaderParamExplodeVolumesColor(LocalShader* sh) :
+		ShaderParam(sh),
+		light_pos_(10, 100, 1000),
+		explode_vol_(0.8f),
+		plane_clip_(0,0,0,0),
+		plane_clip2_(0,0,0,0)
+	{}
+
+	inline ~ShaderParamExplodeVolumesColor() override {}
+
+	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
+	{
+		bind_vao();
+		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
+		release_vao();
+	}
+
+};
+
+
+} // namespace rendering_pgl
+} // namespace cgogn
 
 #endif

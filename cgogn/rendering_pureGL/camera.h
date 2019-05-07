@@ -52,30 +52,9 @@ private:
 	Vec3d scene_center_;
 	float64 scene_radius_;
 
-	inline Mat4d perspective(float64 znear, float64 zfar) const
-	{
-		float64 range_inv = 1.0 / (znear - zfar);
-		float64 f = 1.0/std::tan(field_of_view_/2.0);
-		auto m05 = (asp_ratio_>1) ? std::make_pair(f/asp_ratio_,f) : std::make_pair(f,f*asp_ratio_);
-		Mat4d m;
-		m << m05.first,  0,  0,  0,
-			  0, m05.second,  0,  0,
-			  0,  0, (znear+zfar)*range_inv, 2*znear*zfar*range_inv,
-			  0,  0, -1 ,0;
-		return m;
-	}
+	Mat4d perspective(float64 znear, float64 zfar) const;
 
-	inline Mat4d ortho(float64 znear, float64 zfar) const
-	{
-		float64 range_inv = 1.0 / (znear - zfar);
-		auto m05 = (asp_ratio_<1) ? std::make_pair(1.0/asp_ratio_,1.0) : std::make_pair(1.0,1.0/asp_ratio_);
-		Mat4d m;
-		m << m05.first,  0,  0,  0,
-			  0, m05.second,  0,  0,
-			  0,  0, 2*range_inv, 0,
-			  0,  0, (znear+zfar)*range_inv,0;
-		return m;
-	}
+	Mat4d ortho(float64 znear, float64 zfar) const;
 
 
 public:
@@ -130,10 +109,6 @@ public:
 
 	inline GLMat4 get_modelview_matrix() const
 	{
-//		auto m1 = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_/2.0)));
-//		auto m2 = this->frame_;
-//		auto m3 = Eigen::Translation3d(-scene_center_);
-//		auto m = m1*m2*m3;
 		Transfo3d m = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_/2.0))) * this->frame_ * Eigen::Translation3d(-scene_center_);
 		return m.matrix().cast<float32>();
 	}

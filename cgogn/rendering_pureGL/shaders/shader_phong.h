@@ -88,13 +88,13 @@ public:
 
 	ShaderParamPhong(ShaderType* sh) :
 		ShaderParam(sh),
-		light_position_(),
-		front_color_(),
-		back_color_(),
-		ambiant_color_(),
-		specular_color_(),
-		specular_coef_(),
-		double_side_()
+		light_position_(10,100,1000),
+		front_color_(color_front_default),
+		back_color_(color_back_default),
+		ambiant_color_(color_ambiant_default),
+		specular_color_(1,1,1,1),
+		specular_coef_(250),
+		double_side_(true)
 	{}
 
 	inline ~ShaderParamPhong() override {}
