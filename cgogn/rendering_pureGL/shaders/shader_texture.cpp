@@ -33,11 +33,6 @@ namespace rendering_pgl
 
 ShaderTexture* ShaderTexture::instance_ = nullptr;
 
-void ShaderTexture::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
-
 ShaderTexture::ShaderTexture()
 {
 	const char* vertex_shader_source =
@@ -62,7 +57,8 @@ ShaderTexture::ShaderTexture()
 			"	frag_color = texture(texture_unit,tc);\n"
 			"}\n";
 
-	load(vertex_shader_source,fragment_shader_source);
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos");
 	add_uniforms("texture_unit");
 }
 

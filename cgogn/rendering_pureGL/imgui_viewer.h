@@ -41,9 +41,9 @@ namespace rendering_pgl
 class CGOGN_RENDERING_PUREGL_EXPORT ImGUIViewer: public PureGLViewer
 {
 protected:
-	bool need_draw_;
 	GLFWwindow* window;
 	std::string win_name_;
+	bool show_imgui_;
 public:
 	ImGUIViewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);

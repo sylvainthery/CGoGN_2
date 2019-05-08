@@ -34,34 +34,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamFlatColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlatColor : public ShaderProgram
-{
-public:
-	using Self  = ShaderFlatColor;
-	using Param = ShaderParamFlatColor;
-	friend Param;
-
-protected:
-	ShaderFlatColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlatColor);
-	void set_locations();
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-};
-
+DECLARE_SHADER_CLASS(FlatColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlatColor : public ShaderParam
 {
@@ -90,8 +63,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_color)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_color->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_color);
 		release_vao();
 	}
 };

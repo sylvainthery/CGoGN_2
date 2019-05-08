@@ -124,16 +124,10 @@ static const char* fragment_shader_source =
 "}\n";
 
 
-
-void ShaderBoldLineColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_color");
-}
-
 ShaderBoldLineColor::ShaderBoldLineColor()
 {
-	load(vertex_shader_source,fragment_shader_source, geometry_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source, geometry_shader_source,
+			  "vertex_pos", "vertex_color");
 	add_uniforms("lineWidths","plane_clip","plane_clip2");
 }
 

@@ -32,32 +32,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-class ShaderParamPhongColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhongColor : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPhongColor;
-	using  Param = ShaderParamPhongColor;
-	friend Param;
-
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-protected:
-	ShaderPhongColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhongColor);
-	void set_locations() override;
-	static Self* instance_;
-};
+DECLARE_SHADER_CLASS(PhongColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhongColor : public ShaderParam
 {
@@ -94,9 +69,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm, VBO* vbo_color)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
-		vbo_norm->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_norm,vbo_color);
 		release_vao();
 	}
 };

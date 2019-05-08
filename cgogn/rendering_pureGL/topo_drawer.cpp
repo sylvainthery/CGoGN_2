@@ -60,8 +60,8 @@ TopoDrawer::Renderer::Renderer(TopoDrawer* tr) :
 	param_rp_ = ShaderRoundPointColor::generate_param();
 
 	param_rp_->bind_vao();
-	tr->vbo_darts_->associate(ShaderProgram::ATTRIB_POS,2,0);
-	tr->vbo_color_darts_->associate(ShaderProgram::ATTRIB_COLOR,2,0);
+	tr->vbo_darts_->associate(1,2,0);
+	tr->vbo_color_darts_->associate(2,2,0);
 	param_rp_->release_vao();
 }
 

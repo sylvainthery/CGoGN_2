@@ -122,14 +122,10 @@ static const char* fragment_shader_source =
 "}\n";
 
 
-void ShaderBoldLine::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
-
 ShaderBoldLine::ShaderBoldLine()
 {
-	load(vertex_shader_source,fragment_shader_source, geometry_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source, geometry_shader_source,
+			  "vertex_pos");
 	add_uniforms("lineColor","lineWidths","plane_clip","plane_clip2");
 }
 

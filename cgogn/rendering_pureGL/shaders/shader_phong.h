@@ -32,32 +32,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-class ShaderParamPhong;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPhong : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPhong;
-	using  Param = ShaderParamPhong;
-	friend Param;
-
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-protected:
-	ShaderPhong();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPhong);
-	void set_locations() override;
-	static Self* instance_;
-};
+DECLARE_SHADER_CLASS(Phong)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPhong : public ShaderParam
 {
@@ -102,8 +77,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_norm)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_norm->associate(ShaderProgram::ATTRIB_NORM);
+		associate_vbos(vbo_pos,vbo_norm);
 		release_vao();
 	}
 

@@ -33,11 +33,6 @@ namespace rendering_pgl
 
 ShaderVectorPerVertex* ShaderVectorPerVertex::instance_ = nullptr;
 
-void ShaderVectorPerVertex::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
-
 ShaderVectorPerVertex::ShaderVectorPerVertex()
 {
 	const char* vertex_shader_source =
@@ -78,7 +73,8 @@ ShaderVectorPerVertex::ShaderVectorPerVertex()
 		"	EndPrimitive();\n"
 		"}\n";
 
-	load(vertex_shader_source,fragment_shader_source,geometry_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source,geometry_shader_source,
+		 "vertex_pos","vertex_normal");
 	add_uniforms("color","length");
 }
 

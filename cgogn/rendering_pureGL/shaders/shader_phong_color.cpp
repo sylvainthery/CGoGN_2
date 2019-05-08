@@ -89,17 +89,12 @@ static const char* fragment_shader_source =
 	"	frag_color=finalColor;\n"
 	"}\n";
 
-void ShaderPhongColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_NORM, "vertex_normal");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_color");
-}
-
 ShaderPhongColor::ShaderPhongColor()
 {
 
-	load(vertex_shader_source,fragment_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos", "vertex_normal", "vertex_color");
+
 	add_uniforms("light_position",
 				 "ambiant_color",
 				 "spec_color",

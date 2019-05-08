@@ -34,12 +34,6 @@ namespace rendering_pgl
 
 ShaderSimpleColor* ShaderSimpleColor::instance_ = nullptr;
 
-
-void ShaderSimpleColor::set_locations()
-{
-	glBindAttribLocation(this->id(), ATTRIB_POS, "vertex_pos");
-}
-
 ShaderSimpleColor::ShaderSimpleColor()
 {
 	const char* vertex_shader_source_ =
@@ -61,8 +55,8 @@ ShaderSimpleColor::ShaderSimpleColor()
 	"   fragColor = color;\n"
 	"}\n";
 
-	this->load(vertex_shader_source_,fragment_shader_source_);
-	get_matrices_uniforms();
+	load2_bind(vertex_shader_source_,fragment_shader_source_,
+			  "vertex_pos");
 
 	add_uniforms("color");
 }

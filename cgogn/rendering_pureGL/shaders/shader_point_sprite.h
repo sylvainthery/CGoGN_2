@@ -33,35 +33,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamPointSprite;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPointSprite : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPointSprite;
-	using  Param = ShaderParamPointSprite;
-	friend Param;
-
-protected:
-	ShaderPointSprite();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPointSprite);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(PointSprite)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPointSprite : public ShaderParam
 {
@@ -95,41 +67,13 @@ public:
 	inline void set_vbos(VBO* vbo_pos)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		associate_vbos(vbo_pos);
 		release_vao();
 	}
 };
 
 
-// forward
-class ShaderParamPointSpriteColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPointSpriteColor : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPointSpriteColor;
-	using  Param = ShaderParamPointSpriteColor;
-	friend Param;
-
-protected:
-	ShaderPointSpriteColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPointSpriteColor);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(PointSpriteColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPointSpriteColor : public ShaderParam
 {
@@ -161,43 +105,13 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_col);
 		release_vao();
 	}
 };
 
 
-
-// forward
-class ShaderParamPointSpriteSize;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPointSpriteSize : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPointSpriteSize;
-	using  Param = ShaderParamPointSpriteSize;
-	friend Param;
-
-protected:
-	ShaderPointSpriteSize();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPointSpriteSize);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(PointSpriteSize)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPointSpriteSize : public ShaderParam
 {
@@ -230,43 +144,14 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_size)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_size->associate(ShaderProgram::ATTRIB_SIZE);
+		associate_vbos(vbo_pos,vbo_size);
 		release_vao();
 	}
 };
 
 
 
-// forward
-class ShaderParamPointSpriteColorSize;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderPointSpriteColorSize : public ShaderProgram
-{
-public:
-	using  Self  = ShaderPointSpriteColorSize;
-	using  Param = ShaderParamPointSpriteColorSize;
-	friend Param;
-
-protected:
-	ShaderPointSpriteColorSize();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderPointSpriteColorSize);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(PointSpriteColorSize)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPointSpriteColorSize : public ShaderParam
 {
@@ -296,9 +181,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col, VBO* vbo_size)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
-		vbo_size->associate(ShaderProgram::ATTRIB_SIZE);
+		associate_vbos(vbo_pos,vbo_col,vbo_size);
 		release_vao();
 	}
 };

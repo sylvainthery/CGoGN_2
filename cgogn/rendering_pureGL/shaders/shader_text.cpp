@@ -33,13 +33,6 @@ namespace rendering_pgl
 
 ShaderText* ShaderText::instance_ = nullptr;
 
-void ShaderText::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_in");
-	bind_attrib_location(ATTRIB_CUSTOM1, "char_in");
-	bind_attrib_location(ATTRIB_CUSTOM2, "colsz_in");
-}
-
 ShaderText::ShaderText()
 {
 	const char* vertex_shader_source =
@@ -81,7 +74,9 @@ ShaderText::ShaderText()
 			"		frag_color = a*color;\n"
 			"}\n";
 
-	load(vertex_shader_source,fragment_shader_source);
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_in", "char_in", "colsz_in");
+
 	add_uniforms("texture_unit","italic");
 }
 

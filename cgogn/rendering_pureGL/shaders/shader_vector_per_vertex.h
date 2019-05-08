@@ -32,36 +32,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamVectorPerVertex;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderVectorPerVertex : public ShaderProgram
-{
-public:
-	using  Self  = ShaderVectorPerVertex;
-	using  Param = ShaderParamVectorPerVertex;
-	friend Param;
-
-protected:
-	ShaderVectorPerVertex();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderVectorPerVertex);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(VectorPerVertex)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamVectorPerVertex : public ShaderParam
 {
@@ -78,8 +49,8 @@ public:
 
 	ShaderParamVectorPerVertex(LocalShader* sh) :
 		ShaderParam(sh),
-		color_(1,1,1,1),
-		length_(1)
+		color_(color_line_default),
+		length_(1.0f)
 	{}
 
 	inline ~ShaderParamVectorPerVertex() override {}
@@ -87,8 +58,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_normal)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_normal->associate(ShaderProgram::ATTRIB_NORM);
+		associate_vbos(vbo_pos,vbo_normal);
 		release_vao();
 	}
 

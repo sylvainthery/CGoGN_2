@@ -36,34 +36,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamText;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderText : public ShaderProgram
-{
-public:
-	using  Self  = ShaderText;
-	using  Param = ShaderParamText;
-	friend Param;
-
-protected:
-	ShaderText();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderText);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
+DECLARE_SHADER_CLASS(Text)
 
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamText : public ShaderParam
@@ -90,9 +63,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_str, VBO* vbo_colsize)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_str->associate(ShaderProgram::ATTRIB_CUSTOM1);
-		vbo_colsize->associate(ShaderProgram::ATTRIB_CUSTOM2);
+		associate_vbos(vbo_pos,vbo_str,vbo_colsize);
 		release_vao();
 	}
 

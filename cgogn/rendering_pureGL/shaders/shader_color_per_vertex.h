@@ -32,35 +32,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamColorPerVertex;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderColorPerVertex : public ShaderProgram
-{
-public:
-	using  Self  = ShaderColorPerVertex;
-	using  Param = ShaderParamColorPerVertex;
-	friend Param;
-
-protected:
-	ShaderColorPerVertex();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderColorPerVertex);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(ColorPerVertex)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamColorPerVertex : public ShaderParam
 {
@@ -77,8 +49,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_col);
 		release_vao();
 	}
 };

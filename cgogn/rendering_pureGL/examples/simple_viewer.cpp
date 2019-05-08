@@ -77,6 +77,7 @@ private:
 	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_sphere_sz_;
 
 	std::unique_ptr<cgogn::rendering_pgl::ShaderBoldLine::Param> param_edge_;
+//	std::unique_ptr<cgogn::rendering_pgl::ShaderSimpleColor::Param> param_edge_;
 	std::unique_ptr<cgogn::rendering_pgl::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<cgogn::rendering_pgl::ShaderVectorPerVertex::Param> param_normal_;
 	std::unique_ptr<cgogn::rendering_pgl::ShaderPhong::Param> param_phong_;
@@ -92,6 +93,7 @@ private:
 	bool edge_rendering_;
 	bool normal_rendering_;
 	bool bb_rendering_;
+	float interface_scaling_;
 public:
 	float f;
 	int counter;
@@ -123,7 +125,8 @@ Viewer::Viewer() :
 	vertices_rendering_(false),
 	edge_rendering_(false),
 	normal_rendering_(false),
-	bb_rendering_(true)
+	bb_rendering_(true),
+	interface_scaling_(1.0f)
 {}
 
 
@@ -146,10 +149,8 @@ void Viewer::key_press_event(int k)
 	{
 		case int('P'):
 			phong_rendering_ = true;
-			flat_rendering_ = false;
 			break;
 		case int('F'):
-			flat_rendering_ = true;
 			phong_rendering_ = false;
 			break;
 		case int('N'):
@@ -164,7 +165,7 @@ void Viewer::key_press_event(int k)
 		case int('B'):
 			bb_rendering_ = !bb_rendering_;
 			break;
-		case int(' '):
+		case int('R'):
 			std::cout << "Reset"<< std::endl;
 			cam_.reset();
 			break;
@@ -173,8 +174,14 @@ void Viewer::key_press_event(int k)
 			cam_.center_scene();
 			break;
 		case int('S'):
-			std::cout << "Entire"<< std::endl;
-			cam_.show_entire_scene();
+			if (shift_pressed_)
+				interface_scaling_ += 0.1f;
+			else
+				interface_scaling_ -= 0.1f;
+			break;
+		case int(' '):
+			show_imgui_ = !show_imgui_;
+			cam_.reset();
 			break;
 		default:
 			break;
@@ -183,15 +190,46 @@ void Viewer::key_press_event(int k)
 
 void Viewer::interface()
 {
+	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
-	ImGui::Begin("Control Window");                          // Create a window called "Hello, world!" and append into it.
-	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-	ImGui::ColorEdit3("clear color", (float*)(clear_color.data())); // Edit 3 floats representing a color
-	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-		this->counter++;
-	ImGui::SameLine();
-	ImGui::Text("counter = %d", counter);
+	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);                          // Create a window called "Hello, world!" and append into it.
+	ImGui::Checkbox("Phong/Flat", &phong_rendering_);
+	ImGui::Checkbox("Vertices", &vertices_rendering_);
+	ImGui::Checkbox("Normals", &normal_rendering_);
+	ImGui::Checkbox("Edges", &edge_rendering_);
+	ImGui::Checkbox("BB", &bb_rendering_);
+
+	if (phong_rendering_)
+	{
+		ImGui::Text("Phong parameters");
+		ImGui::ColorEdit3("front color##phong",param_phong_->front_color_.data());
+		ImGui::ColorEdit3("back color##phong",param_phong_->back_color_.data());
+		ImGui::SliderFloat("spec##phong", &(param_phong_->specular_coef_), 10.0f, 1000.0f);
+		ImGui::Checkbox("double side##phong", &(param_phong_->double_side_));
+	}
+	else
+	{
+		ImGui::Text("Flat parameters");
+		ImGui::ColorEdit3("front color##flat",param_flat_->front_color_.data());
+		ImGui::ColorEdit3("back color##flat",param_flat_->back_color_.data());
+		ImGui::Checkbox("single side##flat", &(param_flat_->bf_culling_));
+	}
+	if (normal_rendering_)
+	{
+		ImGui::Text("Normal parameters");
+		ImGui::ColorEdit3("color##norm",param_normal_->color_.data());
+		ImGui::SliderFloat("length##norm", &(param_normal_->length_), 0.01f, 0.5f);
+	}
+
+	if (edge_rendering_)
+	{
+		ImGui::Text("Edge parameters");
+		ImGui::ColorEdit3("color##edge",param_edge_->color_.data());
+		ImGui::SliderFloat("Width##edge", &(param_edge_->width_), 1.0f, 10.0f);
+	}
+
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
 	ImGui::End();
 }
 
@@ -241,7 +279,7 @@ bool Viewer::init()
 	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(1);
 	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
-		return cgogn::geometry::diagonal(bb_).norm()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
+		return cgogn::geometry::diagonal(bb_).norm()/1000.0*(1.0 + 2.0*std::abs(n[2]));
 	});
 
 	// map rendering object (primitive creation & sending to GPU)
@@ -253,10 +291,11 @@ bool Viewer::init()
 	// generation of one parameter set (for this shader) : vbo + uniforms
 	param_point_sprite_ = cgogn::rendering_pgl::ShaderPointSpriteColorSize::generate_param();
 	param_point_sprite_->set_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
+//	param_point_sprite_->size_=0.01f;
 
 	param_edge_ = cgogn::rendering_pgl::ShaderBoldLine::generate_param();
 	param_edge_->set_vbos(vbo_pos_.get());
-	param_edge_->color_ =  cgogn::rendering_pgl::GLColor(1,1,0,1);
+	param_edge_->color_ =  cgogn::rendering_pgl::GLColor(1,1,1,1);
 	param_edge_->width_= 2.5f;
 
 	param_flat_ = cgogn::rendering_pgl::ShaderFlat::generate_param();
@@ -267,7 +306,7 @@ bool Viewer::init()
 
 	param_normal_ = cgogn::rendering_pgl::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_vbos(vbo_pos_.get(), vbo_norm_.get());
-	param_normal_->color_ =  cgogn::rendering_pgl::GLColor(0.8f,0,0.8f,1);
+	param_normal_->color_ =  cgogn::rendering_pgl::GLColor(0.8f,0.8f,0.8f,1);
 	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
 	param_phong_ = cgogn::rendering_pgl::ShaderPhong::generate_param();
@@ -322,12 +361,6 @@ void Viewer::draw()
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 2.0f);
-	if (flat_rendering_)
-	{
-		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::TRIANGLES);
-		param_flat_->release();
-	}
 
 	if (phong_rendering_)
 	{
@@ -335,11 +368,17 @@ void Viewer::draw()
 		render_->draw(cgogn::rendering_pgl::TRIANGLES);
 		param_phong_->release();
 	}
+	else
+	{
+		param_flat_->bind(proj,view);
+		render_->draw(cgogn::rendering_pgl::TRIANGLES);
+		param_flat_->release();
+	}
+
 	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	if (vertices_rendering_)
 	{
-		std::cout << "vertices"<< std::endl;
 		param_point_sprite_->bind(proj,view);
 		render_->draw(cgogn::rendering_pgl::POINTS);
 		param_point_sprite_->release();
@@ -347,7 +386,6 @@ void Viewer::draw()
 
 	if (edge_rendering_)
 	{
-		std::cout << "Edge"<< std::endl;
 		param_edge_->bind(proj,view);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -358,7 +396,6 @@ void Viewer::draw()
 
 	if (normal_rendering_)
 	{
-		std::cout << "Norm"<< std::endl;
 		param_normal_->bind(proj,view);
 		render_->draw(cgogn::rendering_pgl::POINTS);
 		param_normal_->release();
@@ -366,7 +403,6 @@ void Viewer::draw()
 
 	if (bb_rendering_)
 	{
-		std::cout << "BB"<< std::endl;
 		drawer_rend_->draw(proj,view);
 	}
 

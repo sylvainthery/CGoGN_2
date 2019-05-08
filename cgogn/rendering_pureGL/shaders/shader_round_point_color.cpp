@@ -97,15 +97,10 @@ static const char* fragment_shader_source =
 
 ShaderRoundPointColor* ShaderRoundPointColor::instance_ = nullptr;
 
-void ShaderRoundPointColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_pos");
-}
-
 ShaderRoundPointColor::ShaderRoundPointColor()
 {
-	load(vertex_shader_source,fragment_shader_source,geometry_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source,geometry_shader_source,
+		 "vertex_pos", "vertex_pos");
 	add_uniforms("pointSizes","plane_clip","plane_clip2");
 }
 

@@ -53,9 +53,7 @@ public:
 protected:
 	ShaderScalarPerVertex();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderScalarPerVertex);
-	void set_locations() override;
 	static Self* instance_;
-
 public:
 	inline static std::unique_ptr<Param> generate_param()
 	{
@@ -66,7 +64,6 @@ public:
 		}
 		return cgogn::make_unique<Param>(instance_);
 	}
-
 };
 
 
@@ -82,8 +79,6 @@ class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamScalarPerVertex : public ShaderPa
 					show_iso_lines_,
 					nb_iso_levels_);
 	}
-
-	const uint32 ATTRIB_SCALAR = ShaderProgram::ATTRIB_CUSTOM1;
 
 public:
 	ShaderScalarPerVertex::ColorMap color_map_;
@@ -110,8 +105,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_scalar)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_scalar->associate(ATTRIB_SCALAR);
+		associate_vbos(vbo_pos,vbo_scalar);
 		release_vao();
 	}
 

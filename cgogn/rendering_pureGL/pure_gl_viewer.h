@@ -82,6 +82,8 @@ protected:
 	float64 last_mouse_x_;
 	float64 last_mouse_y_;
 	uint32 mouse_buttons_;
+	bool need_redraw_;
+
 
 protected:
 	bool shift_pressed_;

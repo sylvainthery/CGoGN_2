@@ -33,12 +33,6 @@ namespace rendering_pgl
 ShaderFlatColor* ShaderFlatColor::instance_ = nullptr;
 
 
-void ShaderFlatColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
-}
-
 ShaderFlatColor::ShaderFlatColor()
 {
 	const char* vertex_shader_source =
@@ -74,8 +68,9 @@ ShaderFlatColor::ShaderFlatColor()
 	"	else fragColor = ambiant_color+vec4(lambert*col,1.0);\n"
 	"}\n";
 
-	load(vertex_shader_source,fragment_shader_source);
-	get_matrices_uniforms();
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos", "vertex_col");
+
 	add_uniforms("ambiant_color",
 				 "lightPosition",
 				 "cull_back_face");

@@ -32,33 +32,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-class ShaderParamSimpleColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderSimpleColor : public ShaderProgram
-{
-public:
-	using  Self  = ShaderSimpleColor;
-	using  Param = ShaderParamSimpleColor;
-	friend Param;
-
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-protected:
-	ShaderSimpleColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderSimpleColor);
-	void set_locations() override;
-	static Self* instance_;
-
-};
+DECLARE_SHADER_CLASS(SimpleColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamSimpleColor : public ShaderParam
 {
@@ -77,7 +51,7 @@ public:
 
 	ShaderParamSimpleColor(ShaderType* sh) :
 		ShaderParam(sh),
-		color_(1.0, 1.0, 1.0,1.0)
+		color_(color_line_default)
 	{}
 
 	inline ~ShaderParamSimpleColor() override {}
@@ -85,7 +59,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		associate_vbos(vbo_pos);
 		release_vao();
 	}
 };

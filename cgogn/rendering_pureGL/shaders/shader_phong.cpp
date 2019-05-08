@@ -42,7 +42,7 @@ static const char* vertex_shader_source =
 "uniform mat4 projection_matrix;\n"
 "uniform mat4 model_view_matrix;\n"
 "uniform mat3 normal_matrix;\n"
-"uniform vec3 lightPosition;\n"
+"uniform vec3 light_position;\n"
 "out vec3 EyeVector;\n"
 "out vec3 Normal;\n"
 "out vec3 LightDir;\n"
@@ -50,7 +50,7 @@ static const char* vertex_shader_source =
 "{\n"
 "	Normal = normal_matrix * vertex_normal;\n"
 "	vec3 Position = vec3 (model_view_matrix * vec4 (vertex_pos, 1.0));\n"
-"	LightDir = lightPosition - Position;\n"
+"	LightDir = light_position - Position;\n"
 "	EyeVector = -Position;"
 "	gl_Position = projection_matrix * model_view_matrix * vec4 (vertex_pos, 1.0);\n"
 "}\n";
@@ -89,15 +89,11 @@ static const char* fragment_shader_source =
 "	frag_color=vec4(finalColor.rgb,1.0);"
 "}\n";
 
-void ShaderPhong::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_NORM, "vertex_normal");
-}
 
 ShaderPhong::ShaderPhong()
 {
-	load(vertex_shader_source,fragment_shader_source);
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos","vertex_normal");
 	add_uniforms("light_position",
 				 "front_color",
 				 "back_color",

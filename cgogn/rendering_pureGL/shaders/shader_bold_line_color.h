@@ -32,42 +32,16 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamBoldLineColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderBoldLineColor : public ShaderProgram
-{
-public:
-	using  Self  = ShaderBoldLineColor;
-	using  Param = ShaderParamBoldLineColor;
-	friend Param;
-
-protected:
-	ShaderBoldLineColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderBoldLineColor);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(BoldLineColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamBoldLineColor : public ShaderParam
 {
 	inline void set_uniforms() override
 	{
-		shader_->set_uniforms_values(width_,plane_clip_,plane_clip2_);
+		int viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		GLVec2 wd(width_ / float32(viewport[2]), width_ / float32(viewport[3]));
+		shader_->set_uniforms_values(wd,plane_clip_,plane_clip2_);
 	}
 
 public:
@@ -89,8 +63,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_col);
 		release_vao();
 	}
 

@@ -88,15 +88,10 @@ static const char* fragment_shader_source =
 
 ShaderExplodeVolumesColor* ShaderExplodeVolumesColor::instance_ = nullptr;
 
-void ShaderExplodeVolumesColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_color");
-}
-
 ShaderExplodeVolumesColor::ShaderExplodeVolumesColor()
 {
-	load(vertex_shader_source,fragment_shader_source,geometry_shader_source);
+	load3_bind(vertex_shader_source,fragment_shader_source,geometry_shader_source,
+			  "vertex_pos","vertex_color");
 	add_uniforms("explode_vol","plane_clip","plane_clip2");
 }
 

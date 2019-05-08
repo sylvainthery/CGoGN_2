@@ -39,15 +39,12 @@ ImGUIViewer::ImGUIViewer():
 {
 	vp_w_ = 512;
 	vp_h_ = 512;
-	need_draw_ = true;
-
 }
 
 ImGUIViewer::ImGUIViewer(int32 w, int32 h)
 {
 	vp_w_ = w;
 	vp_h_ = h;
-	need_draw_ = true;
 }
 
 void ImGUIViewer::set_window_title(const std::string&  name)
@@ -86,7 +83,7 @@ bool ImGUIViewer::launch()
 	const char* glsl_version = "#version 150";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 	window = glfwCreateWindow(vp_w_, vp_h_, win_name_.c_str(), nullptr, nullptr);
 	if (window == nullptr)
@@ -111,6 +108,9 @@ bool ImGUIViewer::launch()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	glfwSetWindowUserPointer(window,this);
+
+	std::cout << glGetString(GL_RENDERER)<< std::endl;
+	std::cout << glGetString(GL_VERSION)<< std::endl;
 
 	init();
 
@@ -154,15 +154,43 @@ bool ImGUIViewer::launch()
 	glfwSetKeyCallback(window, [](GLFWwindow* w, int k, int s, int a, int m)
 	{
 		ImGUIViewer* that= static_cast<ImGUIViewer*>(glfwGetWindowUserPointer(w));
-		that->shift_pressed_   = (k==GLFW_KEY_LEFT_SHIFT)||(k==GLFW_KEY_RIGHT_SHIFT);
-		that->control_pressed_ = (k==GLFW_KEY_LEFT_CONTROL)||(k==GLFW_KEY_RIGHT_CONTROL);
-		that->alt_pressed_     = (k==GLFW_KEY_LEFT_ALT)||(k==GLFW_KEY_RIGHT_ALT);
-		that->meta_pressed_    = (k==GLFW_KEY_LEFT_SUPER)||(k==GLFW_KEY_RIGHT_SUPER);
+		that->shift_pressed_   = (m & GLFW_MOD_SHIFT);
+		that->control_pressed_ = (m & GLFW_MOD_CONTROL);
+		that->alt_pressed_     = (m & GLFW_MOD_ALT);
+		that->meta_pressed_    = (m & GLFW_MOD_SUPER);;
 		switch(a)
 		{
 			case GLFW_PRESS:
 			if (k==GLFW_KEY_ESCAPE)
 				exit(0);
+			if ((k==GLFW_KEY_F) && that->control_pressed_  && !that->shift_pressed_)
+			{
+				GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+				const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+				glfwSetWindowMonitor(that->window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+				glfwSetInputMode(that->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				return;
+			}
+			if ((k==GLFW_KEY_F) && that->control_pressed_ && that->shift_pressed_)
+			{
+				int count;
+				GLFWmonitor** monitors = glfwGetMonitors(&count);
+				if (count>1)
+				{
+					const GLFWvidmode* mode = glfwGetVideoMode(monitors[1]);
+					glfwSetWindowMonitor(that->window, monitors[1], 0, 0, mode->width, mode->height, mode->refreshRate);
+					glfwSetInputMode(that->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				}
+				else
+					std::cerr << "Only one monitor"<< std::endl;
+				return;
+			}
+			if ((k==GLFW_KEY_W) && that->control_pressed_)
+			{
+				glfwSetWindowMonitor(that->window, nullptr,100,100, 1024, 1024, 0);
+				glfwSetInputMode(that->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+				return;
+			}
 			that->key_press_event(k);
 			break;
 			case GLFW_RELEASE:
@@ -174,11 +202,14 @@ bool ImGUIViewer::launch()
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		interface();
-		ImGui::Render();
+		if (show_imgui_)
+		{
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+			interface();
+			ImGui::Render();
+		}
 		glfwMakeContextCurrent(window);
 		int32 nw,nh;
 		glfwGetFramebufferSize(window, &nw, &nh);
@@ -187,17 +218,17 @@ bool ImGUIViewer::launch()
 			vp_w_ = nw;
 			vp_h_ = nh;
 			resize_event(nw,nh);
+			need_redraw_ = true;
 		}
 		glfwMakeContextCurrent(window);
 		cam_.set_aspect_ratio(double(vp_w_)/vp_h_);
 		glViewport(0,0, vp_w_, vp_h_);
-		if (need_draw_)
-		{
-			spin();
-			draw();
-		}
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		spin();
+		draw();
+		if (show_imgui_)
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		glfwSwapBuffers(window);
+
 	}
 	return true;
 }

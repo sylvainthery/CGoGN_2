@@ -34,11 +34,6 @@ namespace rendering_pgl
 
 ShaderScalarPerVertex* ShaderScalarPerVertex::instance_ = nullptr;
 
-void ShaderScalarPerVertex::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
-
 static const char* vertex_shader_source =
 "#version 150\n"
 "in vec3 vertex_pos;\n"
@@ -173,7 +168,9 @@ static const char* fragment_shader_source =
 
 ShaderScalarPerVertex::ShaderScalarPerVertex()
 {
-	load(vertex_shader_source,fragment_shader_source);
+	load(vertex_shader_source,fragment_shader_source,
+		 "vertex_pos");
+
 	add_uniforms("color_map","expansion",
 				 "min_value","max_value",
 				 "show_iso_lines","nb_iso_levels");

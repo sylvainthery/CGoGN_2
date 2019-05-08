@@ -27,41 +27,14 @@
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
+
 namespace cgogn
 {
 
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamFlat;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderFlat : public ShaderProgram
-{
-public:
-	using  Self  = ShaderFlat;
-	using  Param = ShaderParamFlat;
-	friend Param;
-
-protected:
-	ShaderFlat();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderFlat);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(Flat)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamFlat : public ShaderParam
 {
@@ -93,7 +66,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		associate_vbos(vbo_pos);
 		release_vao();
 	}
 

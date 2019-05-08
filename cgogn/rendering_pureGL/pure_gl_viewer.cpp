@@ -82,10 +82,10 @@ void PureGLViewer::mouse_press_event(int32 button, float64 x, float64 y)
 	std::cout <<" mouse_press_event: " << button <<" : "<< x <<" , "<< y << std::endl;
 	if (button == 0)
 	{
-			current_frame_->is_moving_ = false;
-			spinning_speed_ = 0;
-			current_frame_->spin_ = Transfo3d::Identity();
-
+		current_frame_->is_moving_ = false;
+		spinning_speed_ = 0;
+		current_frame_->spin_ = Transfo3d::Identity();
+		need_redraw_ = true;
 	}
 }
 
@@ -100,7 +100,7 @@ void PureGLViewer::mouse_release_event(int32 button, float64 x, float64 y)
 			spinning_speed_ = 0;
 			current_frame_->spin_ = Transfo3d::Identity();
 		}
-
+		need_redraw_ = true;
 	}
 }
 
@@ -135,7 +135,8 @@ void PureGLViewer::mouse_move_event(float64 x, float64 y)
 			current_frame_->frame_.translation().setZero();
 			current_frame_->frame_ = Eigen::AngleAxisd(spinning_speed_,axis) * current_frame_->frame_;
 			current_frame_->frame_.translation() = tr;
-		}	
+		}
+		need_redraw_ = true;
 	}
 	
 	if (mouse_buttons_ & 2)
@@ -157,6 +158,7 @@ void PureGLViewer::mouse_move_event(float64 x, float64 y)
 			cam_.frame_.translation().x() += 2*nx;
 			cam_.frame_.translation().y() += 2*ny;
 		}
+		need_redraw_ = true;
 	}
 }
 
@@ -168,6 +170,7 @@ void PureGLViewer::spin()
 		current_frame_->frame_.translation().setZero();
 		current_frame_->frame_ = current_frame_->spin_ * current_frame_->frame_;
 		current_frame_->frame_.translation() = tr;
+		need_redraw_ = true;
 	}
 }
 

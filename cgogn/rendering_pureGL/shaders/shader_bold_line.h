@@ -33,42 +33,16 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamBoldLine;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderBoldLine : public ShaderProgram
-{
-public:
-	using  Self  = ShaderBoldLine;
-	using  Param = ShaderParamBoldLine;
-	friend Param;
-
-protected:
-	ShaderBoldLine();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderBoldLine);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(BoldLine)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamBoldLine : public ShaderParam
 {
 	inline void set_uniforms() override
 	{
-		shader_->set_uniforms_values(color_,width_,plane_clip_,plane_clip2_);
+		int viewport[4];
+		glGetIntegerv(GL_VIEWPORT, viewport);
+		GLVec2 wd(width_ / float32(viewport[2]), width_ / float32(viewport[3]));
+		shader_->set_uniforms_values(color_,wd,plane_clip_,plane_clip2_);
 	}
 
 public:
@@ -76,7 +50,6 @@ public:
 	float32 width_;
 	GLVec4 plane_clip_;
 	GLVec4 plane_clip2_;
-
 
 	using LocalShader = ShaderBoldLine;
 
@@ -88,10 +61,12 @@ public:
 		plane_clip2_(0,0,0,0)
 	{}
 
+	inline ~ShaderParamBoldLine() override {}
+
 	inline void set_vbos(VBO* vbo_pos)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		associate_vbos(vbo_pos);
 		release_vao();
 	}
 

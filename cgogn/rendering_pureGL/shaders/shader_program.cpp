@@ -153,8 +153,6 @@ void ShaderProgram::load(const std::string& vert_src, const std::string& frag_sr
 	glAttachShader(id_, vert_shader_->shaderId());
 	glAttachShader(id_, frag_shader_->shaderId());
 
-	set_locations();
-
 	glLinkProgram(id_);
 
 	// puis detache (?)
@@ -181,27 +179,32 @@ void ShaderProgram::load(const std::string& vert_src, const std::string& frag_sr
 	vert_shader_ = new Shader(GL_VERTEX_SHADER);
 	vert_shader_->compile(vert_src);
 
-	frag_shader_ = new Shader(GL_FRAGMENT_SHADER);
-	frag_shader_->compile(frag_src);
-
 	geom_shader_ = new Shader(GL_GEOMETRY_SHADER);
 	geom_shader_->compile(geom_src);
 
-	glAttachShader(id_, vert_shader_->shaderId());
-	glAttachShader(id_, frag_shader_->shaderId());
-	glAttachShader(id_, geom_shader_->shaderId());
+	frag_shader_ = new Shader(GL_FRAGMENT_SHADER);
+	frag_shader_->compile(frag_src);
 
-	set_locations();
+	glAttachShader(id_, vert_shader_->shaderId());
+	glAttachShader(id_, geom_shader_->shaderId());
+	glAttachShader(id_, frag_shader_->shaderId());
 
 	glLinkProgram(id_);
 
 	// puis detache (?)
-	glDetachShader(id_, geom_shader_->shaderId());
 	glDetachShader(id_, frag_shader_->shaderId());
+	glDetachShader(id_, geom_shader_->shaderId());
 	glDetachShader(id_, vert_shader_->shaderId());
 
 	//Print log if needed
-	int infologLength = 0;
+	GLint infologLength = 0;
+	glGetProgramiv(id_, GL_LINK_STATUS, &infologLength);
+	if (infologLength != GL_TRUE)
+		std::cerr << "PB GL_LINK_STATUS" << std::endl;
+	glGetProgramiv(id_, GL_VALIDATE_STATUS, &infologLength);
+	if (infologLength != GL_TRUE)
+		std::cerr << "PB GL_VALIDATE_STATUS" << std::endl;
+
 	glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &infologLength);
 	if (infologLength > 1)
 	{
@@ -246,6 +249,10 @@ void ShaderProgram::clean_all()
 
 void ShaderProgram::get_matrices_uniforms()
 {
+	unif_mvp_matrix_ = -1;
+	unif_mv_matrix_ = -1;
+	unif_projection_matrix_ = -1;
+	unif_normal_matrix_ = -1;
 	unif_mvp_matrix_ = glGetUniformLocation(id_,"mvp_matrix");
 	unif_mv_matrix_ = glGetUniformLocation(id_,"model_view_matrix");
 	unif_projection_matrix_ = glGetUniformLocation(id_,"projection_matrix");

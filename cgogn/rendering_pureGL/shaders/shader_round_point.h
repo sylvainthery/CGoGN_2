@@ -33,34 +33,7 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-// forward
-class ShaderParamRoundPoint;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderRoundPoint : public ShaderProgram
-{
-public:
-	using  Self  = ShaderRoundPoint;
-	using  Param = ShaderParamRoundPoint;
-	friend Param;
-
-protected:
-	ShaderRoundPoint();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderRoundPoint);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
+DECLARE_SHADER_CLASS(RoundPoint)
 
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamRoundPoint : public ShaderParam
@@ -94,7 +67,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
+		associate_vbos(vbo_pos);
 		release_vao();
 	}
 };

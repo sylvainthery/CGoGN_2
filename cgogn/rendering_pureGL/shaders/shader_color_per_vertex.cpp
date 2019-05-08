@@ -35,11 +35,6 @@ namespace rendering_pgl
 
 ShaderColorPerVertex* ShaderColorPerVertex::instance_ = nullptr;
 
-void ShaderColorPerVertex::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
-
 ShaderColorPerVertex::ShaderColorPerVertex()
 {
 	const char* vertex_shader_source =
@@ -64,7 +59,8 @@ ShaderColorPerVertex::ShaderColorPerVertex()
 		"   fragColor = color_v;\n"
 		"}\n";
 
-	load(vertex_shader_source,fragment_shader_source);
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos");
 }
 
 } // namespace rendering

@@ -32,36 +32,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamRoundPointColor;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderRoundPointColor : public ShaderProgram
-{
-public:
-	using  Self  = ShaderRoundPointColor;
-	using  Param = ShaderParamRoundPointColor;
-	friend Param;
-
-protected:
-	ShaderRoundPointColor();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderRoundPointColor);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(RoundPointColor)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamRoundPointColor : public ShaderParam
 {
@@ -93,8 +64,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_col)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_col->associate(ShaderProgram::ATTRIB_COLOR);
+		associate_vbos(vbo_pos,vbo_col);
 		release_vao();
 	}	
 };

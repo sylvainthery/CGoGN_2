@@ -33,36 +33,7 @@ namespace cgogn
 
 namespace rendering_pgl
 {
-
-// forward
-class ShaderParamTexture;
-
-class CGOGN_RENDERING_PUREGL_EXPORT ShaderTexture : public ShaderProgram
-{
-public:
-	using  Self  = ShaderTexture;
-	using  Param = ShaderParamTexture;
-	friend Param;
-
-protected:
-	ShaderTexture();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ShaderTexture);
-	void set_locations() override;
-	static Self* instance_;
-
-public:
-	inline static std::unique_ptr<Param> generate_param()
-	{
-		if (!instance_)
-		{
-			instance_ = new Self();
-			ShaderProgram::register_instance(instance_);
-		}
-		return cgogn::make_unique<Param>(instance_);
-	}
-
-};
-
+DECLARE_SHADER_CLASS(Texture)
 
 class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamTexture : public ShaderParam
 {
@@ -87,8 +58,7 @@ public:
 	inline void set_vbos(VBO* vbo_pos, VBO* vbo_tc)
 	{
 		bind_vao();
-		vbo_pos->associate(ShaderProgram::ATTRIB_POS);
-		vbo_tc->associate(ShaderProgram::ATTRIB_TC);
+		associate_vbos(vbo_pos,vbo_tc);
 		release_vao();
 	}
 

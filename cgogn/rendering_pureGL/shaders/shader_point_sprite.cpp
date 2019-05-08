@@ -180,10 +180,6 @@ static const char* fragment_shader_source =
 "	fragColor = result.rgba;\n"
 "}\n";
 
-void ShaderPointSprite::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-}
 
 ShaderPointSprite::ShaderPointSprite()
 {
@@ -193,16 +189,10 @@ ShaderPointSprite::ShaderPointSprite()
 	std::string gs = bs + std::string(geometry_shader_source);
 	std::string fs = bs + std::string(fragment_shader_source);
 
-	load(vs,fs,gs);
+	load3_bind(vs,fs,gs,"vertex_pos");
 	add_uniforms("color","ambiant","lightPos","point_size","plane_clip","plane_clip2");
 }
 
-
-void ShaderPointSpriteColor::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
-}
 
 ShaderPointSpriteColor::ShaderPointSpriteColor()
 {
@@ -212,16 +202,11 @@ ShaderPointSpriteColor::ShaderPointSpriteColor()
 	std::string gs = bs + std::string(geometry_shader_source);
 	std::string fs = bs + std::string(fragment_shader_source);
 
-	load(vs,fs,gs);
+	load3_bind(vs,fs,gs,"vertex_pos", "vertex_col");
 	add_uniforms("ambiant","lightPos","point_size","plane_clip","plane_clip2");
 }
 
 
-void ShaderPointSpriteSize::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_SIZE, "vertex_size");
-}
 
 ShaderPointSpriteSize::ShaderPointSpriteSize()
 {
@@ -231,26 +216,20 @@ ShaderPointSpriteSize::ShaderPointSpriteSize()
 	std::string gs = bs + std::string(geometry_shader_source);
 	std::string fs = bs + std::string(fragment_shader_source);
 
-	load(vs,fs,gs);
+	load3_bind(vs,fs,gs,"vertex_pos", "vertex_size");
 	add_uniforms("color","ambiant","lightPos","plane_clip","plane_clip2");
 }
 
-void ShaderPointSpriteColorSize::set_locations()
-{
-	bind_attrib_location(ATTRIB_POS, "vertex_pos");
-	bind_attrib_location(ATTRIB_COLOR, "vertex_col");
-	bind_attrib_location(ATTRIB_SIZE, "vertex_size");
-}
 
 ShaderPointSpriteColorSize::ShaderPointSpriteColorSize()
 {
-	std::string bs("#version 150\n#define WITH_COLOR 1\n#define WITH_SIZE 0\n");
+	std::string bs("#version 150\n#define WITH_COLOR 1\n#define WITH_SIZE 1\n");
 
 	std::string vs = bs + std::string(vertex_shader_source);
 	std::string gs = bs + std::string(geometry_shader_source);
 	std::string fs = bs + std::string(fragment_shader_source);
 
-	load(vs,fs,gs);
+	load3_bind(vs,fs,gs,"vertex_pos", "vertex_col", "vertex_size");
 	add_uniforms("ambiant","lightPos","plane_clip","plane_clip2");
 }
 
