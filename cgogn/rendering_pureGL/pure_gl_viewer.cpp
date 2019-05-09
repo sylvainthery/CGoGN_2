@@ -79,7 +79,6 @@ void PureGLViewer::key_release_event(int32 key_code)
 
 void PureGLViewer::mouse_press_event(int32 button, float64 x, float64 y)
 {
-	std::cout <<" mouse_press_event: " << button <<" : "<< x <<" , "<< y << std::endl;
 	if (button == 0)
 	{
 		current_frame_->is_moving_ = false;
@@ -91,7 +90,6 @@ void PureGLViewer::mouse_press_event(int32 button, float64 x, float64 y)
 
 void PureGLViewer::mouse_release_event(int32 button, float64 x, float64 y)
 {
-	std::cout <<" mouse_release_event: " << button <<" : "<< x <<" , "<< y << std::endl;
 	if (button == 0)
 	{
 		current_frame_->is_moving_ = (spinning_speed_ > spin_sensitivity_);
@@ -186,15 +184,14 @@ void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 	{
 		if (obj_mode())
 		{
-			auto ntr = inv_cam_ * Eigen::Translation3d(Vec3d(0,0,0.0025*dy)) * cam_.frame_;
+			auto ntr = inv_cam_ * Eigen::Translation3d(Vec3d(0,0,-0.0025*dy)) * cam_.frame_;
 			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
 		{
 			float64 zcam = 1.0/std::tan(cam_.field_of_view()/2.0);
 			float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/zcam/cam_.scene_radius();
-			std::cout << a << std::endl;
-			cam_.frame_.translation().z() += wheel_sensitivity_*dy*std::max(0.1,a);
+			cam_.frame_.translation().z() -= wheel_sensitivity_*dy*std::max(0.1,a);
 		}
 	}
 }

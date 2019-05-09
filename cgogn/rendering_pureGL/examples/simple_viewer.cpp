@@ -181,7 +181,6 @@ void Viewer::key_press_event(int k)
 			break;
 		case int(' '):
 			show_imgui_ = !show_imgui_;
-			cam_.reset();
 			break;
 		default:
 			break;
@@ -192,7 +191,8 @@ void Viewer::interface()
 {
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
-	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);                          // Create a window called "Hello, world!" and append into it.
+	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);
+	ImGui::SetWindowSize({0,0});
 	ImGui::Checkbox("Phong/Flat", &phong_rendering_);
 	ImGui::Checkbox("Vertices", &vertices_rendering_);
 	ImGui::Checkbox("Normals", &normal_rendering_);
@@ -201,28 +201,34 @@ void Viewer::interface()
 
 	if (phong_rendering_)
 	{
+		ImGui::Separator();
 		ImGui::Text("Phong parameters");
-		ImGui::ColorEdit3("front color##phong",param_phong_->front_color_.data());
-		ImGui::ColorEdit3("back color##phong",param_phong_->back_color_.data());
+		ImGui::ColorEdit3("front color##phong",param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SameLine();
+		ImGui::ColorEdit3("back color##phong",param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SliderFloat("spec##phong", &(param_phong_->specular_coef_), 10.0f, 1000.0f);
 		ImGui::Checkbox("double side##phong", &(param_phong_->double_side_));
 	}
 	else
 	{
+		ImGui::Separator();
 		ImGui::Text("Flat parameters");
-		ImGui::ColorEdit3("front color##flat",param_flat_->front_color_.data());
-		ImGui::ColorEdit3("back color##flat",param_flat_->back_color_.data());
+		ImGui::ColorEdit3("front color##flat",param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SameLine();
+		ImGui::ColorEdit3("back color##flat",param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::Checkbox("single side##flat", &(param_flat_->bf_culling_));
 	}
 	if (normal_rendering_)
 	{
+		ImGui::Separator();
 		ImGui::Text("Normal parameters");
-		ImGui::ColorEdit3("color##norm",param_normal_->color_.data());
+		ImGui::ColorEdit3("color##norm",param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SliderFloat("length##norm", &(param_normal_->length_), 0.01f, 0.5f);
 	}
 
 	if (edge_rendering_)
 	{
+		ImGui::Separator();
 		ImGui::Text("Edge parameters");
 		ImGui::ColorEdit3("color##edge",param_edge_->color_.data());
 		ImGui::SliderFloat("Width##edge", &(param_edge_->width_), 1.0f, 10.0f);

@@ -109,6 +109,7 @@ bool ImGUIViewer::launch()
 	ImGui_ImplOpenGL3_Init(glsl_version);
 	glfwSetWindowUserPointer(window,this);
 
+	std::cout << glGetString(GL_VENDOR)<< std::endl;
 	std::cout << glGetString(GL_RENDERER)<< std::endl;
 	std::cout << glGetString(GL_VERSION)<< std::endl;
 
