@@ -366,7 +366,7 @@ void Viewer::draw()
 	cgogn::rendering_pgl::GLMat4 view = get_modelview_matrix();
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.0f, 2.0f);
+	glPolygonOffset(1.0f, 4.0f);
 
 	if (phong_rendering_)
 	{
@@ -393,7 +393,7 @@ void Viewer::draw()
 	if (edge_rendering_)
 	{
 		param_edge_->bind(proj,view);
-		glEnable(GL_BLEND);
+//		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		render_->draw(cgogn::rendering_pgl::LINES);
 		glDisable(GL_BLEND);

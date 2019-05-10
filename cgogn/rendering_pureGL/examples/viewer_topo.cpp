@@ -21,12 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QMatrix4x4>
-#include <QKeyEvent>
-
-#include <QOGLViewer/qoglviewer.h>
-
 #include <cgogn/core/cmap/cmap2.h>
 
 #include <cgogn/io/map_import.h>
@@ -34,12 +28,11 @@
 
 #include <cgogn/geometry/algos/bounding_box.h>
 
-#include <cgogn/rendering/drawer.h>
-#include <cgogn/rendering/map_render.h>
-#include <cgogn/rendering/topo_drawer.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/shaders/shader_flat.h>
-#include <cgogn/rendering/shaders/shader_simple_color.h>
+#include <cgogn/rendering_pureGL/drawer.h>
+#include <cgogn/rendering_pureGL/map_render.h>
+#include <cgogn/rendering_pureGL/topo_drawer.h>
+#include <cgogn/rendering_pureGL/shaders/shader_flat.h>
+#include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -52,12 +45,14 @@ using Vec3 = Eigen::Vector3d;
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
-class Viewer : public QOGLViewer
+namespace RGL = cgogn::rendering_pgl;
+
+class Viewer : public RGL::ImGuiViewer
 {
 public:
 
-	using MapRender = cgogn::rendering::MapRender;
-	using TopoDrawer = cgogn::rendering::TopoDrawer;
+	using MapRender = RGL::MapRender;
+	using TopoDrawer = RGL::TopoDrawer;
 
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
@@ -76,13 +71,9 @@ private:
 	VertexAttribute<Vec3> vertex_position_;
 
 	cgogn::geometry::AABB<Vec3> bb_;
-
 	std::unique_ptr<MapRender> render_;
-
-	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
-
-	std::unique_ptr<cgogn::rendering::ShaderFlat::Param> param_flat_;
-
+	std::unique_ptr<RGL::VBO> vbo_pos_;
+	std::unique_ptr<RGL::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<TopoDrawer> topo_drawer_;
 	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
 
@@ -114,7 +105,7 @@ void Viewer::import(const std::string& surface_mesh)
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 	Vec3 center = cgogn::geometry::center(bb_);
-	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
+	setSceneCenter(center);
 	showEntireScene();
 }
 
@@ -127,7 +118,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_pos_.reset();
 	topo_drawer_.reset();
 	topo_drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	RGL::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -159,24 +150,22 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 	}
 	// enable QGLViewer keys
-	QOGLViewer::keyPressEvent(ev);
+//	QOGLViewer::keyPressEvent(ev);
 	//update drawing
-	update();
+//	update();
 }
 
 void Viewer::draw()
 {
-	QMatrix4x4 proj;
-	QMatrix4x4 view;
-	camera()->getProjectionMatrix(proj);
-	camera()->getModelViewMatrix(view);
+	RGL::GLMat4 proj = get_projection_matrix();
+	RGL::GLMat4 view = get_modelview_matrix();
 
 	if (flat_rendering_)
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
 		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering::TRIANGLES);
+		render_->draw(RGL::TRIANGLES);
 		param_flat_->release();
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
@@ -191,19 +180,19 @@ void Viewer::init()
 {
 	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+	vbo_pos_ = cgogn::make_unique<RGL::VBO>(3);
+	RGL::update_vbo(vertex_position_, vbo_pos_.get());
 
-	render_ = cgogn::make_unique<cgogn::rendering::MapRender>();
-	render_->init_primitives(map_, cgogn::rendering::TRIANGLES);
+	render_ = cgogn::make_unique<RGL::MapRender>();
+	render_->init_primitives(map_, RGL::TRIANGLES);
 
-	param_flat_ = cgogn::rendering::ShaderFlat::generate_param();
+	param_flat_ = RGL::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
 	param_flat_->front_color_ = QColor(0,150,0);
 	param_flat_->back_color_ = QColor(0,0,150);
 	param_flat_->ambiant_color_ = QColor(5,5,5);
 
-	topo_drawer_ = cgogn::make_unique<cgogn::rendering::TopoDrawer>();
+	topo_drawer_ = cgogn::make_unique<RGL::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->update(map_,vertex_position_);
 }
@@ -220,14 +209,12 @@ int main(int argc, char** argv)
 	else
 		surface_mesh = std::string(argv[1]);
 
-	QApplication application(argc, argv);
-	qoglviewer::init_ogl_context();
-
 	// Instantiate the viewer.
-	Viewer viewer;
-	viewer.setWindowTitle("viewer_topo");
-	viewer.import(surface_mesh);
-	viewer.show();
+	Viewer view;
+	view.import(surface_mesh);
+	view.set_window_title("SimpleViewerIMGUI");
+	view.launch();
+	return 0;
 
 	// Run main loop.
 	return application.exec();
