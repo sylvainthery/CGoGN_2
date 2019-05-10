@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_DRAWER_H_
-#define CGOGN_RENDERING_DRAWER_H_
+#ifndef CGOGN_RENDERING_DRAWER_PGL_H_
+#define CGOGN_RENDERING_DRAWER_PGL_H_
 
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 

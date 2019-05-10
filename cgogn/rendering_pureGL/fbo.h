@@ -30,6 +30,8 @@
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/rendering_pureGL/texture.h>
+#include <cgogn/rendering_pureGL/shaders/shader_fullscreen_texture.h>
+
 
 namespace cgogn
 {
@@ -39,20 +41,28 @@ namespace rendering_pgl
 
 class CGOGN_RENDERING_PUREGL_EXPORT FBO
 {
+	GLint initial_viewport_[4];
 public:
-	FBO(std::vector<Texture2D*> textures, bool add_depth, FBO* from );
+	FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from );
 
 	inline void bind()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, id_);
+		glGetIntegerv(GL_VIEWPORT, initial_viewport_);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id_);
+		glViewport(0,0,tex_[0]->width(),tex_[0]->height());
 	}
 
-	inline static void release()
+	inline void release()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glViewport(initial_viewport_[0],initial_viewport_[1],initial_viewport_[2],initial_viewport_[3]);
 	}
 
 	void resize(int w, int h);
+
+	inline Texture2D* texture(std::size_t i) { return tex_[i]; }
+
+	inline std::size_t nb_textures() { return tex_.size(); }
 
 protected:
 	GLuint id_;

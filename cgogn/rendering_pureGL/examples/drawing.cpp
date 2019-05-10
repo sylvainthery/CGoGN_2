@@ -20,46 +20,48 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
+#include <imgui.h>
 
-#include <QApplication>
-#include <QMatrix4x4>
-#include <QKeyEvent>
 
-#include <QOGLViewer/qoglviewer.h>
-
-#include <cgogn/rendering/drawer.h>
-
-#include <cgogn/rendering/wall_paper.h>
+#include <cgogn/core/utils/definitions.h>
+#include <cgogn/rendering_pureGL/imgui_viewer.h>
+#include <cgogn/rendering_pureGL/drawer.h>
+#include <cgogn/rendering_pureGL/wall_paper.h>
+#include <cgogn/rendering_pureGL/types.h>
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
-//using Vec3 = Eigen::Vector3d;
-using Vec3 = cgogn::geometry::Vec_T<std::array<double,3>>;
+using Vec3 = Eigen::Vector3d;
+namespace RGL = cgogn::rendering_pgl;
 
-class Drawing : public QOGLViewer
+class Drawing : public RGL::ImGUIViewer
 {
 public:
 	Drawing();
-	Drawing(Drawing* ptr);
+//	Drawing(Drawing* ptr);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawing);
 
-	virtual void draw();
-	virtual void init();
-	virtual void closeEvent(QCloseEvent *e);
-	virtual ~Drawing();
+	void draw() override;
+	void init() override;
+	void interface() override;
+	void close_event() override;
+	void key_press_event(int k) override;
+	virtual ~Drawing() override;
 
-//private:
-	std::shared_ptr<cgogn::rendering::DisplayListDrawer> drawer_;
-	std::shared_ptr<cgogn::rendering::DisplayListDrawer> drawer2_;
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer_rend_;
-	std::unique_ptr<cgogn::rendering::DisplayListDrawer::Renderer> drawer2_rend_;
+////private:
+	std::shared_ptr<RGL::DisplayListDrawer> drawer_;
+	std::shared_ptr<RGL::DisplayListDrawer> drawer2_;
+	std::unique_ptr<RGL::DisplayListDrawer::Renderer> drawer_rend_;
+	std::unique_ptr<RGL::DisplayListDrawer::Renderer> drawer2_rend_;
 
-	std::shared_ptr<cgogn::rendering::WallPaper> wp_;
-	std::shared_ptr<cgogn::rendering::WallPaper> button_;
-	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> wp_rend_;
-	std::unique_ptr<cgogn::rendering::WallPaper::Renderer> button_rend_;
+	std::shared_ptr<RGL::WallPaper> wp_;
+	std::shared_ptr<RGL::WallPaper> button_;
+	std::unique_ptr<RGL::WallPaper::Renderer> wp_rend_;
+	std::unique_ptr<RGL::WallPaper::Renderer> button_rend_;
 
-	Drawing* m_first;
+//	Drawing* m_first;
+	float interface_scaling_;
+
 };
 
 
@@ -67,10 +69,8 @@ public:
 Drawing::~Drawing()
 {}
 
-void Drawing::closeEvent(QCloseEvent*)
+void Drawing::close_event()
 {
-	this->makeCurrent();
-
 	drawer_rend_.reset();
 	drawer2_rend_.reset();
 	wp_rend_.reset();
@@ -80,7 +80,7 @@ void Drawing::closeEvent(QCloseEvent*)
 	drawer2_.reset();
 	wp_.reset();
 	button_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	RGL::ShaderProgram::clean_all();
 }
 
 Drawing::Drawing() :
@@ -92,23 +92,44 @@ Drawing::Drawing() :
 	button_(nullptr),
 	wp_rend_(nullptr),
 	button_rend_(nullptr),
-	m_first(nullptr)
+	interface_scaling_(1.0)
 {
-	m_first = this;
 }
 
-Drawing::Drawing(Drawing* ptr) :
-	QOGLViewer(ptr),
-	drawer_(nullptr),
-	drawer2_(nullptr),
-	drawer_rend_(nullptr),
-	drawer2_rend_(nullptr),
-	wp_(nullptr),
-	button_(nullptr),
-	wp_rend_(nullptr),
-	button_rend_(nullptr),
-	m_first(ptr)
-{}
+
+
+//Drawing::Drawing(Drawing* ptr) :
+////	RGL::ImGUIViewer(ptr),
+//	drawer_(nullptr),
+//	drawer2_(nullptr),
+//	drawer_rend_(nullptr),
+//	drawer2_rend_(nullptr),
+//	wp_(nullptr),
+//	button_(nullptr),
+//	wp_rend_(nullptr),
+//	button_rend_(nullptr),
+//	m_first(ptr)
+//{}
+
+
+void Drawing::key_press_event(int k)
+{
+	std::cout << "key_press_event "<< k << std::endl;
+	switch(k)
+	{
+		case int('S'):
+			if (shift_pressed_)
+				interface_scaling_ += 0.1f;
+			else
+				interface_scaling_ -= 0.1f;
+			break;
+		case int(' '):
+			show_imgui_ = !show_imgui_;
+			break;
+		default:
+			break;
+	}
+}
 
 
 void Drawing::draw()
@@ -116,10 +137,8 @@ void Drawing::draw()
 	wp_rend_->draw();
 	button_rend_->draw();
 
-	QMatrix4x4 proj;
-	QMatrix4x4 view;
-	camera()->getProjectionMatrix(proj);
-	camera()->getModelViewMatrix(view);
+	cgogn::rendering_pgl::GLMat4 proj = get_projection_matrix();
+	cgogn::rendering_pgl::GLMat4 view = get_modelview_matrix();
 
 	drawer_rend_->draw(proj,view);
 	drawer2_rend_->draw(proj,view);
@@ -127,37 +146,18 @@ void Drawing::draw()
 
 void Drawing::init()
 {
-	setSceneRadius(5.0);
-	setSceneCenter(qoglviewer::Vec(0.0,0.0,0.0));
-	showEntireScene();
+	set_scene_radius(5.0);
+	set_scene_center(Eigen::Vector3d(0,0,0));
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	this->makeCurrent();
-
-	if (m_first!=this)
-	{
-		drawer_ = m_first->drawer_;
-		drawer2_ = m_first->drawer2_;
-		wp_ = m_first->wp_;
-		button_ = m_first->button_;
-		
-		drawer_rend_ = drawer_->generate_renderer();
-		drawer2_rend_ = drawer2_->generate_renderer();
-		wp_rend_ = wp_->generate_renderer();
-		button_rend_ = button_->generate_renderer();
-		return;
-	}
-
-	wp_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/cgogn2.png")));
-	button_ = std::make_shared<cgogn::rendering::WallPaper>(QImage(QString(DEFAULT_MESH_PATH) + QString("../images/igg.png")));
-//	button_->set_local_position(this->width(),this->height(),10,10,50,50);
+	wp_ = std::make_shared<RGL::WallPaper>(RGL::GLImage(std::string(DEFAULT_MESH_PATH) + std::string(("../images/cgogn2.png"))));
+	button_ = std::make_shared<RGL::WallPaper>(RGL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/igg.png")))));
 	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
-
 	wp_rend_ = wp_->generate_renderer();
 	button_rend_ = button_->generate_renderer();
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = std::make_shared<cgogn::rendering::DisplayListDrawer>();
+	drawer_ = std::make_shared<RGL::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
@@ -216,7 +216,7 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = std::make_shared<cgogn::rendering::DisplayListDrawer>();
+	drawer2_ = std::make_shared<RGL::DisplayListDrawer>();
 	drawer2_rend_ = drawer2_->generate_renderer();
 	drawer2_->new_list();
 	drawer2_->point_size_aa(5.0);
@@ -243,30 +243,26 @@ void Drawing::init()
 	drawer2_->end_list();
 }
 
+void Drawing::interface()
+{
+	ImGui::GetIO().FontGlobalScale = interface_scaling_;
+
+	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);
+	ImGui::SetWindowSize({0,0});
+
+	ImGui::Separator();
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
+}
+
+
 int main(int argc, char** argv)
 {
-	qoglviewer::init_ogl_context();
-	QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-
-	QApplication application(argc, argv);
-
-
 	// Instantiate the viewer.
 
 	std::unique_ptr<Drawing> viewer = cgogn::make_unique<Drawing>();
-	viewer->setWindowTitle("Drawing");
-	viewer->show();
+	viewer->set_window_title("Drawing");
+	viewer->launch();
 
-	std::unique_ptr<Drawing> viewer2 = cgogn::make_unique<Drawing>(viewer.get());
-	viewer2->setWindowTitle("Drawing2");
-	viewer2->show();
-
-//	cgogn_log_info("are context shared ?") << std::boolalpha <<	QOpenGLContext::areSharing(viewer2->context(),viewer->context());
-
-	// Run main loop.
-	const int ret = application.exec();
-
-	viewer.reset();
-	viewer2.reset();
-	return ret;
+	return 0;
 }

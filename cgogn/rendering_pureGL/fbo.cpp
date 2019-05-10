@@ -30,14 +30,17 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-FBO::FBO(std::vector<Texture2D*> textures, bool add_depth, FBO* from ):
-tex_(textures)
+FBO::FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from)
 {
 	glGenFramebuffers(1, &id_);
 	glBindFramebuffer(GL_FRAMEBUFFER, id_);
 	GLenum att = GL_COLOR_ATTACHMENT0;
-	for (auto* t: tex_)
+	for (auto* t: textures)
+	{
+		tex_.clear();
+		tex_.push_back(t);
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, att++, GL_TEXTURE_2D, t->id(), 0);
+	}
 
 	if (add_depth)
 	{

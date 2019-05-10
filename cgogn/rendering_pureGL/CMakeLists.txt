@@ -79,6 +79,8 @@ target_sources(${PROJECT_NAME}
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_texture.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_text.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_text.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/shaders/shader_fullscreen_texture.h"
+        "${CMAKE_CURRENT_LIST_DIR}/shaders/shader_fullscreen_texture.cpp"
 )
 
 #[[

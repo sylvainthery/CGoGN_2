@@ -21,8 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <imgui.h>
-
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <iostream>
 
@@ -41,7 +39,7 @@
 #include <cgogn/rendering_pureGL/drawer.h>
 #include <cgogn/rendering_pureGL/vbo_update.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
-
+#include <cgogn/rendering_pureGL/fbo.h>
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Map2 = cgogn::CMap2;
@@ -50,14 +48,9 @@ using Vec3 = Eigen::Vector3d;
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
+namespace GL = ::cgogn::rendering_pgl;
 
-
-static void glfw_error_callback(int error, const char* description)
-{
-	std::cerr << "Glfw Error "<< error <<" : "<< description << std::endl;
-}
-
-class Viewer : public cgogn::rendering_pgl::ImGUIViewer
+class Viewer : public GL::ImGUIViewer
 {
 public:
 	Viewer();
@@ -70,22 +63,24 @@ private:
 	VertexAttribute<Vec3> vertex_position_;
 	VertexAttribute<Vec3> vertex_normal_;
 	cgogn::geometry::AABB<Vec3> bb_;
-	std::unique_ptr<cgogn::rendering_pgl::MapRender> render_;
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_pos_;
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_norm_;
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_color_;
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_sphere_sz_;
+	std::unique_ptr<GL::MapRender> render_;
+	std::unique_ptr<GL::VBO> vbo_pos_;
+	std::unique_ptr<GL::VBO> vbo_norm_;
+	std::unique_ptr<GL::VBO> vbo_color_;
+	std::unique_ptr<GL::VBO> vbo_sphere_sz_;
 
-	std::unique_ptr<cgogn::rendering_pgl::ShaderBoldLine::Param> param_edge_;
-//	std::unique_ptr<cgogn::rendering_pgl::ShaderSimpleColor::Param> param_edge_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderFlat::Param> param_flat_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderVectorPerVertex::Param> param_normal_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderPhong::Param> param_phong_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderPointSpriteColorSize::Param> param_point_sprite_;
+	std::unique_ptr<GL::ShaderBoldLine::Param> param_edge_;
+	std::unique_ptr<GL::ShaderFlat::Param> param_flat_;
+	std::unique_ptr<GL::ShaderVectorPerVertex::Param> param_normal_;
+	std::unique_ptr<GL::ShaderPhong::Param> param_phong_;
+	std::unique_ptr<GL::ShaderPointSpriteColorSize::Param> param_point_sprite_;
 
+	std::unique_ptr<GL::DisplayListDrawer> drawer_;
+	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer_rend_;
 
-	std::unique_ptr<cgogn::rendering_pgl::DisplayListDrawer> drawer_;
-	std::unique_ptr<cgogn::rendering_pgl::DisplayListDrawer::Renderer> drawer_rend_;
+	std::unique_ptr<GL::ShaderFSTexture::Param> param_fst_;
+	std::unique_ptr<GL::FBO> fbo_;
+	std::unique_ptr<GL::Texture2D> tex_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -97,18 +92,19 @@ private:
 public:
 	float f;
 	int counter;
-	cgogn::rendering_pgl::GLColor clear_color;
+	GL::GLColor clear_color;
 
 	void interface() override;
 	void draw() override;
-	bool init() override;
+	void init() override;
 	void key_press_event(int k) override;
+	void resize_event(int w, int h) override;
 
-	void closeEvent();
+	void close_event() override;
 };
 
 Viewer::Viewer() :
-	cgogn::rendering_pgl::ImGUIViewer(1024,1024),
+	GL::ImGUIViewer(1024,1024),
 	map_(),
 	vertex_position_(),
 	vertex_normal_(),
@@ -120,6 +116,7 @@ Viewer::Viewer() :
 	vbo_sphere_sz_(nullptr),
 	drawer_(nullptr),
 	drawer_rend_(nullptr),
+	fbo_(nullptr),
 	phong_rendering_(true),
 	flat_rendering_(false),
 	vertices_rendering_(false),
@@ -130,7 +127,7 @@ Viewer::Viewer() :
 {}
 
 
-void Viewer::closeEvent()
+void Viewer::close_event()
 {
 	render_.reset();
 	vbo_pos_.reset();
@@ -139,12 +136,12 @@ void Viewer::closeEvent()
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering_pgl::ShaderProgram::clean_all();
+	fbo_.reset();
+	GL::ShaderProgram::clean_all();
 }
 
 void Viewer::key_press_event(int k)
 {
-	std::cout << "key_press_event "<< k << std::endl;
 	switch(k)
 	{
 		case int('P'):
@@ -166,11 +163,9 @@ void Viewer::key_press_event(int k)
 			bb_rendering_ = !bb_rendering_;
 			break;
 		case int('R'):
-			std::cout << "Reset"<< std::endl;
 			cam_.reset();
 			break;
 		case int('C'):
-			std::cout << "Center"<< std::endl;
 			cam_.center_scene();
 			break;
 		case int('S'):
@@ -185,6 +180,7 @@ void Viewer::key_press_event(int k)
 		default:
 			break;
 	}
+	ImGUIViewer::key_press_event(k);
 }
 
 void Viewer::interface()
@@ -265,64 +261,64 @@ void Viewer::import(const std::string& surface_mesh)
 }
 
 
-bool Viewer::init()
+void Viewer::init()
 {
 // create and fill VBO for positions
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_position_, vbo_pos_.get());
+	vbo_pos_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_position_, vbo_pos_.get());
 
 	// create and fill VBO for normals
-	vbo_norm_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_norm_.get());
+	vbo_norm_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_normal_, vbo_norm_.get());
 
 	// fill a color vbo with abs of normals
-	vbo_color_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+	vbo_color_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 	// fill a sphere size vbo
-	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(1);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
+	vbo_sphere_sz_ = cgogn::make_unique<GL::VBO>(1);
+	GL::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
 		return cgogn::geometry::diagonal(bb_).norm()/1000.0*(1.0 + 2.0*std::abs(n[2]));
 	});
 
 	// map rendering object (primitive creation & sending to GPU)
-	render_ = cgogn::make_unique<cgogn::rendering_pgl::MapRender>();
-	render_->init_primitives(map_, cgogn::rendering_pgl::POINTS);
-	render_->init_primitives(map_, cgogn::rendering_pgl::LINES);
-	render_->init_primitives(map_, cgogn::rendering_pgl::TRIANGLES, &vertex_position_);
+	render_ = cgogn::make_unique<GL::MapRender>();
+	render_->init_primitives(map_, GL::POINTS);
+	render_->init_primitives(map_, GL::LINES);
+	render_->init_primitives(map_, GL::TRIANGLES, &vertex_position_);
 
 	// generation of one parameter set (for this shader) : vbo + uniforms
-	param_point_sprite_ = cgogn::rendering_pgl::ShaderPointSpriteColorSize::generate_param();
+	param_point_sprite_ = GL::ShaderPointSpriteColorSize::generate_param();
 	param_point_sprite_->set_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
 //	param_point_sprite_->size_=0.01f;
 
-	param_edge_ = cgogn::rendering_pgl::ShaderBoldLine::generate_param();
+	param_edge_ = GL::ShaderBoldLine::generate_param();
 	param_edge_->set_vbos(vbo_pos_.get());
-	param_edge_->color_ =  cgogn::rendering_pgl::GLColor(1,1,1,1);
+	param_edge_->color_ =  GL::GLColor(1,1,1,1);
 	param_edge_->width_= 2.5f;
 
-	param_flat_ = cgogn::rendering_pgl::ShaderFlat::generate_param();
+	param_flat_ = GL::ShaderFlat::generate_param();
 	param_flat_->set_vbos(vbo_pos_.get());
-	param_flat_->front_color_ =  cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
-	param_flat_->back_color_ =  cgogn::rendering_pgl::GLColor(0,0,0.8f,1);
-	param_flat_->ambiant_color_ =  cgogn::rendering_pgl::GLColor(0.1f,0.1f,0.1f,1);
+	param_flat_->front_color_ =  GL::GLColor(0,0.8f,0,1);
+	param_flat_->back_color_ =  GL::GLColor(0,0,0.8f,1);
+	param_flat_->ambiant_color_ =  GL::GLColor(0.1f,0.1f,0.1f,1);
 
-	param_normal_ = cgogn::rendering_pgl::ShaderVectorPerVertex::generate_param();
+	param_normal_ = GL::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_vbos(vbo_pos_.get(), vbo_norm_.get());
-	param_normal_->color_ =  cgogn::rendering_pgl::GLColor(0.8f,0.8f,0.8f,1);
+	param_normal_->color_ =  GL::GLColor(0.8f,0.8f,0.8f,1);
 	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
-	param_phong_ = cgogn::rendering_pgl::ShaderPhong::generate_param();
-	param_phong_->front_color_ =  cgogn::rendering_pgl::GLColor(0,0.8f,0,1);
-	param_phong_->back_color_ =  cgogn::rendering_pgl::GLColor(0,0,0.8f,1);
-	param_phong_->ambiant_color_ =  cgogn::rendering_pgl::GLColor(0.1f,0.1f,0.1f,1);
+	param_phong_ = GL::ShaderPhong::generate_param();
+	param_phong_->front_color_ =  GL::GLColor(0,0.8f,0,1);
+	param_phong_->back_color_ =  GL::GLColor(0,0,0.8f,1);
+	param_phong_->ambiant_color_ =  GL::GLColor(0.1f,0.1f,0.1f,1);
 	param_phong_->set_vbos(vbo_pos_.get(), vbo_norm_.get());//, vbo_color_.get());
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = cgogn::make_unique<cgogn::rendering_pgl::DisplayListDrawer>();
+	drawer_ = cgogn::make_unique<GL::DisplayListDrawer>();
 	drawer_rend_= drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);
@@ -349,21 +345,37 @@ bool Viewer::init()
 		drawer_->vertex3f(bb_.max()[0],bb_.max()[1],bb_.max()[2]);
 	drawer_->end();
 	drawer_->end_list();
-	return true;
+
+	tex_ = cgogn::make_unique<GL::Texture2D>();
+	tex_->alloc(1,1,GL_RGBA8,GL_RGBA);
+	std::vector<GL::Texture2D*> vt{tex_.get()};
+	fbo_ = cgogn::make_unique<GL::FBO>(vt,true,nullptr);
+	fbo_->resize(width()*2,height()*2);
+
+	param_fst_ = GL::ShaderFSTexture::generate_param();
+	param_fst_->texture_ = fbo_->texture(0);
 }
 
-
+void Viewer::resize_event(int w, int h)
+{
+	fbo_->resize(w*2,h*2);
+}
 
 void Viewer::draw()
 {
-//	glfwMakeContextCurrent(window);
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.5f,0.5f,0.9f,0);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
 
-	cgogn::rendering_pgl::GLMat4 proj = get_projection_matrix();
-	cgogn::rendering_pgl::GLMat4 view = get_modelview_matrix();
+	fbo_->bind();
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.25f,0.25f,0.29f,1);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	GLenum idbuf = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1,&idbuf);
+
+
+	GL::GLMat4 proj = get_projection_matrix();
+	GL::GLMat4 view = get_modelview_matrix();
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1.0f, 4.0f);
@@ -371,13 +383,13 @@ void Viewer::draw()
 	if (phong_rendering_)
 	{
 		param_phong_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::TRIANGLES);
+		render_->draw(GL::TRIANGLES);
 		param_phong_->release();
 	}
 	else
 	{
 		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::TRIANGLES);
+		render_->draw(GL::TRIANGLES);
 		param_flat_->release();
 	}
 
@@ -386,7 +398,7 @@ void Viewer::draw()
 	if (vertices_rendering_)
 	{
 		param_point_sprite_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::POINTS);
+		render_->draw(GL::POINTS);
 		param_point_sprite_->release();
 	}
 
@@ -395,7 +407,7 @@ void Viewer::draw()
 		param_edge_->bind(proj,view);
 //		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		render_->draw(cgogn::rendering_pgl::LINES);
+		render_->draw(GL::LINES);
 		glDisable(GL_BLEND);
 		param_edge_->release();
 	}
@@ -403,7 +415,7 @@ void Viewer::draw()
 	if (normal_rendering_)
 	{
 		param_normal_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::POINTS);
+		render_->draw(GL::POINTS);
 		param_normal_->release();
 	}
 
@@ -411,6 +423,10 @@ void Viewer::draw()
 	{
 		drawer_rend_->draw(proj,view);
 	}
+
+	fbo_->release();
+	glDisable(GL_DEPTH_TEST);
+	param_fst_->draw();
 
 }
 
@@ -444,18 +460,18 @@ int main(int argc, char** argv)
 #include <QOGLViewer/qoglviewer.h>
 
 
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_color_;
-	std::unique_ptr<cgogn::rendering_pgl::VBO> vbo_sphere_sz_;
+	std::unique_ptr<GL::VBO> vbo_color_;
+	std::unique_ptr<GL::VBO> vbo_sphere_sz_;
 
-	std::unique_ptr<cgogn::rendering_pgl::ShaderBoldLine::Param> param_edge_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderFlat::Param> param_flat_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderVectorPerVertex::Param> param_normal_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderPhongColor::Param> param_phong_;
-	std::unique_ptr<cgogn::rendering_pgl::ShaderPointSpriteColorSize::Param> param_point_sprite_;
+	std::unique_ptr<GL::ShaderBoldLine::Param> param_edge_;
+	std::unique_ptr<GL::ShaderFlat::Param> param_flat_;
+	std::unique_ptr<GL::ShaderVectorPerVertex::Param> param_normal_;
+	std::unique_ptr<GL::ShaderPhongColor::Param> param_phong_;
+	std::unique_ptr<GL::ShaderPointSpriteColorSize::Param> param_point_sprite_;
 
 
-	std::unique_ptr<cgogn::rendering_pgl::DisplayListDrawer> drawer_;
-	std::unique_ptr<cgogn::rendering_pgl::DisplayListDrawer::Renderer> drawer_rend_;
+	std::unique_ptr<GL::DisplayListDrawer> drawer_;
+	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer_rend_;
 
 	bool phong_rendering_;
 	bool flat_rendering_;
@@ -485,7 +501,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	vbo_sphere_sz_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering_pgl::ShaderProgram::clean_all();
+	GL::ShaderProgram::clean_all();
 
 }
 
@@ -548,14 +564,14 @@ void Viewer::draw()
 	if (flat_rendering_)
 	{
 		param_flat_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::TRIANGLES);
+		render_->draw(GL::TRIANGLES);
 		param_flat_->release();
 	}
 
 	if (phong_rendering_)
 	{
 		param_phong_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::TRIANGLES);
+		render_->draw(GL::TRIANGLES);
 		param_phong_->release();
 	}
 	glDisable(GL_POLYGON_OFFSET_FILL);
@@ -563,7 +579,7 @@ void Viewer::draw()
 	if (vertices_rendering_)
 	{
 		param_point_sprite_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::POINTS);
+		render_->draw(GL::POINTS);
 		param_point_sprite_->release();
 	}
 
@@ -572,7 +588,7 @@ void Viewer::draw()
 		param_edge_->bind(proj,view);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		render_->draw(cgogn::rendering_pgl::LINES);
+		render_->draw(GL::LINES);
 		glDisable(GL_BLEND);
 		param_edge_->release();
 	}
@@ -580,7 +596,7 @@ void Viewer::draw()
 	if (normal_rendering_)
 	{
 		param_normal_->bind(proj,view);
-		render_->draw(cgogn::rendering_pgl::POINTS);
+		render_->draw(GL::POINTS);
 		param_normal_->release();
 	}
 
@@ -593,60 +609,60 @@ void Viewer::init()
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
 	// create and fill VBO for positions
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_position_, vbo_pos_.get());
+	vbo_pos_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_position_, vbo_pos_.get());
 
 	// create and fill VBO for normals
-	vbo_norm_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_norm_.get());
+	vbo_norm_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_normal_, vbo_norm_.get());
 
 	// fill a color vbo with abs of normals
-	vbo_color_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(3);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
+	vbo_color_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_normal_, vbo_color_.get(), [] (const Vec3& n) -> std::array<float,3>
 	{
 		return {float(std::abs(n[0])), float(std::abs(n[1])), float(std::abs(n[2]))};
 	});
 
 	// fill a sphere size vbo
-	vbo_sphere_sz_ = cgogn::make_unique<cgogn::rendering_pgl::VBO>(1);
-	cgogn::rendering_pgl::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
+	vbo_sphere_sz_ = cgogn::make_unique<GL::VBO>(1);
+	GL::update_vbo(vertex_normal_, vbo_sphere_sz_.get(), [&] (const Vec3& n) -> float
 	{
 		return cgogn::geometry::diagonal(bb_).norm()/1000.0 * (1.0 + 2.0*std::abs(n[2]));
 	});
 
 	// map rendering object (primitive creation & sending to GPU)
-	render_ = cgogn::make_unique<cgogn::rendering_pgl::MapRender>();
-	render_->init_primitives(map_, cgogn::rendering_pgl::POINTS);
-	render_->init_primitives(map_, cgogn::rendering_pgl::LINES);
-	render_->init_primitives(map_, cgogn::rendering_pgl::TRIANGLES, &vertex_position_);
+	render_ = cgogn::make_unique<GL::MapRender>();
+	render_->init_primitives(map_, GL::POINTS);
+	render_->init_primitives(map_, GL::LINES);
+	render_->init_primitives(map_, GL::TRIANGLES, &vertex_position_);
 
 	// generation of one parameter set (for this shader) : vbo + uniforms
-	param_point_sprite_ = cgogn::rendering_pgl::ShaderPointSpriteColorSize::generate_param();
+	param_point_sprite_ = GL::ShaderPointSpriteColorSize::generate_param();
 	// set vbo param (see param::set_vbo signature)
 	param_point_sprite_->set_vbos(vbo_pos_.get(), vbo_color_.get(), vbo_sphere_sz_.get());
 	// set uniforms data
 
-	param_edge_ = cgogn::rendering_pgl::ShaderBoldLine::generate_param();
+	param_edge_ = GL::ShaderBoldLine::generate_param();
 	param_edge_->set_position_vbo(vbo_pos_.get());
 	param_edge_->color_ = GLColor(255,255,0);
 	param_edge_->width_= 2.5f;
 
-	param_flat_ = cgogn::rendering_pgl::ShaderFlat::generate_param();
+	param_flat_ = GL::ShaderFlat::generate_param();
 	param_flat_->set_position_vbo(vbo_pos_.get());
 	param_flat_->front_color_ = GLColor(0,200,0);
 	param_flat_->back_color_ = GLColor(0,0,200);
 	param_flat_->ambiant_color_ = GLColor(5,5,5);
 
-	param_normal_ = cgogn::rendering_pgl::ShaderVectorPerVertex::generate_param();
+	param_normal_ = GL::ShaderVectorPerVertex::generate_param();
 	param_normal_->set_vbos(vbo_pos_.get(), vbo_norm_.get());
 	param_normal_->color_ = GLColor(200,0,200);
 	param_normal_->length_ = cgogn::geometry::diagonal(bb_).norm()/50;
 
-	param_phong_ = cgogn::rendering_pgl::ShaderPhongColor::generate_param();
+	param_phong_ = GL::ShaderPhongColor::generate_param();
 	param_phong_->set_vbos(vbo_pos_.get(), vbo_norm_.get(), vbo_color_.get());
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = cgogn::make_unique<cgogn::rendering_pgl::DisplayListDrawer>();
+	drawer_ = cgogn::make_unique<GL::DisplayListDrawer>();
 	drawer_rend_= drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width_aa(2.0);

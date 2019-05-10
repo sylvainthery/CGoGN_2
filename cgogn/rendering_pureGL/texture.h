@@ -71,15 +71,18 @@ public:
 
 	inline void alloc(GLsizei w, GLsizei h, GLint internal, GLenum external, const uint8* ptr=nullptr, GLenum data_type = GL_UNSIGNED_BYTE)
 	{
-		bind();
-		glTexImage2D(GL_TEXTURE_2D, 0, internal, w, h, 0, external, data_type, ptr);
 		internal_ = internal;
 		external_ = external;
 		width_ = w;
 		height_ = h;
 		data_type_ = data_type;
 		depth_ = ((internal == GL_DEPTH_COMPONENT32F) || (internal == GL_DEPTH_COMPONENT24));
-		release();
+		if (w*h > 0)
+		{
+			bind();
+			glTexImage2D(GL_TEXTURE_2D, 0, internal, w, h, 0, external, data_type, ptr);
+			release();
+		}
 	}
 
 

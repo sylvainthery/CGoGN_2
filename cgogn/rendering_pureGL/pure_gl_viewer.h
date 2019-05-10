@@ -112,10 +112,17 @@ public:
 	}
 
 	inline void set_scene_radius(float64 radius) { cam_.set_scene_radius(radius); }
-	inline void set_scene_center(const Vec3d& center) {cam_.set_scene_center(center); }
+	void set_scene_center(const GLVec3& center) {cam_.set_scene_center(center.cast<float64>()); }
+	void set_scene_center(const Vec3d& center) {cam_.set_scene_center(center); }
+
+
 
 	inline void center_scene() { cam_.center_scene(); }
 	inline void show_entire_scene() { cam_.show_entire_scene(); }
+
+	inline int32 width() const { return vp_w_; }
+	inline int32 height() const { return vp_h_; }
+
 
 	void manip(MovingFrame* fr);
 
@@ -132,7 +139,7 @@ public:
 	inline void set_mouse_sensitivity(float64 s) { mouse_sensitivity_ = s*0.005; }
 	inline void set_spin_sensitivity(float64 s) { spin_sensitivity_ = s*0.025; }
 
-	virtual bool init() = 0;
+	virtual void init() = 0;
 	virtual void draw() = 0;
 };	
 

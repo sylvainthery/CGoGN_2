@@ -27,12 +27,14 @@
 #include <cgogn/io/map_export.h>
 
 #include <cgogn/geometry/algos/bounding_box.h>
-
+#include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <cgogn/rendering_pureGL/drawer.h>
 #include <cgogn/rendering_pureGL/map_render.h>
 #include <cgogn/rendering_pureGL/topo_drawer.h>
 #include <cgogn/rendering_pureGL/shaders/shader_flat.h>
 #include <cgogn/rendering_pureGL/shaders/shader_simple_color.h>
+#include <cgogn/rendering_pureGL/vbo_update.h>
+
 
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
@@ -45,35 +47,34 @@ using Vec3 = Eigen::Vector3d;
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
-namespace RGL = cgogn::rendering_pgl;
+namespace GL= cgogn::rendering_pgl;
 
-class Viewer : public RGL::ImGuiViewer
+class Viewer : public GL::ImGUIViewer
 {
 public:
 
-	using MapRender = RGL::MapRender;
-	using TopoDrawer = RGL::TopoDrawer;
+	using MapRender = GL::MapRender;
+	using TopoDrawer = GL::TopoDrawer;
 
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
-	virtual void draw();
-	virtual void init();
-
-	virtual void keyPressEvent(QKeyEvent *);
+	void draw() override;
+	 void init() override;
+	void key_press_event(int k) override;
+	void close_event() override;
+	void interface() override {}
 	void import(const std::string& surface_mesh);
 	virtual ~Viewer();
-	virtual void closeEvent(QCloseEvent *e);
 
 private:
 
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
-
 	cgogn::geometry::AABB<Vec3> bb_;
 	std::unique_ptr<MapRender> render_;
-	std::unique_ptr<RGL::VBO> vbo_pos_;
-	std::unique_ptr<RGL::ShaderFlat::Param> param_flat_;
+	std::unique_ptr<GL::VBO> vbo_pos_;
+	std::unique_ptr<GL::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<TopoDrawer> topo_drawer_;
 	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
 
@@ -103,22 +104,21 @@ void Viewer::import(const std::string& surface_mesh)
 	}
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
-	Vec3 center = cgogn::geometry::center(bb_);
-	setSceneCenter(center);
-	showEntireScene();
+//	Vec3 center = cgogn::geometry::center(bb_);
+	set_scene_center(cgogn::geometry::center(bb_));
+	set_scene_radius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 }
 
 Viewer::~Viewer()
 {}
 
-void Viewer::closeEvent(QCloseEvent*)
+void Viewer::close_event()
 {
 	render_.reset();
 	vbo_pos_.reset();
 	topo_drawer_.reset();
 	topo_drawer_rend_.reset();
-	RGL::ShaderProgram::clean_all();
+	GL::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -133,39 +133,40 @@ Viewer::Viewer() :
 	topo_drawing_(true)
 {}
 
-void Viewer::keyPressEvent(QKeyEvent *ev)
+void Viewer::key_press_event(int k)
 {
-	switch (ev->key())
+	switch (k)
 	{
-		case Qt::Key_F:
+		case int('F'):
 			flat_rendering_ = !flat_rendering_;
 			break;
-		case Qt::Key_T:
+		case int('T'):
 			topo_drawing_ = !topo_drawing_;
 			break;
-		case Qt::Key_E:
+		case int('E'):
 			cgogn::io::export_surface(map_, cgogn::io::ExportOptions::create().filename("/tmp/pipo.vtp").position_attribute(Map2::Vertex::ORBIT, "position"));
 			break;
 		default:
 			break;
 	}
-	// enable QGLViewer keys
-//	QOGLViewer::keyPressEvent(ev);
-	//update drawing
-//	update();
 }
 
 void Viewer::draw()
 {
-	RGL::GLMat4 proj = get_projection_matrix();
-	RGL::GLMat4 view = get_modelview_matrix();
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.5f,0.5f,0.9f,0);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
+
+	GL::GLMat4 proj = get_projection_matrix();
+	GL::GLMat4 view = get_modelview_matrix();
 
 	if (flat_rendering_)
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
 		param_flat_->bind(proj,view);
-		render_->draw(RGL::TRIANGLES);
+		render_->draw(GL::TRIANGLES);
 		param_flat_->release();
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
@@ -180,19 +181,19 @@ void Viewer::init()
 {
 	glClearColor(0.1f, 0.1f, 0.3f, 0.0f);
 
-	vbo_pos_ = cgogn::make_unique<RGL::VBO>(3);
-	RGL::update_vbo(vertex_position_, vbo_pos_.get());
+	vbo_pos_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_position_, vbo_pos_.get());
 
-	render_ = cgogn::make_unique<RGL::MapRender>();
-	render_->init_primitives(map_, RGL::TRIANGLES);
+	render_ = cgogn::make_unique<GL::MapRender>();
+	render_->init_primitives(map_, GL::TRIANGLES);
 
-	param_flat_ = RGL::ShaderFlat::generate_param();
-	param_flat_->set_position_vbo(vbo_pos_.get());
-	param_flat_->front_color_ = QColor(0,150,0);
-	param_flat_->back_color_ = QColor(0,0,150);
-	param_flat_->ambiant_color_ = QColor(5,5,5);
+	param_flat_ = GL::ShaderFlat::generate_param();
+	param_flat_->set_vbos(vbo_pos_.get());
+	param_flat_->front_color_ = GL::GLColor(0,0.7f,0,1);
+	param_flat_->back_color_ = GL::GLColor(0,0,0.7f,1);
+	param_flat_->ambiant_color_ = GL::GLColor(0.1f,0.1f,0.1f,1);
 
-	topo_drawer_ = cgogn::make_unique<RGL::TopoDrawer>();
+	topo_drawer_ = cgogn::make_unique<GL::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->update(map_,vertex_position_);
 }
@@ -217,5 +218,5 @@ int main(int argc, char** argv)
 	return 0;
 
 	// Run main loop.
-	return application.exec();
+	return 0;
 }
