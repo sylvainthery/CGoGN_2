@@ -19,14 +19,18 @@ add_definitions("-DCGOGN_TEST_MESHES_PATH=${CGOGN_TEST_MESHES_PATH}")
 add_executable(simple_viewerPGL simple_viewer.cpp)
 target_link_libraries(simple_viewerPGL cgogn::core cgogn::io cgogn::renderingPGL)
 
+add_executable(drawingPGL drawing.cpp)
+target_link_libraries(drawingPGL cgogn::renderingPGL)
+
+add_executable(text_drawingPGL text_drawing.cpp)
+target_link_libraries(text_drawingPGL cgogn::renderingPGL)
+
 #[[add_executable(viewer_per_face viewer_per_face.cpp)
 target_link_libraries(viewer_per_face cgogn::core cgogn::io cgogn::rendering)
 
 add_executable(viewer_topo viewer_topo.cpp)
 target_link_libraries(viewer_topo cgogn::core cgogn::io cgogn::rendering cgogn::modeling)
 
-add_executable(drawing drawing.cpp)
-target_link_libraries(drawing cgogn::rendering)
 
 add_executable(picking_viewer picking_viewer.cpp)
 target_link_libraries(picking_viewer cgogn::core cgogn::io cgogn::rendering)
@@ -37,8 +41,6 @@ target_link_libraries(viewer_topo3 cgogn::core cgogn::io cgogn::rendering)
 add_executable(mt_viewer mt_viewer.cpp)
 target_link_libraries(mt_viewer cgogn::core cgogn::io cgogn::rendering)
 
-add_executable(text_drawing text_drawing.cpp)
-target_link_libraries(text_drawing cgogn::rendering)
 
 add_executable(point_set_drawing point_set_drawing.cpp)
 target_link_libraries(point_set_drawing cgogn::rendering cgogn::io QOGLViewer)

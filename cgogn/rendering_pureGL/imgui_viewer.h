@@ -56,6 +56,7 @@ public:
 	virtual void interface();
 
 	void set_window_title(const std::string&  name);
+	float32 device_pixel_ratio() const { return 1.0f;}
 
 	bool launch();
 };

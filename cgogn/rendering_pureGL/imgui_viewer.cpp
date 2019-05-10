@@ -63,7 +63,7 @@ void ImGUIViewer::close_event()
 void ImGUIViewer::interface()
 {}
 
-void ImGUIViewer::resize_event(int32 w, int32 h)
+void ImGUIViewer::resize_event(int32 /*w*/, int32 /*h*/)
 {}
 
 
@@ -114,6 +114,7 @@ bool ImGUIViewer::launch()
 	std::cout << glGetString(GL_VERSION)<< std::endl;
 
 	init();
+	mouse_buttons_ = 0;
 
 	glfwSetMouseButtonCallback(window, [](GLFWwindow* w, int b, int a, int m)
 	{

@@ -21,8 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <imgui.h>
-
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <iostream>
 
@@ -104,7 +102,7 @@ public:
 	bool init() override;
 	void key_press_event(int k) override;
 
-	void closeEvent();
+	void close_event() override;
 };
 
 Viewer::Viewer() :
@@ -130,7 +128,7 @@ Viewer::Viewer() :
 {}
 
 
-void Viewer::closeEvent()
+void Viewer::close_event()
 {
 	render_.reset();
 	vbo_pos_.reset();

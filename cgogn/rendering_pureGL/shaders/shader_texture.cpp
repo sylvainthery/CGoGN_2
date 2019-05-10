@@ -58,7 +58,7 @@ ShaderTexture::ShaderTexture()
 			"}\n";
 
 	load2_bind(vertex_shader_source,fragment_shader_source,
-			  "vertex_pos");
+			  "vertex_pos","vertex_tc");
 	add_uniforms("texture_unit");
 }
 

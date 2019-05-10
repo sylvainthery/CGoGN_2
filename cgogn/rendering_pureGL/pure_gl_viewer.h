@@ -117,6 +117,10 @@ public:
 	inline void center_scene() { cam_.center_scene(); }
 	inline void show_entire_scene() { cam_.show_entire_scene(); }
 
+	inline int32 width() const { return vp_w_; }
+	inline int32 height() const { return vp_h_; }
+
+
 	void manip(MovingFrame* fr);
 
 	virtual void mouse_press_event(int32 button, float64 x, float64 y);
