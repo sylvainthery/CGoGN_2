@@ -45,7 +45,7 @@ ImGUIViewer::ImGUIViewer(ImGUIViewer* share):
 	vp_percent_y_(0),
 	vp_percent_width_(1),
 	vp_percent_height_(1),
-	double_click_timeout_(0.2),
+	double_click_timeout_(0.4),
 	last_click_time_(0),
 	global_fbo_(nullptr)
 {
@@ -147,11 +147,12 @@ bool ImGUIViewer::get_pixel_scene_position(int32 x, int32 y, GLVec3d& P)
 
 }
 
-ImGUIApps::ImGUIApps():
+ImGUIApp::ImGUIApp():
 	window_(nullptr),
 	win_name_("CGoGN"),
 	win_frame_width_(512),
 	win_frame_height_(512),
+	interface_scaling_(1.0f),
 	show_imgui_(true)
 {
 	glfwSetErrorCallback(glfw_error_callback);
@@ -196,7 +197,7 @@ ImGUIApps::ImGUIApps():
 
 	glfwSetWindowSizeCallback(window_, [](GLFWwindow* wi, int , int)
 	{
-		ImGUIApps* that = static_cast<ImGUIApps*>(glfwGetWindowUserPointer(wi));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		glfwGetFramebufferSize(wi, &(that->win_frame_width_), &(that->win_frame_height_));
 
 		for (ImGUIViewer* v: that->viewers_)
@@ -211,13 +212,18 @@ ImGUIApps::ImGUIApps():
 	glfwSetMouseButtonCallback(window_, [](GLFWwindow* wi, int b, int a, int m)
 	{
 		if (ImGui::GetIO().WantCaptureMouse) return;
-		ImGUIApps* that = static_cast<ImGUIApps*>(glfwGetWindowUserPointer(wi));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if (v->over_viewport(cx,cy))
 			{
+				that->focused_ = v;
+				v->shift_pressed_   = (m & GLFW_MOD_SHIFT);
+				v->control_pressed_ = (m & GLFW_MOD_CONTROL);
+				v->alt_pressed_     = (m & GLFW_MOD_ALT);
+				v->meta_pressed_    = (m & GLFW_MOD_SUPER);;
 				v->last_mouse_x_ = cx;
 				v->last_mouse_y_ = cy;
 				double now = glfwGetTime();
@@ -244,11 +250,14 @@ ImGUIApps::ImGUIApps():
 		if (ImGui::GetIO().WantCaptureMouse) return;
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
-		ImGUIApps* that = static_cast<ImGUIApps*>(glfwGetWindowUserPointer(wi));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if (v->over_viewport(cx,cy))
+			{
+				that->focused_ = v;
 				v->mouse_wheel_event(dx,100*dy);
+			}
 		}
 	});
 
@@ -258,11 +267,14 @@ ImGUIApps::ImGUIApps():
 		if (ImGui::GetIO().WantCaptureMouse) return;
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
-		ImGUIApps* that = static_cast<ImGUIApps*>(glfwGetWindowUserPointer(wi));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if (v->mouse_buttons_ && v->over_viewport(cx,cy))
+			{
+				that->focused_ = v;
 				v->mouse_move_event(x,y);
+			}
 		}
 	});
 
@@ -270,11 +282,16 @@ ImGUIApps::ImGUIApps():
 	{
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
-		ImGUIApps* that = static_cast<ImGUIApps*>(glfwGetWindowUserPointer(wi));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
+
+		if (k==GLFW_KEY_ESCAPE)
+			glfwTerminate();
+
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if ( v->over_viewport(cx,cy))
 			{
+				that->focused_ = v;
 				v->shift_pressed_   = (m & GLFW_MOD_SHIFT);
 				v->control_pressed_ = (m & GLFW_MOD_CONTROL);
 				v->alt_pressed_     = (m & GLFW_MOD_ALT);
@@ -282,8 +299,6 @@ ImGUIApps::ImGUIApps():
 				switch(a)
 				{
 					case GLFW_PRESS:
-					if (k==GLFW_KEY_ESCAPE)
-						exit(0);
 					if ((k==GLFW_KEY_F) && v->control_pressed_  && !v->shift_pressed_)
 					{
 						GLFWmonitor* monitor = glfwGetPrimaryMonitor();
@@ -320,17 +335,27 @@ ImGUIApps::ImGUIApps():
 				}
 			}
 		}
+		switch(a)
+		{
+			case GLFW_PRESS:
+				that->key_press_event(k);
+			break;
+			case GLFW_RELEASE:
+				that->key_release_event(k);
+			break;
+		}
+
 	});
 
 }
 
-ImGUIApps::~ImGUIApps()
+ImGUIApp::~ImGUIApp()
 {
 
 }
 
 
-void ImGUIApps::close_event()
+void ImGUIApp::close_event()
 {
 	for (ImGUIViewer* v: viewers_)
 	{
@@ -339,16 +364,21 @@ void ImGUIApps::close_event()
 }
 
 
-void ImGUIApps::interface()
+void ImGUIApp::interface()
 {}
 
+void ImGUIApp::key_press_event(int32 /*key_code*/)
+{}
 
-void ImGUIApps::set_window_size(int32 w, int32 h)
+void ImGUIApp::key_release_event(int32 /*key_code*/)
+{}
+
+void ImGUIApp::set_window_size(int32 w, int32 h)
 {
 	glfwSetWindowSize(window_,w,h);
 }
 
-void ImGUIApps::set_window_title(const std::string&  name)
+void ImGUIApp::set_window_title(const std::string&  name)
 {
 	win_name_ = name;
 	if (window_)
@@ -356,7 +386,7 @@ void ImGUIApps::set_window_title(const std::string&  name)
 }
 
 
-void ImGUIApps::add_view(ImGUIViewer* view)
+void ImGUIApp::add_view(ImGUIViewer* view)
 {
 	glfwMakeContextCurrent(window_);
 	view->init();
@@ -364,7 +394,7 @@ void ImGUIApps::add_view(ImGUIViewer* view)
 	viewers_.push_back(view);
 }
 
-void ImGUIApps::adapt_viewers_geometry()
+void ImGUIApp::adapt_viewers_geometry()
 {
 	switch(viewers_.size())
 	{
@@ -389,7 +419,7 @@ void ImGUIApps::adapt_viewers_geometry()
 	}
 }
 
-void ImGUIApps::launch()
+void ImGUIApp::launch()
 {
 	adapt_viewers_geometry();
 

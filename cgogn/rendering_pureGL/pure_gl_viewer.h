@@ -121,6 +121,13 @@ public:
 	inline int32 height() const { return vp_h_; }
 	inline void set_vp() {glViewport(vp_x_,vp_y_, vp_w_, vp_h_);}
 
+
+	inline bool shift_pressed() const { return shift_pressed_; }
+	inline bool control_pressed() const { return control_pressed_; }
+	inline bool alt_pressed() const { return alt_pressed_; }
+	inline bool meta_pressed() const { return meta_pressed_; }
+
+
 	void manip(MovingFrame* fr);
 
 	virtual void mouse_press_event(int32 button, float64 x, float64 y);

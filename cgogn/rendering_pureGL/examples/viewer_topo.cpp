@@ -85,35 +85,58 @@ private:
 	bool topo_drawing_;
 };
 
-class App: public GL::ImGUIApps
+class App: public GL::ImGUIApp
 {
+	int current_view_;
 public:
-	App() {}
-	float f;
-	int counter;
+	App():	current_view_(0) {}
 	GL::GLColor clear_color;
-	Viewer* view;
+	Viewer* view(int i) { return static_cast<Viewer*>(viewers_[i]); }
 	void interface() override;
+	void key_press_event(int k) override;
+
 };
 
 
 
 void App::interface()
 {
-	ImGui::SetCurrentContext(context_);
+//	ImGui::SetCurrentContext(context_);
+	imgui_make_context_current();
+	ImGui::GetIO().FontGlobalScale = interface_scaling_;
+
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
 	ImGui::SetWindowSize({0,0});
-	ImGui::Checkbox("Flat", &view->flat_rendering_);
-	ImGui::Checkbox("Topo", &view->topo_drawing_);
+	ImGui::SliderInt("View", &current_view_,0,viewers_.size()-1);
+	ImGui::Checkbox("Flat", &view(current_view_)->flat_rendering_);
+	ImGui::Checkbox("Topo", &view(current_view_)->topo_drawing_);
 	ImGui::Text("Flat parameters");
-	ImGui::ColorEdit3("front color##flat",view->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+	ImGui::ColorEdit3("front color##flat",view(current_view_)->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
 	ImGui::SameLine();
-	ImGui::ColorEdit3("back color##flat",view->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-	ImGui::Checkbox("single side##flat", &(view->param_flat_->bf_culling_));
+	ImGui::ColorEdit3("back color##flat",view(current_view_)->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+	ImGui::Checkbox("single side##flat", &(view(current_view_)->param_flat_->bf_culling_));
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
 }
 
+void App::key_press_event(int32 k)
+{
+	switch(k)
+	{
+		case int('S'):
+			if (focused_->shift_pressed())
+				interface_scaling_ += 0.1f;
+			else
+				interface_scaling_ -= 0.1f;
+			break;
+		case int(' '):
+			show_imgui_ = !show_imgui_;
+			break;
+		default:
+			break;
+	}
+	ImGUIApp::key_press_event(k);
+}
 
 void Viewer::import(const std::string& surface_mesh)
 {
@@ -257,7 +280,6 @@ int main(int argc, char** argv)
 	Viewer view;
 	view.import(surface_mesh);
 	app.add_view(&view);
-	app.view = &view;
 	Viewer view2;
 	view2.import(surface_mesh);
 	app.add_view(&view2);

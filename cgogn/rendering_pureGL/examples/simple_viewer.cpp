@@ -104,67 +104,64 @@ public:
 
 };
 
-class App: public GL::ImGUIApps
+class App: public GL::ImGUIApp
 {
+	int current_view_;
 public:
-	App() :
-		interface_scaling_(1.0f)
-	{}
-	float64 interface_scaling_;
-	float f;
-	int counter;
-	GL::GLColor clear_color;
-	Viewer* view;
+	App():	current_view_(0) {}
+	Viewer* view() { return static_cast<Viewer*>(viewers_.front()); }
 	void interface() override;
+	void key_press_event(int k) override;
 };
 
 
 void App::interface()
 {
-	ImGui::SetCurrentContext(context_);
+//	ImGui::SetCurrentContext(context_);
+	imgui_make_context_current();
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
 	ImGui::SetWindowSize({0,0});
-	ImGui::Checkbox("Phong/Flat", &view->phong_rendering_);
-	ImGui::Checkbox("Vertices", &view->vertices_rendering_);
-	ImGui::Checkbox("Normals", &view->normal_rendering_);
-	ImGui::Checkbox("Edges", &view->edge_rendering_);
-	ImGui::Checkbox("BB", &view->bb_rendering_);
+	ImGui::Checkbox("Phong/Flat", &view()->phong_rendering_);
+	ImGui::Checkbox("Vertices", &view()->vertices_rendering_);
+	ImGui::Checkbox("Normals", &view()->normal_rendering_);
+	ImGui::Checkbox("Edges", &view()->edge_rendering_);
+	ImGui::Checkbox("BB", &view()->bb_rendering_);
 
-	if (view->phong_rendering_)
+	if (view()->phong_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Phong parameters");
-		ImGui::ColorEdit3("front color##phong",view->param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::ColorEdit3("front color##phong",view()->param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##phong",view->param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("spec##phong", &(view->param_phong_->specular_coef_), 10.0f, 1000.0f);
-		ImGui::Checkbox("double side##phong", &(view->param_phong_->double_side_));
+		ImGui::ColorEdit3("back color##phong",view()->param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SliderFloat("spec##phong", &(view()->param_phong_->specular_coef_), 10.0f, 1000.0f);
+		ImGui::Checkbox("double side##phong", &(view()->param_phong_->double_side_));
 	}
 	else
 	{
 		ImGui::Separator();
 		ImGui::Text("Flat parameters");
-		ImGui::ColorEdit3("front color##flat",view->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::ColorEdit3("front color##flat",view()->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##flat",view->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::Checkbox("single side##flat", &(view->param_flat_->bf_culling_));
+		ImGui::ColorEdit3("back color##flat",view()->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::Checkbox("single side##flat", &(view()->param_flat_->bf_culling_));
 	}
-	if (view->normal_rendering_)
+	if (view()->normal_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Normal parameters");
-		ImGui::ColorEdit3("color##norm",view->param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("length##norm", &(view->param_normal_->length_), 0.01f, 0.5f);
+		ImGui::ColorEdit3("color##norm",view()->param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SliderFloat("length##norm", &(view()->param_normal_->length_), 0.01f, 0.5f);
 	}
 
-	if (view->edge_rendering_)
+	if (view()->edge_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Edge parameters");
-		ImGui::ColorEdit3("color##edge",view->param_edge_->color_.data());
-		ImGui::SliderFloat("Width##edge", &(view->param_edge_->width_), 1.0f, 10.0f);
+		ImGui::ColorEdit3("color##edge",view()->param_edge_->color_.data());
+		ImGui::SliderFloat("Width##edge", &(view()->param_edge_->width_), 1.0f, 10.0f);
 	}
 
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -172,9 +169,28 @@ void App::interface()
 	ImGui::End();
 }
 
+void App::key_press_event(int32 k)
+{
+	switch(k)
+	{
+		case int('S'):
+			if (focused_->shift_pressed())
+				interface_scaling_ += 0.1f;
+			else
+				interface_scaling_ -= 0.1f;
+			break;
+		case int(' '):
+			show_imgui_ = !show_imgui_;
+			break;
+		default:
+			break;
+	}
+	ImGUIApp::key_press_event(k);
+}
 
 void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
 {
+	ImGUIViewer::mouse_press_event(button,x,y);
 }
 
 Viewer::Viewer() :
@@ -239,15 +255,6 @@ void Viewer::key_press_event(int k)
 		case int('C'):
 			cam_.center_scene();
 			break;
-		case int('S'):
-			if (shift_pressed_)
-				interface_scaling_ += 0.1f;
-			else
-				interface_scaling_ -= 0.1f;
-			break;
-//		case int(' '):
-//			show_imgui_ = !show_imgui_;
-//			break;
 		default:
 			break;
 	}
@@ -466,6 +473,8 @@ int main(int argc, char** argv)
 	else
 		surface_mesh = std::string(argv[1]);
 
+	std::string surface_mesh2 = std::string(DEFAULT_MESH_PATH) + std::string("off/horse.off");
+
 
 	// Instantiate the viewer.
 //	Viewer view;
@@ -478,7 +487,9 @@ int main(int argc, char** argv)
 	Viewer view;
 	view.import(surface_mesh);
 	app.add_view(&view);
-	app.view = &view;
+	Viewer view2;
+	view2.import(surface_mesh2);
+	app.add_view(&view2);
 	app.launch();
 	return 0;
 }

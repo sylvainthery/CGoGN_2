@@ -38,11 +38,11 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class ImGUIApps;
+class ImGUIApp;
 
 class CGOGN_RENDERING_PUREGL_EXPORT ImGUIViewer: public PureGLViewer
 {
-	friend class ImGUIApps;
+	friend class ImGUIApp;
 
 	bool launch_init();
 	void launch_loop();
@@ -78,11 +78,12 @@ public:
 
 	inline bool over_viewport(int32 x, int32 y)
 	{
+		y = fr_h_ - y;
 		return (x >= vp_x_) && (x < vp_x_+vp_w_) && (y >= vp_y_) && (y < vp_y_+vp_h_);
 	}
 };
 
-class CGOGN_RENDERING_PUREGL_EXPORT ImGUIApps
+class CGOGN_RENDERING_PUREGL_EXPORT ImGUIApp
 {
 protected:
 	GLFWwindow* window_;
@@ -90,17 +91,22 @@ protected:
 	std::string win_name_;
 	int32 win_frame_width_;
 	int32 win_frame_height_;
+	float64 interface_scaling_;
 	bool show_imgui_;
 
 	std::vector<ImGUIViewer*> viewers_;
-
+	ImGUIViewer* focused_;
 public:
-	ImGUIApps();
-	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIApps);
-	virtual ~ImGUIApps();
+	ImGUIApp();
+	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIApp);
+	virtual ~ImGUIApp();
 	void resize_event(int32 w, int32 h);
 	void close_event();
 	virtual void interface();
+	virtual void key_press_event(int32 k);
+	virtual void key_release_event(int32 k);
+
+	inline void imgui_make_context_current() { ImGui::SetCurrentContext(context_); }
 	void set_window_size(int32 w, int32 h);
 	void set_window_title(const std::string&  name);
 
