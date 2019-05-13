@@ -51,7 +51,7 @@ struct CGOGN_RENDERING_PUREGL_EXPORT MovingFrame
 		is_moving_(false)
 	{}
 
-	//Vec3d local_coordinates(Vec3d glob);
+	//GLVec3d local_coordinates(GLVec3d glob);
 };
 
 }

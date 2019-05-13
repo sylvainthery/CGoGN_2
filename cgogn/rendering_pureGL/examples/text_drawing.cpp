@@ -97,7 +97,6 @@ void TextDrawing::init()
 {
 	set_scene_radius(5.0);
 	set_scene_center(Vec3(0,0,0));
-//	showEntireScene();
 	glClearColor(0.1f,0.1f,0.2f,0.0f);
 
 	tdr_ = cgogn::make_unique<RGL::TextDrawer>();
@@ -161,6 +160,7 @@ int main(int argc, char** argv)
 {
 //	qoglviewer::init_ogl_context();
 	TextDrawing view;
+	gl3wInit();
 	view.set_window_title("TextDrawing");
 	view.launch();
 }

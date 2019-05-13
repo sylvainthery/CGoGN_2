@@ -44,31 +44,35 @@ using Vertex = Map2::Vertex;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
+using namespace cgogn;
+
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
 namespace GL= cgogn::rendering_pgl;
 
+class App;
+
 class Viewer : public GL::ImGUIViewer
 {
+	friend class App;
 public:
 
 	using MapRender = GL::MapRender;
 	using TopoDrawer = GL::TopoDrawer;
 
-	Viewer();
+	Viewer( GL::ImGUIViewer* share = nullptr);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	void draw() override;
 	 void init() override;
 	void key_press_event(int k) override;
+	void mouse_press_event(int32 button, float64 x, float64 y) override;
 	void close_event() override;
-	void interface() override {}
 	void import(const std::string& surface_mesh);
-	virtual ~Viewer();
+	virtual ~Viewer() override;
 
 private:
-
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
 	cgogn::geometry::AABB<Vec3> bb_;
@@ -77,14 +81,39 @@ private:
 	std::unique_ptr<GL::ShaderFlat::Param> param_flat_;
 	std::unique_ptr<TopoDrawer> topo_drawer_;
 	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
-
 	bool flat_rendering_;
 	bool topo_drawing_;
 };
 
-//
-// IMPLEMENTATION
-//
+class App: public GL::ImGUIApps
+{
+public:
+	App() {}
+	float f;
+	int counter;
+	GL::GLColor clear_color;
+	Viewer* view;
+	void interface() override;
+};
+
+
+
+void App::interface()
+{
+	ImGui::SetCurrentContext(context_);
+	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
+	ImGui::SetWindowSize({0,0});
+	ImGui::Checkbox("Flat", &view->flat_rendering_);
+	ImGui::Checkbox("Topo", &view->topo_drawing_);
+	ImGui::Text("Flat parameters");
+	ImGui::ColorEdit3("front color##flat",view->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+	ImGui::SameLine();
+	ImGui::ColorEdit3("back color##flat",view->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+	ImGui::Checkbox("single side##flat", &(view->param_flat_->bf_culling_));
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
+}
+
 
 void Viewer::import(const std::string& surface_mesh)
 {
@@ -104,7 +133,6 @@ void Viewer::import(const std::string& surface_mesh)
 	}
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
-//	Vec3 center = cgogn::geometry::center(bb_);
 	set_scene_center(cgogn::geometry::center(bb_));
 	set_scene_radius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 }
@@ -121,7 +149,8 @@ void Viewer::close_event()
 	GL::ShaderProgram::clean_all();
 }
 
-Viewer::Viewer() :
+Viewer::Viewer(GL::ImGUIViewer* share) :
+	GL::ImGUIViewer(share),
 	map_(),
 	vertex_position_(),
 	bb_(),
@@ -153,10 +182,10 @@ void Viewer::key_press_event(int k)
 
 void Viewer::draw()
 {
+//glClearColor(0.5f,0.5f,0.9f,0);
+//	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.5f,0.5f,0.9f,0);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
 
 	GL::GLMat4 proj = get_projection_matrix();
 	GL::GLMat4 view = get_modelview_matrix();
@@ -198,6 +227,10 @@ void Viewer::init()
 	topo_drawer_->update(map_,vertex_position_);
 }
 
+void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
+{
+}
+
 int main(int argc, char** argv)
 {
 	std::string surface_mesh;
@@ -211,11 +244,31 @@ int main(int argc, char** argv)
 		surface_mesh = std::string(argv[1]);
 
 	// Instantiate the viewer.
+//	Viewer view;
+//	gl3wInit();
+//	view.import(surface_mesh);
+//	view.set_window_title("SimpleViewerIMGUI");
+//	view.launch();
+
+	App app;
+	app.set_window_title("SimpleViewerIMGUI");
+	app.set_window_size(1024,512);
+	gl3wInit();
 	Viewer view;
 	view.import(surface_mesh);
-	view.set_window_title("SimpleViewerIMGUI");
-	view.launch();
-	return 0;
+	app.add_view(&view);
+	app.view = &view;
+	Viewer view2;
+	view2.import(surface_mesh);
+	app.add_view(&view2);
+	Viewer view3;
+	view3.import(surface_mesh);
+	app.add_view(&view3);
+	Viewer view4;
+	view4.import(surface_mesh);
+	app.add_view(&view4);
+
+	app.launch();
 
 	// Run main loop.
 	return 0;

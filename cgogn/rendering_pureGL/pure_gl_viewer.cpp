@@ -44,7 +44,12 @@ PureGLViewer::PureGLViewer():
 	vp_h_(0),
 	wheel_sensitivity_(0.005),
 	mouse_sensitivity_(0.005),
-	spin_sensitivity_(0.025)
+	spin_sensitivity_(0.025),
+	need_redraw_(true),
+	shift_pressed_(false),
+	control_pressed_(false),
+	alt_pressed_(false),
+	meta_pressed_(false)
 {
 	current_frame_ = &cam_;
 }
@@ -52,8 +57,6 @@ PureGLViewer::PureGLViewer():
 PureGLViewer::~PureGLViewer()
 {}
 
-void PureGLViewer::close_event()
-{}
 
 void PureGLViewer::manip(MovingFrame* fr)
 {
@@ -66,14 +69,6 @@ void PureGLViewer::manip(MovingFrame* fr)
 	{
 		current_frame_ = &(cam_);
 	}
-}
-
-void PureGLViewer::key_press_event(int32 key_code)
-{
-}
-
-void PureGLViewer::key_release_event(int32 key_code)
-{
 }
 
 
@@ -113,7 +108,7 @@ void PureGLViewer::mouse_move_event(float64 x, float64 y)
 
 	if ((mouse_buttons_ & 1) && ((std::abs(dx)+ std::abs(dy))>0.0))
 	{
-		Vec3d axis(dy,dx,0.0);
+		GLVec3d axis(dy,dx,0.0);
 		spinning_speed_ = axis.norm();
 		axis /= spinning_speed_;
 		spinning_speed_ *= mouse_sensitivity_;
@@ -146,7 +141,7 @@ void PureGLViewer::mouse_move_event(float64 x, float64 y)
 			
 			float64 tx = dx / vp_w_ * cam_.width() * a;
 			float64 ty = - dy / vp_h_ * cam_.height() * a;
-			Transfo3d ntr = inv_cam_ * Eigen::Translation3d(Vec3d(tx,ty,0.0)) * cam_.frame_;
+			Transfo3d ntr = inv_cam_ * Eigen::Translation3d(GLVec3d(tx,ty,0.0)) * cam_.frame_;
 			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
@@ -159,6 +154,7 @@ void PureGLViewer::mouse_move_event(float64 x, float64 y)
 		need_redraw_ = true;
 	}
 }
+
 
 void PureGLViewer::spin()
 {
@@ -175,6 +171,15 @@ void PureGLViewer::spin()
 
 void PureGLViewer::mouse_dbl_click_event(int32 buttons, float64 x, float64 y)
 {
+	if (shift_pressed_)
+	{
+		GLVec3d P;
+		if (get_pixel_scene_position(x,y,P))
+		{
+			std::cout << P << std::endl;
+			set_scene_pivot(P);
+		}
+	}
 }
 
 
@@ -184,7 +189,7 @@ void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 	{
 		if (obj_mode())
 		{
-			auto ntr = inv_cam_ * Eigen::Translation3d(Vec3d(0,0,-0.0025*dy)) * cam_.frame_;
+			auto ntr = inv_cam_ * Eigen::Translation3d(GLVec3d(0,0,-0.0025*dy)) * cam_.frame_;
 			current_frame_->frame_ = ntr * current_frame_->frame_;
 		}
 		else
@@ -193,6 +198,7 @@ void PureGLViewer::mouse_wheel_event(float64 dx, float64 dy)
 			float64 a = cam_.scene_radius() - cam_.frame_.translation().z()/zcam/cam_.scene_radius();
 			cam_.frame_.translation().z() -= wheel_sensitivity_*dy*std::max(0.1,a);
 		}
+		need_redraw_=true;
 	}
 }
 

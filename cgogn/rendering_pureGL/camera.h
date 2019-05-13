@@ -49,69 +49,120 @@ private:
 	Type type_;
 	float64 field_of_view_;
 	float64 asp_ratio_; // width/height
-	Vec3d scene_center_;
+	GLVec3d pivot_shift_;
+	GLVec3d pivot_point_;
 	float64 scene_radius_;
+	float64 focal_dist_;
+	mutable GLMat4d proj_;
+	mutable GLMat4d mv_;
+	mutable uint32 need_computing_;
 
-	Mat4d perspective(float64 znear, float64 zfar) const;
+	GLMat4d perspective(float64 znear, float64 zfar) const;
 
-	Mat4d ortho(float64 znear, float64 zfar) const;
+	GLMat4d ortho(float64 znear, float64 zfar) const;
 
 
 public:
 	inline Camera():
 		type_(PERSPECTIVE),
 		field_of_view_(0.78),
-		asp_ratio_(1.0)
+		asp_ratio_(1.0),
+		pivot_shift_(0,0,0)
 	{}
+
 	inline float64 width() const { return (asp_ratio_>1.0) ? asp_ratio_ : 1.0;}
 	
 	inline float64 height() const { return (asp_ratio_>1.0) ? 1.0 : 1.0/asp_ratio_;}
 	
-	inline void set_type(Type type) { type_ = type; }
+	inline void set_type(Type type) { type_ = type; need_computing_ = 3; }
 	
-	inline void set_field_of_view(float64 fov) { field_of_view_ = fov; }
+	inline void set_field_of_view(float64 fov)
+	{
+		field_of_view_ = fov;
+		focal_dist_ = scene_radius_/std::tan(field_of_view_/2.0);
+		need_computing_ = 3;
+	}
 
 	inline float64 field_of_view() { return field_of_view_; }
 
-	inline void set_aspect_ratio(float64 aspect) { asp_ratio_ = aspect; }
+	inline void set_aspect_ratio(float64 aspect)
+	{
+		asp_ratio_ = aspect;
+		need_computing_ = 3;
+	}
 	
-	inline void set_scene_radius(float64 radius) { scene_radius_ = radius; }
+	inline void set_scene_radius(float64 radius)
+	{
+		scene_radius_ = radius;
+		focal_dist_ = scene_radius_/std::tan(field_of_view_/2.0);
+		need_computing_ = 3;
+	}
 	
-	inline void set_scene_center(const Vec3d& center) {scene_center_ = center; }
+	inline void change_pivot_point(const GLVec3d& piv)
+	{
+		pivot_shift_ = piv-pivot_point_;
+		frame_ *= Eigen::Translation3d(pivot_shift_);
+		pivot_point_ = piv;
+		need_computing_ = 3;
+	}
 
-	inline void center_scene() { this->frame_.matrix().block<3,1>(0,3).setZero(); }
+	inline void set_pivot_point(const GLVec3d& piv)
+	{
+		pivot_point_ = piv;
+	}
+
+	inline void center_scene()
+	{
+		this->frame_.matrix().block<3,1>(0,3).setZero();
+		need_computing_ = 3;
+	}
 	
 	inline void show_entire_scene() 
 	{
-		this->frame_.matrix().block<3,1>(0,0).normalize();
-		this->frame_.matrix().block<3,1>(0,1).normalize();
-		this->frame_.matrix().block<3,1>(0,2).normalize();
+		this->frame_.matrix().block<3,1>(0,3).setZero();
+		need_computing_ = 3;
 	}
 
 	inline void reset()
 	{
 		this->frame_ = Transfo3d::Identity();
 		this->spin_ = Transfo3d::Identity();
+		need_computing_ = 3;
 	}
 
 	inline float64 scene_radius() const { return scene_radius_; }
 	
-	inline const Vec3d& scene_center() const { return scene_center_; }
+	inline const GLVec3d& pivot_point() const { return pivot_point_; }
+
+	inline GLMat4d get_projection_matrix_d() const
+	{
+		Transfo3d tr = this->frame_ * Eigen::Translation3d(-pivot_shift_);
+		float64 d = focal_dist_ - (tr.translation()/*this->frame_.translation()-pivot_shift_*/).z();
+		float64 znear = std::max(0.001, d - scene_radius_);
+		float64 zfar = d + scene_radius_;
+		proj_ = ((type_==PERSPECTIVE) ? perspective(znear,zfar) : ortho(znear,zfar));
+		return proj_;
+	}
+
+	inline GLMat4d get_modelview_matrix_d() const
+	{
+		Transfo3d m = Eigen::Translation3d(GLVec3d(0.0,0.0,-focal_dist_)) * this->frame_ * Eigen::Translation3d(-pivot_point_);
+		mv_ = m.matrix();
+		return mv_;
+	}
+
 
 	inline GLMat4 get_projection_matrix() const
 	{
-		float64 d = scene_radius_/std::tan(field_of_view_/2.0) - this->frame_.translation().z();
-		float64 znear = std::max(0.001, d - scene_radius_);
-		float64 zfar = d+scene_radius_;
-
-		return ((type_==PERSPECTIVE) ? perspective(znear,zfar) : ortho(znear,zfar)).cast<float>();
+		return get_projection_matrix_d().cast<float>();
 	}
 
 	inline GLMat4 get_modelview_matrix() const
 	{
-		Transfo3d m = Eigen::Translation3d(Vec3d(0.0,0.0,-scene_radius_/std::tan(field_of_view_/2.0))) * this->frame_ * Eigen::Translation3d(-scene_center_);
-		return m.matrix().cast<float32>();
+		return get_modelview_matrix_d().cast<float32>();
 	}
+
+
 };
 
 }

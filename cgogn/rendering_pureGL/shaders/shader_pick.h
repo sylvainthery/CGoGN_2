@@ -1,5 +1,4 @@
-
-/*******************************************************************************
+﻿/*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
 *                                                                              *
@@ -22,15 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_FBO_H_
-#define CGOGN_RENDERING_FBO_H_
+#ifndef CGOGN_RENDERING_SHADERS_PICK_H_
+#define CGOGN_RENDERING_SHADERS_PICK_H_
 
-#include <GL/gl3w.h>
-#include <vector>
-#include <cgogn/core/utils/numerics.h>
 #include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/texture.h>
-#include <cgogn/rendering_pureGL/shaders/shader_fullscreen_texture.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
 
 
 namespace cgogn
@@ -39,40 +34,33 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class CGOGN_RENDERING_PUREGL_EXPORT FBO
+DECLARE_SHADER_CLASS(Pick)
+
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamPick : public ShaderParam
 {
-	GLint initial_viewport_[4];
+	inline void set_uniforms() override
+	{}
+
 public:
-	FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from );
+	using LocalShader = ShaderPick;
 
-	inline void bind()
+	ShaderParamPick(LocalShader* sh) :
+		ShaderParam(sh)
+	{}
+
+	inline ~ShaderParamPick() override {}
+
+	inline void set_vbos(VBO* vbo_pos)
 	{
-		glGetIntegerv(GL_VIEWPORT, initial_viewport_);
-		glBindFramebuffer(GL_FRAMEBUFFER, id_);
-		glViewport(0,0,tex_[0]->width(),tex_[0]->height());
+		bind_vao();
+		associate_vbos(vbo_pos);
+		release_vao();
 	}
 
-	inline void release()
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(initial_viewport_[0],initial_viewport_[1],initial_viewport_[2],initial_viewport_[3]);
-	}
-
-	void resize(int w, int h);
-
-	inline Texture2D* texture(std::size_t i) { return tex_[i]; }
-
-	inline std::size_t nb_textures() { return tex_.size(); }
-
-	inline GLint width() const { return tex_.front()->width(); }
-	inline GLint height() const { return tex_.front()->height(); }
-
-protected:
-	GLuint id_;
-	GLuint depth_render_buffer_;
-	std::vector<Texture2D*> tex_;
 };
 
-}
-}
+
+} // namespace rendering_pgl
+} // namespace cgogn
+
 #endif

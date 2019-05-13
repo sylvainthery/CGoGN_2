@@ -39,7 +39,7 @@ FBO::FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from)
 	{
 		tex_.clear();
 		tex_.push_back(t);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, att++, GL_TEXTURE_2D, t->id(), 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, att++, GL_TEXTURE_2D, t->id(), 0);
 	}
 
 	if (add_depth)
@@ -48,7 +48,7 @@ FBO::FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from)
 		{
 			depth_render_buffer_ = from->depth_render_buffer_;
 			glBindRenderbuffer( GL_RENDERBUFFER, depth_render_buffer_ );
-			glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
 			glBindRenderbuffer(GL_RENDERBUFFER, 0);
 		}
 		else
@@ -56,7 +56,7 @@ FBO::FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from)
 			glGenRenderbuffers(1,&depth_render_buffer_);
 			glBindRenderbuffer( GL_RENDERBUFFER, depth_render_buffer_ );
 			glRenderbufferStorage( GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, tex_[0]->width(), tex_[0]->height());
-			glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
+			glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer_);
 			glBindRenderbuffer( GL_RENDERBUFFER, 0);
 		}
 	}

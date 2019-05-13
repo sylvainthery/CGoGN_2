@@ -1,4 +1,3 @@
-
 /*******************************************************************************
 * CGoGN: Combinatorial and Geometric modeling with Generic N-dimensional Maps  *
 * Copyright (C) 2015, IGG Group, ICube, University of Strasbourg, France       *
@@ -22,15 +21,7 @@
 *                                                                              *
 *******************************************************************************/
 
-#ifndef CGOGN_RENDERING_FBO_H_
-#define CGOGN_RENDERING_FBO_H_
-
-#include <GL/gl3w.h>
-#include <vector>
-#include <cgogn/core/utils/numerics.h>
-#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
-#include <cgogn/rendering_pureGL/texture.h>
-#include <cgogn/rendering_pureGL/shaders/shader_fullscreen_texture.h>
+#include <cgogn/rendering_pureGL/shaders/shader_pick.h>
 
 
 namespace cgogn
@@ -39,40 +30,35 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-class CGOGN_RENDERING_PUREGL_EXPORT FBO
+ShaderPick* ShaderPick::instance_ = nullptr;
+
+ShaderPick::ShaderPick()
 {
-	GLint initial_viewport_[4];
-public:
-	FBO(const std::vector<Texture2D*>& textures, bool add_depth, FBO* from );
+	const char* vertex_shader_source =
+	"#version 150\n"
+	"in vec3 vertex_pos;\n"
+	"uniform mat4 projection_matrix;\n"
+	"uniform mat4 model_view_matrix;\n"
+	"out vec3 pos;\n"
+	"void main()\n"
+	"{\n"
+	"	pos = vertex_in;\n"
+	"   gl_Position = projection_matrix * model_view_matrix * vec4(vertex_pos,1.0);\n"
+	"}\n";
 
-	inline void bind()
-	{
-		glGetIntegerv(GL_VIEWPORT, initial_viewport_);
-		glBindFramebuffer(GL_FRAMEBUFFER, id_);
-		glViewport(0,0,tex_[0]->width(),tex_[0]->height());
-	}
+	const char* fragment_shader_source =
+	"#version 150\n"
+	"out vec4 position;\n"
+	"in vec3 pos;\n"
+	"void main()\n"
+	"{\n"
+	"	position = vec4(pos,1.0);\n"
+	"}\n";
 
-	inline void release()
-	{
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(initial_viewport_[0],initial_viewport_[1],initial_viewport_[2],initial_viewport_[3]);
-	}
+	load2_bind(vertex_shader_source,fragment_shader_source,
+			  "vertex_pos");
 
-	void resize(int w, int h);
-
-	inline Texture2D* texture(std::size_t i) { return tex_[i]; }
-
-	inline std::size_t nb_textures() { return tex_.size(); }
-
-	inline GLint width() const { return tex_.front()->width(); }
-	inline GLint height() const { return tex_.front()->height(); }
-
-protected:
-	GLuint id_;
-	GLuint depth_render_buffer_;
-	std::vector<Texture2D*> tex_;
-};
+}
 
 }
 }
-#endif

@@ -22,6 +22,7 @@
 *******************************************************************************/
 
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 #include <cgogn/core/cmap/cmap2.h>
@@ -48,10 +49,14 @@ using Vec3 = Eigen::Vector3d;
 template <typename T>
 using VertexAttribute = Map2::VertexAttribute<T>;
 
+using namespace cgogn;
 namespace GL = ::cgogn::rendering_pgl;
+
+class App;
 
 class Viewer : public GL::ImGUIViewer
 {
+	friend class App;
 public:
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
@@ -83,28 +88,96 @@ private:
 	std::unique_ptr<GL::Texture2D> tex_;
 
 	bool phong_rendering_;
-	bool flat_rendering_;
 	bool vertices_rendering_;
 	bool edge_rendering_;
 	bool normal_rendering_;
 	bool bb_rendering_;
 	float interface_scaling_;
 public:
-	float f;
-	int counter;
-	GL::GLColor clear_color;
-
-	void interface() override;
 	void draw() override;
 	void init() override;
 	void key_press_event(int k) override;
 	void resize_event(int w, int h) override;
 
 	void close_event() override;
+	void mouse_press_event(int32 button, float64 x, float64 y) override;
+
 };
 
+class App: public GL::ImGUIApps
+{
+public:
+	App() :
+		interface_scaling_(1.0f)
+	{}
+	float64 interface_scaling_;
+	float f;
+	int counter;
+	GL::GLColor clear_color;
+	Viewer* view;
+	void interface() override;
+};
+
+
+void App::interface()
+{
+	ImGui::SetCurrentContext(context_);
+	ImGui::GetIO().FontGlobalScale = interface_scaling_;
+
+	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
+	ImGui::SetWindowSize({0,0});
+	ImGui::Checkbox("Phong/Flat", &view->phong_rendering_);
+	ImGui::Checkbox("Vertices", &view->vertices_rendering_);
+	ImGui::Checkbox("Normals", &view->normal_rendering_);
+	ImGui::Checkbox("Edges", &view->edge_rendering_);
+	ImGui::Checkbox("BB", &view->bb_rendering_);
+
+	if (view->phong_rendering_)
+	{
+		ImGui::Separator();
+		ImGui::Text("Phong parameters");
+		ImGui::ColorEdit3("front color##phong",view->param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SameLine();
+		ImGui::ColorEdit3("back color##phong",view->param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SliderFloat("spec##phong", &(view->param_phong_->specular_coef_), 10.0f, 1000.0f);
+		ImGui::Checkbox("double side##phong", &(view->param_phong_->double_side_));
+	}
+	else
+	{
+		ImGui::Separator();
+		ImGui::Text("Flat parameters");
+		ImGui::ColorEdit3("front color##flat",view->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SameLine();
+		ImGui::ColorEdit3("back color##flat",view->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::Checkbox("single side##flat", &(view->param_flat_->bf_culling_));
+	}
+	if (view->normal_rendering_)
+	{
+		ImGui::Separator();
+		ImGui::Text("Normal parameters");
+		ImGui::ColorEdit3("color##norm",view->param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
+		ImGui::SliderFloat("length##norm", &(view->param_normal_->length_), 0.01f, 0.5f);
+	}
+
+	if (view->edge_rendering_)
+	{
+		ImGui::Separator();
+		ImGui::Text("Edge parameters");
+		ImGui::ColorEdit3("color##edge",view->param_edge_->color_.data());
+		ImGui::SliderFloat("Width##edge", &(view->param_edge_->width_), 1.0f, 10.0f);
+	}
+
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+	ImGui::End();
+}
+
+
+void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
+{
+}
+
 Viewer::Viewer() :
-	GL::ImGUIViewer(1024,1024),
 	map_(),
 	vertex_position_(),
 	vertex_normal_(),
@@ -118,12 +191,10 @@ Viewer::Viewer() :
 	drawer_rend_(nullptr),
 	fbo_(nullptr),
 	phong_rendering_(true),
-	flat_rendering_(false),
 	vertices_rendering_(false),
 	edge_rendering_(false),
 	normal_rendering_(false),
-	bb_rendering_(true),
-	interface_scaling_(1.0f)
+	bb_rendering_(true)
 {}
 
 
@@ -174,66 +245,15 @@ void Viewer::key_press_event(int k)
 			else
 				interface_scaling_ -= 0.1f;
 			break;
-		case int(' '):
-			show_imgui_ = !show_imgui_;
-			break;
+//		case int(' '):
+//			show_imgui_ = !show_imgui_;
+//			break;
 		default:
 			break;
 	}
 	ImGUIViewer::key_press_event(k);
 }
 
-void Viewer::interface()
-{
-	ImGui::GetIO().FontGlobalScale = interface_scaling_;
-
-	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);
-	ImGui::SetWindowSize({0,0});
-	ImGui::Checkbox("Phong/Flat", &phong_rendering_);
-	ImGui::Checkbox("Vertices", &vertices_rendering_);
-	ImGui::Checkbox("Normals", &normal_rendering_);
-	ImGui::Checkbox("Edges", &edge_rendering_);
-	ImGui::Checkbox("BB", &bb_rendering_);
-
-	if (phong_rendering_)
-	{
-		ImGui::Separator();
-		ImGui::Text("Phong parameters");
-		ImGui::ColorEdit3("front color##phong",param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##phong",param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("spec##phong", &(param_phong_->specular_coef_), 10.0f, 1000.0f);
-		ImGui::Checkbox("double side##phong", &(param_phong_->double_side_));
-	}
-	else
-	{
-		ImGui::Separator();
-		ImGui::Text("Flat parameters");
-		ImGui::ColorEdit3("front color##flat",param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##flat",param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::Checkbox("single side##flat", &(param_flat_->bf_culling_));
-	}
-	if (normal_rendering_)
-	{
-		ImGui::Separator();
-		ImGui::Text("Normal parameters");
-		ImGui::ColorEdit3("color##norm",param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("length##norm", &(param_normal_->length_), 0.01f, 0.5f);
-	}
-
-	if (edge_rendering_)
-	{
-		ImGui::Separator();
-		ImGui::Text("Edge parameters");
-		ImGui::ColorEdit3("color##edge",param_edge_->color_.data());
-		ImGui::SliderFloat("Width##edge", &(param_edge_->width_), 1.0f, 10.0f);
-	}
-
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-	ImGui::End();
-}
 
 void Viewer::import(const std::string& surface_mesh)
 {
@@ -257,13 +277,12 @@ void Viewer::import(const std::string& surface_mesh)
 	set_scene_radius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 	Vec3 center = cgogn::geometry::center(bb_);
 	set_scene_center(center);
-//	show_entire_scene();
 }
 
 
 void Viewer::init()
 {
-// create and fill VBO for positions
+	// create and fill VBO for positions
 	vbo_pos_ = cgogn::make_unique<GL::VBO>(3);
 	GL::update_vbo(vertex_position_, vbo_pos_.get());
 
@@ -350,7 +369,8 @@ void Viewer::init()
 	tex_->alloc(1,1,GL_RGBA8,GL_RGBA);
 	std::vector<GL::Texture2D*> vt{tex_.get()};
 	fbo_ = cgogn::make_unique<GL::FBO>(vt,true,nullptr);
-	fbo_->resize(width()*2,height()*2);
+	fbo_->resize(width(),height());
+	global_fbo_ = fbo_.get();
 
 	param_fst_ = GL::ShaderFSTexture::generate_param();
 	param_fst_->texture_ = fbo_->texture(0);
@@ -358,70 +378,73 @@ void Viewer::init()
 
 void Viewer::resize_event(int w, int h)
 {
-	fbo_->resize(w*2,h*2);
+	fbo_->resize(w,h);
 }
 
 void Viewer::draw()
 {
-	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
-
-	fbo_->bind();
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.25f,0.25f,0.29f,1);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-	GLenum idbuf = GL_COLOR_ATTACHMENT0;
-	glDrawBuffers(1,&idbuf);
-
-
-	GL::GLMat4 proj = get_projection_matrix();
-	GL::GLMat4 view = get_modelview_matrix();
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1.0f, 4.0f);
-
-	if (phong_rendering_)
+	if (need_redraw_)
 	{
-		param_phong_->bind(proj,view);
-		render_->draw(GL::TRIANGLES);
-		param_phong_->release();
-	}
-	else
-	{
-		param_flat_->bind(proj,view);
-		render_->draw(GL::TRIANGLES);
-		param_flat_->release();
-	}
+		fbo_->bind();
+		glEnable(GL_DEPTH_TEST);
+		glClearColor(0.25f,0.25f,0.29f,1);
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	glDisable(GL_POLYGON_OFFSET_FILL);
+		GLenum idbuf = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1,&idbuf);
 
-	if (vertices_rendering_)
-	{
-		param_point_sprite_->bind(proj,view);
-		render_->draw(GL::POINTS);
-		param_point_sprite_->release();
-	}
 
-	if (edge_rendering_)
-	{
-		param_edge_->bind(proj,view);
-//		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		render_->draw(GL::LINES);
-		glDisable(GL_BLEND);
-		param_edge_->release();
-	}
+		GL::GLMat4 proj = get_projection_matrix();
+		GL::GLMat4 view = get_modelview_matrix();
 
-	if (normal_rendering_)
-	{
-		param_normal_->bind(proj,view);
-		render_->draw(GL::POINTS);
-		param_normal_->release();
-	}
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1.0f, 4.0f);
 
-	if (bb_rendering_)
-	{
-		drawer_rend_->draw(proj,view);
+		if (phong_rendering_)
+		{
+			param_phong_->bind(proj,view);
+			render_->draw(GL::TRIANGLES);
+			param_phong_->release();
+		}
+		else
+		{
+			param_flat_->bind(proj,view);
+			render_->draw(GL::TRIANGLES);
+			param_flat_->release();
+		}
+
+		glDisable(GL_POLYGON_OFFSET_FILL);
+
+		if (vertices_rendering_)
+		{
+			param_point_sprite_->bind(proj,view);
+			render_->draw(GL::POINTS);
+			param_point_sprite_->release();
+		}
+
+		if (edge_rendering_)
+		{
+			param_edge_->bind(proj,view);
+	//		glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			render_->draw(GL::LINES);
+			glDisable(GL_BLEND);
+			param_edge_->release();
+		}
+
+		if (normal_rendering_)
+		{
+			param_normal_->bind(proj,view);
+			render_->draw(GL::POINTS);
+			param_normal_->release();
+		}
+
+		if (bb_rendering_)
+		{
+			drawer_rend_->draw(proj,view);
+		}
+
+		need_redraw_ = camera().is_moving_;
 	}
 
 	fbo_->release();
@@ -445,10 +468,18 @@ int main(int argc, char** argv)
 
 
 	// Instantiate the viewer.
+//	Viewer view;
+//	view->import(surface_mesh);
+//	view->set_window_title("SimpleViewerIMGUI");
+//	view->launch();
+
+	App app;
+	gl3wInit();
 	Viewer view;
 	view.import(surface_mesh);
-	view.set_window_title("SimpleViewerIMGUI");
-	view.launch();
+	app.add_view(&view);
+	app.view = &view;
+	app.launch();
 	return 0;
 }
 

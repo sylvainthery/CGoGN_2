@@ -22,9 +22,9 @@
 *******************************************************************************/
 #include <imgui.h>
 
-
-#include <cgogn/core/utils/definitions.h>
 #include <cgogn/rendering_pureGL/imgui_viewer.h>
+#include<GLFW/glfw3.h>
+#include <cgogn/core/utils/definitions.h>
 #include <cgogn/rendering_pureGL/drawer.h>
 #include <cgogn/rendering_pureGL/wall_paper.h>
 #include <cgogn/rendering_pureGL/types.h>
@@ -32,12 +32,14 @@
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Vec3 = Eigen::Vector3d;
-namespace RGL = cgogn::rendering_pgl;
+namespace GL = cgogn::rendering_pgl;
 
-class Drawing : public RGL::ImGUIViewer
+class Drawing : public GL::ImGUIViewer
 {
 public:
 	Drawing();
+	Drawing(GL::ImGUIViewer* v);
+
 //	Drawing(Drawing* ptr);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Drawing);
 
@@ -49,15 +51,15 @@ public:
 	virtual ~Drawing() override;
 
 ////private:
-	std::shared_ptr<RGL::DisplayListDrawer> drawer_;
-	std::shared_ptr<RGL::DisplayListDrawer> drawer2_;
-	std::unique_ptr<RGL::DisplayListDrawer::Renderer> drawer_rend_;
-	std::unique_ptr<RGL::DisplayListDrawer::Renderer> drawer2_rend_;
+	std::shared_ptr<GL::DisplayListDrawer> drawer_;
+	std::shared_ptr<GL::DisplayListDrawer> drawer2_;
+	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer_rend_;
+	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer2_rend_;
 
-	std::shared_ptr<RGL::WallPaper> wp_;
-	std::shared_ptr<RGL::WallPaper> button_;
-	std::unique_ptr<RGL::WallPaper::Renderer> wp_rend_;
-	std::unique_ptr<RGL::WallPaper::Renderer> button_rend_;
+	std::shared_ptr<GL::WallPaper> wp_;
+	std::shared_ptr<GL::WallPaper> button_;
+	std::unique_ptr<GL::WallPaper::Renderer> wp_rend_;
+	std::unique_ptr<GL::WallPaper::Renderer> button_rend_;
 
 //	Drawing* m_first;
 	float interface_scaling_;
@@ -80,7 +82,7 @@ void Drawing::close_event()
 	drawer2_.reset();
 	wp_.reset();
 	button_.reset();
-	RGL::ShaderProgram::clean_all();
+	GL::ShaderProgram::clean_all();
 }
 
 Drawing::Drawing() :
@@ -96,10 +98,24 @@ Drawing::Drawing() :
 {
 }
 
+Drawing::Drawing(GL::ImGUIViewer* v) :
+	GL::ImGUIViewer(v),
+	drawer_(nullptr),
+	drawer2_(nullptr),
+	drawer_rend_(nullptr),
+	drawer2_rend_(nullptr),
+	wp_(nullptr),
+	button_(nullptr),
+	wp_rend_(nullptr),
+	button_rend_(nullptr),
+	interface_scaling_(1.0)
+{
+}
+
 
 
 //Drawing::Drawing(Drawing* ptr) :
-////	RGL::ImGUIViewer(ptr),
+////	GL::ImGUIViewer(ptr),
 //	drawer_(nullptr),
 //	drawer2_(nullptr),
 //	drawer_rend_(nullptr),
@@ -123,9 +139,6 @@ void Drawing::key_press_event(int k)
 			else
 				interface_scaling_ -= 0.1f;
 			break;
-		case int(' '):
-			show_imgui_ = !show_imgui_;
-			break;
 		default:
 			break;
 	}
@@ -146,18 +159,19 @@ void Drawing::draw()
 
 void Drawing::init()
 {
+
 	set_scene_radius(5.0);
 	set_scene_center(Eigen::Vector3d(0,0,0));
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	wp_ = std::make_shared<RGL::WallPaper>(RGL::GLImage(std::string(DEFAULT_MESH_PATH) + std::string(("../images/cgogn2.png"))));
-	button_ = std::make_shared<RGL::WallPaper>(RGL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/igg.png")))));
+	wp_ = std::make_shared<GL::WallPaper>(GL::GLImage(std::string(DEFAULT_MESH_PATH) + std::string(("../images/cgogn2.png"))));
+	button_ = std::make_shared<GL::WallPaper>(GL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/igg.png")))));
 	button_->set_local_position(0.1f,0.1f,0.2f,0.2f);
 	wp_rend_ = wp_->generate_renderer();
 	button_rend_ = button_->generate_renderer();
 
 	// drawer for simple old-school g1 rendering
-	drawer_ = std::make_shared<RGL::DisplayListDrawer>();
+	drawer_ = std::make_shared<GL::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 	drawer_->new_list();
 	drawer_->line_width(2.0);
@@ -216,7 +230,7 @@ void Drawing::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	drawer2_ = std::make_shared<RGL::DisplayListDrawer>();
+	drawer2_ = std::make_shared<GL::DisplayListDrawer>();
 	drawer2_rend_ = drawer2_->generate_renderer();
 	drawer2_->new_list();
 	drawer2_->point_size_aa(5.0);
@@ -245,6 +259,9 @@ void Drawing::init()
 
 void Drawing::interface()
 {
+	glfwMakeContextCurrent(window_);
+
+	ImGui::SetCurrentContext(context_);
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);
@@ -260,9 +277,11 @@ int main(int argc, char** argv)
 {
 	// Instantiate the viewer.
 
-	std::unique_ptr<Drawing> viewer = cgogn::make_unique<Drawing>();
-	viewer->set_window_title("Drawing");
-	viewer->launch();
+	Drawing view;
+	gl3wInit();
+	view.set_window_title("Drawing");
+	view.launch();
+
 
 	return 0;
 }

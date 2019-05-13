@@ -259,11 +259,11 @@ void ShaderProgram::get_matrices_uniforms()
 	unif_normal_matrix_ = glGetUniformLocation(id_,"normal_matrix");
 }
 
-void ShaderProgram::set_matrices(const Mat4d& proj, const Mat4d& mv)
+void ShaderProgram::set_matrices(const GLMat4d& proj, const GLMat4d& mv)
 {
 	if (unif_mvp_matrix_ >= 0)
 	{
-		Mat4d mvp = (proj*mv);
+		GLMat4d mvp = (proj*mv);
 		GLMat4 m = mvp.cast<float>();
 		glUniformMatrix4fv(	unif_mvp_matrix_,1,false, m.data());
 	}
@@ -307,7 +307,7 @@ void ShaderProgram::set_matrices(const GLMat4& proj, const GLMat4& mv)
 }
 
 
-void ShaderProgram::set_view_matrix(const Mat4d& mv)
+void ShaderProgram::set_view_matrix(const GLMat4d& mv)
 {
 	if (unif_mv_matrix_ >= 0)
 	{

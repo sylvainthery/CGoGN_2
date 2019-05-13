@@ -69,6 +69,7 @@ protected:
 	Camera cam_;
 	MovingFrame* current_frame_;
 	Transfo3d inv_cam_;
+	GLVec3d scene_center_;
 	int32 vp_x_;
 	int32 vp_y_;
 	int32 vp_w_;
@@ -83,13 +84,11 @@ protected:
 	float64 last_mouse_y_;
 	uint32 mouse_buttons_;
 	bool need_redraw_;
-
-
-protected:
 	bool shift_pressed_;
 	bool control_pressed_;
 	bool alt_pressed_;
 	bool meta_pressed_;
+
 	void spin();
 
 public:
@@ -112,17 +111,15 @@ public:
 	}
 
 	inline void set_scene_radius(float64 radius) { cam_.set_scene_radius(radius); }
-	void set_scene_center(const GLVec3& center) {cam_.set_scene_center(center.cast<float64>()); }
-	void set_scene_center(const Vec3d& center) {cam_.set_scene_center(center); }
-
-
+	inline void set_scene_center(const GLVec3d& center) { scene_center_ = center; cam_.set_pivot_point(scene_center_); }
+	inline void set_scene_pivot(const GLVec3d& piv) { cam_.change_pivot_point(piv); }
 
 	inline void center_scene() { cam_.center_scene(); }
 	inline void show_entire_scene() { cam_.show_entire_scene(); }
 
 	inline int32 width() const { return vp_w_; }
 	inline int32 height() const { return vp_h_; }
-
+	inline void set_vp() {glViewport(vp_x_,vp_y_, vp_w_, vp_h_);}
 
 	void manip(MovingFrame* fr);
 
@@ -131,17 +128,13 @@ public:
 	virtual void mouse_dbl_click_event(int32 button, float64 x, float64 y);
 	virtual void mouse_move_event(float64 x, float64 y);
 	virtual void mouse_wheel_event(float64 x, float64 y);
-	virtual void key_press_event(int32 key_code);
-	virtual void key_release_event(int32 key_code);
-	virtual void close_event();
+
+	virtual bool get_pixel_scene_position(int32 x, int32 y,GLVec3d& P) = 0;
 
 	inline void set_wheel_sensitivity(float64 s) { wheel_sensitivity_ = s*0.005; }
 	inline void set_mouse_sensitivity(float64 s) { mouse_sensitivity_ = s*0.005; }
 	inline void set_spin_sensitivity(float64 s) { spin_sensitivity_ = s*0.025; }
-
-	virtual void init() = 0;
-	virtual void draw() = 0;
-};	
+};
 
 }
 }

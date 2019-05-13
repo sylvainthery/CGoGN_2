@@ -240,10 +240,10 @@ public:
 	void get_matrices_uniforms();
 
 	void set_matrices(const GLMat4& proj, const GLMat4& mv);
-	void set_matrices(const Mat4d& proj, const Mat4d& mv);
+	void set_matrices(const GLMat4d& proj, const GLMat4d& mv);
 
 	void set_view_matrix(const GLMat4& mv);
-	void set_view_matrix(const Mat4d& mv);
+	void set_view_matrix(const GLMat4d& mv);
 
 	template<typename... Ts>
 	void load3_bind(const std::string& vert_src, const std::string& frag_src, const std::string& geom_src, Ts... pn)

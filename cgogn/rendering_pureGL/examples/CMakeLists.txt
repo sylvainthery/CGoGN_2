@@ -23,11 +23,11 @@ target_link_libraries(simple_viewerPGL cgogn::core cgogn::io cgogn::renderingPGL
 add_executable(viewer_topoPGL viewer_topo.cpp)
 target_link_libraries(viewer_topoPGL cgogn::core cgogn::io cgogn::renderingPGL cgogn::modeling)
 
-add_executable(drawingPGL drawing.cpp)
-target_link_libraries(drawingPGL cgogn::renderingPGL)
+#add_executable(drawingPGL drawing.cpp)
+#target_link_libraries(drawingPGL cgogn::renderingPGL)
 
-add_executable(text_drawingPGL text_drawing.cpp)
-target_link_libraries(text_drawingPGL cgogn::renderingPGL)
+#add_executable(text_drawingPGL text_drawing.cpp)
+#target_link_libraries(text_drawingPGL cgogn::renderingPGL)
 
 
 #[[add_executable(viewer_per_face viewer_per_face.cpp)

@@ -25,6 +25,7 @@
 #define CGOGN_RENDERING_TYPE_H_
 
 #include <GL/gl3w.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
 #include <cgogn/core/utils/numerics.h>
 #include <cgogn/geometry/types/eigen.h>
 #include <Eigen/Core>
@@ -40,10 +41,11 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-using Vec2d = Eigen::Vector2d;
-using Vec3d = Eigen::Vector3d;
-using Mat3d = Eigen::Matrix3d;
-using Mat4d = Eigen::Matrix4d;
+using GLVec2d = Eigen::Vector2d;
+using GLVec3d = Eigen::Vector3d;
+using GLVec4d = Eigen::Vector4d;
+using GLMat3d = Eigen::Matrix3d;
+using GLMat4d = Eigen::Matrix4d;
 using Mat4f = Eigen::Matrix4f;
 using Transfo3d = Eigen::Affine3d;
 using GLMat4  = Eigen::Matrix4f;
@@ -70,7 +72,7 @@ inline GLColor col1i(uint8 R)
 }
 
 
-class GLImage
+class CGOGN_RENDERING_PUREGL_EXPORT GLImage
 {
 	uint8* data_;
 	int32 width_;
