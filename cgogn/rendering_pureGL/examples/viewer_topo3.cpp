@@ -20,26 +20,22 @@
 * Contact information: cgogn@unistra.fr                                        *
 *                                                                              *
 *******************************************************************************/
-
-#include <QApplication>
-#include <QMatrix4x4>
-#include <QKeyEvent>
-
-#include <QOGLViewer/qoglviewer.h>
+#include <cgogn/rendering_pureGL/imgui_viewer.h>
+#include<GLFW/glfw3.h>
 
 #include <cgogn/core/utils/logger.h>
 //#include <cgogn/core/cmap/cmap3_tetra.h>
 //#include <cgogn/core/cmap/cmap3_hexa.h>
 #include <cgogn/core/cmap/cmap3.h>
 #include <cgogn/io/map_import.h>
+#include <cgogn/rendering_pureGL/map_render.h>
+#include <cgogn/rendering_pureGL/drawer.h>
+#include <cgogn/rendering_pureGL/volume_drawer.h>
+#include <cgogn/rendering_pureGL/topo_drawer.h>
+#include <cgogn/rendering_pureGL/frame_manipulator.h>
+#include <cgogn/rendering_pureGL/vbo_update.h>
 #include <cgogn/geometry/algos/bounding_box.h>
-#include <cgogn/rendering/shaders/vbo.h>
-#include <cgogn/rendering/map_render.h>
-#include <cgogn/rendering/drawer.h>
-#include <cgogn/rendering/volume_drawer.h>
-#include <cgogn/rendering/topo_drawer.h>
 #include <cgogn/geometry/algos/picking.h>
-#include <cgogn/rendering/frame_manipulator.h>
 #include <cgogn/modeling/tiling/hexa_volume.h>
 
 
@@ -52,37 +48,42 @@ using Map3 = cgogn::CMap3;
 using Vec3 = Eigen::Vector3d;
 //using Vec3 = cgogn::geometry::Vec_T<std::array<float64,3>>;
 
+using namespace cgogn;
+
 template <typename T>
 using VertexAttribute = Map3::VertexAttribute<T>;
 
+namespace GL= cgogn::rendering_pgl;
 
 
-class Viewer : public QOGLViewer
+class App;
+
+class Viewer : public GL::ImGUIViewer
 {
+	friend class App;
 public:
 
-	using TopoDrawer = cgogn::rendering::TopoDrawer;
-	using VolumeDrawer = cgogn::rendering::VolumeDrawer;
-	using DisplayListDrawer = cgogn::rendering::DisplayListDrawer;
+	using TopoDrawer = GL::TopoDrawer;
+	using VolumeDrawer = GL::VolumeDrawer;
+	using DisplayListDrawer = GL::DisplayListDrawer;
 
 	Viewer();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
-	virtual void draw();
-	virtual void init();
-	virtual void keyPressEvent(QKeyEvent*);
-	void keyReleaseEvent(QKeyEvent*);
-	virtual void mousePressEvent(QMouseEvent*);
-	virtual void mouseReleaseEvent(QMouseEvent*);
-	virtual void mouseMoveEvent(QMouseEvent*);
-
-	void import(const std::string& volumeMesh);
-	virtual ~Viewer();
-	virtual void closeEvent(QCloseEvent *e);
+	void draw() override;
+	void init() override;
+	void key_press_event(int k) override;
+	void key_release_event(int k) override;
+	void mouse_press_event(int32 button, float64 x, float64 y) override;
+	void mouse_release_event(int32 button, float64 x, float64 y) override;
+	void mouse_move_event(float64 dx, float64 dy) override;
+	void close_event() override;
+	void import(const std::string& surface_mesh);
+	virtual ~Viewer() override;
 
 private:
 
-	void rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q);
+	void rayClick(float64 x, float64 y, GL::GLVec3d& P, GL::GLVec3d& Q);
 
 	void plane_clip_from_frame();
 
@@ -91,7 +92,7 @@ private:
 
 	cgogn::geometry::AABB<Vec3> bb_;
 
-	std::unique_ptr<cgogn::rendering::VBO> vbo_pos_;
+	std::unique_ptr<GL::VBO> vbo_pos_;
 
 	std::unique_ptr<TopoDrawer> topo_drawer_;
 	std::unique_ptr<TopoDrawer::Renderer> topo_drawer_rend_;
@@ -102,7 +103,7 @@ private:
 	std::unique_ptr<DisplayListDrawer> drawer_;
 	std::unique_ptr<DisplayListDrawer::Renderer> drawer_rend_;
 
-	std::unique_ptr<cgogn::rendering::FrameManipulator> frame_manip_;
+	std::unique_ptr<GL::FrameManipulator> frame_manip_;
 
 	bool vol_rendering_;
 	bool edge_rendering_;
@@ -110,19 +111,38 @@ private:
 
 	float32 expl_;
 
-	QVector4D plane_clipping1_;
+	GL::GLVec4 plane_clipping1_;
 	float32 plane_thickness_;
 	bool thick_plane_mode_;
+
+	GL::GLMat4 proj_matrix_;
+	GL::GLMat4 view_matrix_;
+
+};
+
+
+class App: public GL::ImGUIApp
+{
+public:
+	App() {}
+//	inline Viewer* view(int i) { return static_cast<Viewer*>(viewers_[i]); }
+//	void interface() override;
 };
 
 //
 // IMPLEMENTATION
 //
 
-void Viewer::rayClick(QMouseEvent* event, qoglviewer::Vec& P, qoglviewer::Vec& Q)
+void Viewer::rayClick(float64 x, float64 y, GL::GLVec3d &P, GL::GLVec3d &Q)
 {
-	P = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 0.0));
-	Q = camera()->unprojectedCoordinatesOf(qoglviewer::Vec(event->x(), event->y(), 1.0));
+	float64 xgl = x/width() *2.0 - 1.0;
+	float64 ygl = (1.0-y/height()) *2.0 - 1.0;
+
+	GL::GLMat4d im =(proj_matrix_.cast<double>()*view_matrix_.cast<double>()).inverse();
+	GL::GLVec4d P4 = im*GL::GLVec4d(xgl,ygl,0.0,1.0);
+	GL::GLVec4d Q4 = im*GL::GLVec4d(xgl,ygl,1.0,1.0);
+	P = GL::GLVec3d(P4.x()/P4.w(),P4.y()/P4.w(),P4.z()/P4.w());
+	Q = GL::GLVec3d(Q4.x()/Q4.w(),Q4.y()/Q4.w(),Q4.z()/Q4.w());
 }
 
 
@@ -142,7 +162,7 @@ void Viewer::import(const std::string& volumeMesh)
 	{
 		vertex_position_ = map_.template add_attribute<Vec3, Map3::Vertex>("position");
 
-		const uint N = 10;
+		const uint32 N = 10;
 		cgogn::modeling::TilingHexa tile1(map_, 2*N,2*N,2*N);
 		tile1.embedded_grid3D([&](uint32 i, uint32 j, uint32 k)
 		{
@@ -196,10 +216,9 @@ void Viewer::import(const std::string& volumeMesh)
 
 	cgogn::geometry::compute_AABB(vertex_position_, bb_);
 
-	setSceneRadius(cgogn::geometry::diagonal(bb_).norm()/2.0);
+	set_scene_radius(cgogn::geometry::diagonal(bb_).norm()/2.0);
 	Vec3 center = cgogn::geometry::center(bb_);
-	setSceneCenter(qoglviewer::Vec(center[0], center[1], center[2]));
-	showEntireScene();
+	set_scene_center(center);
 
 	map_.check_map_integrity();
 }
@@ -207,7 +226,7 @@ void Viewer::import(const std::string& volumeMesh)
 Viewer::~Viewer()
 {}
 
-void Viewer::closeEvent(QCloseEvent*)
+void Viewer::close_event()
 {
 	vbo_pos_.reset();
 	topo_drawer_.reset();
@@ -216,7 +235,7 @@ void Viewer::closeEvent(QCloseEvent*)
 	volume_drawer_rend_.reset();
 	drawer_.reset();
 	drawer_rend_.reset();
-	cgogn::rendering::ShaderProgram::clean_all();
+	GL::ShaderProgram::clean_all();
 }
 
 Viewer::Viewer() :
@@ -238,46 +257,51 @@ Viewer::Viewer() :
 	thick_plane_mode_(false)
 {}
 
-void Viewer::keyPressEvent(QKeyEvent *ev)
+void Viewer::key_press_event(int key)
 {
-	if ((ev->modifiers() & Qt::ShiftModifier) && (ev->modifiers() & Qt::ControlModifier))
-		setCursor(Qt::CrossCursor);
+//	if ((ev->modifiers() & Qt::ShiftModifier) && (ev->modifiers() & Qt::ControlModifier))
+//		setCursor(Qt::CrossCursor);
 
-	switch (ev->key())
+	switch (key)
 	{
-		case Qt::Key_V:
+		case int32('V'):
 			vol_rendering_ = !vol_rendering_;
 			break;
-		case Qt::Key_E:
+		case int32('E'):
 			edge_rendering_ = !edge_rendering_;
 			break;
-
-		case Qt::Key_T:
+		case int32('T'):
 			topo_drawering_ = !topo_drawering_;
 			break;
-		case Qt::Key_Plus:
+		case GLFW_KEY_KP_MULTIPLY:
+			expl_ = 1.0f;
+			volume_drawer_rend_->set_explode_volume(expl_);
+			topo_drawer_->set_explode_volume(expl_);
+			topo_drawer_->update(map_,vertex_position_);
+			break;
+		case GLFW_KEY_KP_ADD:
 			expl_ += 0.05f;
 			volume_drawer_rend_->set_explode_volume(expl_);
 			topo_drawer_->set_explode_volume(expl_);
 			topo_drawer_->update(map_,vertex_position_);
 			break;
-		case Qt::Key_Minus:
+		case GLFW_KEY_KP_SUBTRACT:
 			expl_ -= 0.05f;
 			volume_drawer_rend_->set_explode_volume(expl_);
 			topo_drawer_->set_explode_volume(expl_);
 			topo_drawer_->update(map_,vertex_position_);
 			break;
-		case Qt::Key_X:
-			frame_manip_->rotate(cgogn::rendering::FrameManipulator::Xr, 0.1507f);
+		case int32('X'):
+			frame_manip_->rotate(GL::FrameManipulator::Xr, 0.1507f);
 			break;
-		case Qt::Key_P:
-			if (ev->modifiers() & Qt::ControlModifier)
+		case int32('P'):
+			if (control_pressed())
 			{
 				thick_plane_mode_ = !thick_plane_mode_;
 			}
 			else if (thick_plane_mode_)
 			{
-				if (ev->modifiers() & Qt::ShiftModifier)
+				if (shift_pressed())
 					plane_thickness_ += cgogn::geometry::diagonal(bb_).norm()/200;
 				else
 				{
@@ -300,30 +324,28 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 			break;
 	}
 	// enable QGLViewer keys
-	QOGLViewer::keyPressEvent(ev);
-	//update drawing
-	update();
+
 }
 
-void Viewer::keyReleaseEvent(QKeyEvent* ev)
+void Viewer::key_release_event(int32 k)
 {
-	QOGLViewer::keyReleaseEvent(ev);
-	unsetCursor();
+//	QOGLViewer::keyReleaseEvent(ev);
+//	unsetCursor();
 }
 
-void Viewer::mousePressEvent(QMouseEvent* event)
+void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
 {
-	qoglviewer::Vec P;
-	qoglviewer::Vec Q;
-	rayClick(event, P, Q);
+	GL::GLVec3d P;
+	GL::GLVec3d Q;
+	rayClick(x,y, P, Q);
 	Vec3 A(P[0], P[1], P[2]);
 	Vec3 B(Q[0], Q[1], Q[2]);
 
 
-	if ((event->modifiers() & Qt::ControlModifier) && !(event->modifiers() & Qt::ShiftModifier))
-		frame_manip_->pick(event->x(), event->y(),P,Q);
+	if (control_pressed() && !shift_pressed())
+		frame_manip_->pick(x,y,P,Q);
 
-	if ((event->modifiers() & Qt::ShiftModifier) && !(event->modifiers() & Qt::ControlModifier))
+	if (shift_pressed() && !control_pressed())
 	{
 		drawer_->new_list();
 		std::vector<Map3::Volume> selected;
@@ -335,11 +357,11 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 			drawer_->begin(GL_LINES);
 			// closest vol in red
 			drawer_->color3f(1.0, 0.0, 0.0);
-			cgogn::rendering::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
+			GL::add_to_drawer(map_, selected[0], vertex_position_, drawer_.get());
 			// others in yellow
 			drawer_->color3f(1.0, 1.0, 0.0);
 			for (uint32 i = 1u; i < selected.size(); ++i)
-				cgogn::rendering::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
+				GL::add_to_drawer(map_, selected[i], vertex_position_, drawer_.get());
 			drawer_->end();
 		}
 		drawer_->line_width(4.0);
@@ -352,7 +374,7 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		drawer_->end_list();
 	}
 
-	if ((event->modifiers() & Qt::ShiftModifier) && (event->modifiers() & Qt::ControlModifier))
+	if (shift_pressed() && control_pressed())
 	{
 		cgogn::Dart da;
 		if (thick_plane_mode_)
@@ -365,25 +387,25 @@ void Viewer::mousePressEvent(QMouseEvent* event)
 		}
 	}
 
-	QOGLViewer::mousePressEvent(event);
-	update();
+	GL::ImGUIViewer::mouse_press_event(button,x,y);
+	ask_update();
 }
 
-void Viewer::mouseReleaseEvent(QMouseEvent* event)
+void Viewer::mouse_release_event(int32 button, float64 x, float64 y)
 {
-	if (event->modifiers() & Qt::ControlModifier)
+	if (control_pressed())
 		frame_manip_->release();
 
-	QOGLViewer::mouseReleaseEvent(event);
-	update();
+	GL::ImGUIViewer::mouse_release_event(button,x,y);
+	ask_update();
 }
 
-void Viewer::mouseMoveEvent(QMouseEvent* event)
+void Viewer::mouse_move_event(float64 dx, float64 dy)
 {
-	if (event->modifiers() & Qt::ControlModifier)
+	if (control_pressed())
 	{
-		bool local_manip = (event->buttons() & Qt::RightButton);
-		frame_manip_->drag(local_manip, event->x(), event->y());
+		bool local_manip = mouse_buttons_ & 2;
+		frame_manip_->drag(local_manip, last_mouse_x_, last_mouse_y_);
 
 		plane_clip_from_frame();
 
@@ -399,63 +421,64 @@ void Viewer::mouseMoveEvent(QMouseEvent* event)
 		}
 	}
 
-	QOGLViewer::mouseMoveEvent(event);
-	update();
+	GL::ImGUIViewer::mouse_move_event(dx,dy);
+	ask_update();
 }
 
 void Viewer::draw()
 {
-	QMatrix4x4 proj;
-	QMatrix4x4 view;
-	camera()->getProjectionMatrix(proj);
-	camera()->getModelViewMatrix(view);
+	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
+	glEnable(GL_DEPTH_TEST);
+
+	proj_matrix_ = get_projection_matrix();
+	view_matrix_ = get_modelview_matrix();
 
 	if (vol_rendering_)
 	{
 		glEnable(GL_POLYGON_OFFSET_FILL);
 		glPolygonOffset(1.0f, 1.0f);
-		volume_drawer_rend_->draw_faces(proj,view);
+		volume_drawer_rend_->draw_faces(proj_matrix_,view_matrix_);
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
 	if (edge_rendering_)
-		volume_drawer_rend_->draw_edges(proj,view);
+		volume_drawer_rend_->draw_edges(proj_matrix_,view_matrix_);
 
 	if (topo_drawering_)
-		topo_drawer_rend_->draw(proj,view);
+		topo_drawer_rend_->draw(proj_matrix_,view_matrix_);
 
-	drawer_rend_->draw(proj, view);
+	drawer_rend_->draw(proj_matrix_, view_matrix_);
 
-	frame_manip_->draw(true,true,proj, view);
+	frame_manip_->draw(true,true,proj_matrix_, view_matrix_);
 }
 
 void Viewer::init()
 {
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
 
-	vbo_pos_ = cgogn::make_unique<cgogn::rendering::VBO>(3);
-	cgogn::rendering::update_vbo(vertex_position_, vbo_pos_.get());
+	vbo_pos_ = cgogn::make_unique<GL::VBO>(3);
+	GL::update_vbo(vertex_position_, vbo_pos_.get());
 
-	topo_drawer_ =  cgogn::make_unique<cgogn::rendering::TopoDrawer>();
+	topo_drawer_ =  cgogn::make_unique<GL::TopoDrawer>();
 	topo_drawer_rend_ = topo_drawer_->generate_renderer();
 	topo_drawer_->set_explode_volume(expl_);
 	topo_drawer_->update(map_,vertex_position_);
 
-	volume_drawer_ = cgogn::make_unique<cgogn::rendering::VolumeDrawer>();
+	volume_drawer_ = cgogn::make_unique<GL::VolumeDrawer>();
 	volume_drawer_->update_face(map_,vertex_position_);
 	volume_drawer_->update_edge(map_,vertex_position_);
 
 	volume_drawer_rend_ = volume_drawer_->generate_renderer();
 	volume_drawer_rend_->set_explode_volume(expl_);
 
-	drawer_ = cgogn::make_unique<cgogn::rendering::DisplayListDrawer>();
+	drawer_ = cgogn::make_unique<GL::DisplayListDrawer>();
 	drawer_rend_ = drawer_->generate_renderer();
 
 
-	frame_manip_ = cgogn::make_unique<cgogn::rendering::FrameManipulator>();
+	frame_manip_ = cgogn::make_unique<GL::FrameManipulator>();
 	frame_manip_->set_size(cgogn::geometry::diagonal(bb_).norm()/4);
 	frame_manip_->set_position(bb_.max());
-	frame_manip_->z_plane_param(QColor(200,200,200),-1.5f,-1.5f, 2.0f);
+	frame_manip_->z_plane_param(GL::GLColor(0.8f,0.8f,0.8f,1.0f),-1.5f,-1.5f, 2.0f);
 
 	plane_thickness_ = cgogn::geometry::diagonal(bb_).norm()/20;
 
@@ -478,32 +501,31 @@ void Viewer::plane_clip_from_frame()
 	Vec3 position;
 	Vec3 axis_z;
 	frame_manip_->get_position(position);
-	frame_manip_->get_axis(cgogn::rendering::FrameManipulator::Zt,axis_z);
+	frame_manip_->get_axis(GL::FrameManipulator::Zt,axis_z);
 	float32 d = -(position.dot(axis_z));
-	plane_clipping1_ = QVector4D(axis_z[0],axis_z[1],axis_z[2],d);
+	plane_clipping1_ = GL::GLVec4(axis_z[0],axis_z[1],axis_z[2],d);
 }
 
 int main(int argc, char** argv)
 {
-	std::string volumeMesh;
+	std::string volume_mesh;
 	if (argc < 2)
 	{
 		cgogn_log_debug("viewer_topo3") << "USAGE: " << argv[0] << " [filename]";
-		volumeMesh = "";//std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
+		volume_mesh = "";//std::string(DEFAULT_MESH_PATH) + std::string("vtk/nine_hexas.vtu");
 		cgogn_log_debug("viewer_topo3") << "Using procedural.";
 	}
 	else
-		volumeMesh = std::string(argv[1]);
+		volume_mesh = std::string(argv[1]);
 
-	QApplication application(argc, argv);
-	qoglviewer::init_ogl_context();
+	App app;
+	app.set_window_title("viewer_topo3_IMGUI");
+	app.set_window_size(800,800);
+	gl3wInit();
+	Viewer view;
+	view.import(volume_mesh);
+	app.add_view(&view);
+	app.launch();
 
-	// Instantiate the viewer.
-	Viewer viewer;
-	viewer.setWindowTitle("viewer_topo3");
-	viewer.import(volumeMesh);
-	viewer.show();
-
-	// Run main loop.
-	return application.exec();
+	return 0;
 }

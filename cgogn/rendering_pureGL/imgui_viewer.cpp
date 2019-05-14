@@ -99,7 +99,7 @@ void ImGUIViewer::close_event()
 
 bool ImGUIViewer::get_pixel_scene_position(int32 x, int32 y, GLVec3d& P)
 {
-	float z;
+	float z[4];
 	GLint xs,ys;
 	float64 xogl;
 	float64 yogl;
@@ -110,25 +110,27 @@ bool ImGUIViewer::get_pixel_scene_position(int32 x, int32 y, GLVec3d& P)
 		ys = GLint(double((fr_h_-y)-vp_y_) / double(vp_h_) * global_fbo_->height());
 		global_fbo_->bind();
 		glReadBuffer(GL_DEPTH_ATTACHMENT);
-		glReadPixels(xs, ys,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&z);
+		glReadPixels(xs, ys,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,z);
 		global_fbo_->release();
-		if (z>=1.0f)
+		if (*z>=1.0f)
 			return false;
 		xogl = (float64(xs)/vp_w_)*2.0 - 1.0;
 		yogl = (float64(ys)/vp_h_)*2.0 - 1.0;
-		zogl = float64(z)*2.0 - 1.0;
+		zogl = float64(*z)*2.0 - 1.0;
 	}
 	else
 	{
 		xs = x;
 		ys = fr_h_-y;
-		glReadBuffer(GL_DEPTH_ATTACHMENT);
-		glReadPixels(xs,ys,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,&z);
-		if (z>=1.0f)
+		glEnable(GL_DEPTH_TEST);
+		glReadBuffer(GL_FRONT);
+		glReadPixels(xs,ys,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,z);
+		std::cout << z[0] << " " <<z[1]<<" "<<z[2]<< std::endl;
+		if (*z>=1.0f)
 			return false;
-		float64 xogl = (float64(xs-vp_x_)/vp_w_)*2.0 - 1.0;
-		float64 yogl = (float64(ys-vp_y_)/vp_h_)*2.0 - 1.0;
-		float64 zogl = float64(z)*2.0 - 1.0;
+		xogl = (float64(xs-vp_x_)/vp_w_)*2.0 - 1.0;
+		yogl = (float64(ys-vp_y_)/vp_h_)*2.0 - 1.0;
+		zogl = float64(*z)*2.0 - 1.0;
 	}
 
 	GLVec4d Q(xogl, yogl, zogl, 1.0);
@@ -153,7 +155,8 @@ ImGUIApp::ImGUIApp():
 	win_frame_width_(512),
 	win_frame_height_(512),
 	interface_scaling_(1.0f),
-	show_imgui_(true)
+	show_imgui_(true),
+	focused_(nullptr)
 {
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
@@ -194,6 +197,15 @@ ImGUIApp::ImGUIApp():
 	std::cout << glGetString(GL_VENDOR)<< std::endl;
 	std::cout << glGetString(GL_RENDERER)<< std::endl;
 	std::cout << glGetString(GL_VERSION)<< std::endl;
+	int x,y;
+	glfwGetWindowSize(window_,&x,&y);
+	std::cout << x << " , " <<  y << std::endl;
+	glfwGetFramebufferSize(window_,&x,&y);
+	std::cout << x << " , " <<  y << std::endl;
+
+
+
+
 
 	glfwSetWindowSizeCallback(window_, [](GLFWwindow* wi, int , int)
 	{
@@ -219,7 +231,13 @@ ImGUIApp::ImGUIApp():
 		{
 			if (v->over_viewport(cx,cy))
 			{
-				that->focused_ = v;
+				if (v != that->focused_)
+				{
+					if (that->focused_)
+						that->focused_->mouse_buttons_ = 0;
+					that->focused_ = v;
+				}
+
 				v->shift_pressed_   = (m & GLFW_MOD_SHIFT);
 				v->control_pressed_ = (m & GLFW_MOD_CONTROL);
 				v->alt_pressed_     = (m & GLFW_MOD_ALT);
@@ -243,6 +261,13 @@ ImGUIApp::ImGUIApp():
 				}
 			}
 		}
+		if (!that->over_frame(cx,cy))
+		{
+			if (that->focused_)
+				that->focused_->mouse_buttons_ = 0;
+			that->focused_ = nullptr;
+		}
+
 	});
 
 	glfwSetScrollCallback(window_, [](GLFWwindow* wi, double dx, double dy)
@@ -255,7 +280,12 @@ ImGUIApp::ImGUIApp():
 		{
 			if (v->over_viewport(cx,cy))
 			{
-				that->focused_ = v;
+				if (v != that->focused_)
+				{
+					if (that->focused_)
+						that->focused_->mouse_buttons_ = 0;
+					that->focused_ = v;
+				}
 				v->mouse_wheel_event(dx,100*dy);
 			}
 		}
@@ -272,9 +302,51 @@ ImGUIApp::ImGUIApp():
 		{
 			if (v->mouse_buttons_ && v->over_viewport(cx,cy))
 			{
-				that->focused_ = v;
+				if (v != that->focused_)
+				{
+					if (that->focused_)
+						that->focused_->mouse_buttons_ = 0;
+					that->focused_ = v;
+				}
 				v->mouse_move_event(x,y);
 			}
+		}
+		if (!that->over_frame(cx,cy))
+		{
+			if (that->focused_)
+				that->focused_->mouse_buttons_ = 0;
+			that->focused_ = nullptr;
+		}
+	});
+
+	glfwSetCursorEnterCallback(window_, [](GLFWwindow* wi, int enter)
+	{
+		double cx,cy;
+		glfwGetCursorPos(wi,&cx,&(cy));
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
+
+		if (enter)
+		{
+			for (ImGUIViewer* v: that->viewers_)
+			{
+				if (v->over_viewport(cx,cy))
+				{
+					if (v != that->focused_)
+					{
+						if (that->focused_)
+							that->focused_->mouse_buttons_ = 0;
+						that->focused_ = v;
+					}
+				}
+			}
+			if (that->focused_)
+				that->focused_->mouse_buttons_ = 0;
+		}
+		else
+		{
+			if (that->focused_)
+				that->focused_->mouse_buttons_ = 0;
+			that->focused_ = nullptr;
 		}
 	});
 
@@ -285,7 +357,7 @@ ImGUIApp::ImGUIApp():
 		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 
 		if (k==GLFW_KEY_ESCAPE)
-			glfwTerminate();
+			exit(0);
 
 		for (ImGUIViewer* v: that->viewers_)
 		{
@@ -424,11 +496,15 @@ void ImGUIApp::launch()
 	adapt_viewers_geometry();
 
 	for (ImGUIViewer* v: viewers_)
+	{
+		v->update_viewer_geometry(win_frame_width_,win_frame_height_);
+		v->cam_.set_aspect_ratio(double(v->vp_w_)/v->vp_h_);
 		v->need_redraw_ = true;
-
+		v->resize_event(v->vp_w_,v->vp_h_);
+	}
 	while (!glfwWindowShouldClose(window_))
 	{
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
 		glfwPollEvents();
 		glfwMakeContextCurrent(window_);
 		if (show_imgui_)
@@ -439,6 +515,7 @@ void ImGUIApp::launch()
 			interface();
 			ImGui::Render();
 		}
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 		for(ImGUIViewer* v: viewers_)
 		{
 			v->spin();

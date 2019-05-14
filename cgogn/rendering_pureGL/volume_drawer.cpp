@@ -34,7 +34,7 @@ namespace rendering_pgl
 VolumeDrawerGen::VolumeDrawerGen(bool with_color_per_face) :
 	vbo_pos_(nullptr),
 	vbo_col_(nullptr),
-	face_color_(0,150,0,1),
+	face_color_(0,0.8f,0,1),
 	vbo_pos2_(nullptr),
 	edge_color_(0,0,0,1),
 	shrink_v_(0.6f)

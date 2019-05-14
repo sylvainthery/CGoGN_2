@@ -42,7 +42,7 @@ PureGLViewer::PureGLViewer():
 	vp_y_(0),
 	vp_w_(0),
 	vp_h_(0),
-	wheel_sensitivity_(0.005),
+	wheel_sensitivity_(0.0025),
 	mouse_sensitivity_(0.005),
 	spin_sensitivity_(0.025),
 	need_redraw_(true),

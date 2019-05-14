@@ -118,6 +118,12 @@ public:
 
 	void adapt_viewers_geometry();
 
+	inline bool over_frame(int32 x, int32 y)
+	{
+		// assume positive params
+		return (x < win_frame_width_) && (y < win_frame_width_);
+	}
+
 	void launch();
 };
 

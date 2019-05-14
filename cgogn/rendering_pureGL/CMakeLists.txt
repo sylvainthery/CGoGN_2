@@ -83,6 +83,8 @@ target_sources(${PROJECT_NAME}
         "${CMAKE_CURRENT_LIST_DIR}/shaders/shader_fullscreen_texture.cpp"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_pick.h"
 		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_pick.cpp"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_frame2d.h"
+		"${CMAKE_CURRENT_LIST_DIR}/shaders/shader_frame2d.cpp"
 
 )
 

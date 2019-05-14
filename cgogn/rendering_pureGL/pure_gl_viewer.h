@@ -98,6 +98,8 @@ public:
 
 	inline bool obj_mode() const { return  current_frame_ != &cam_;}
 
+	inline void ask_update() { need_redraw_ = true; }
+
 	inline Camera camera() {return cam_;}
 
 	inline GLMat4 get_projection_matrix() const

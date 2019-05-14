@@ -928,7 +928,7 @@ float32 FrameManipulator::angle_from_mouse(int x, int y, int dx, int dy)
 //	std::cout << x << "," << viewport_[3]-y << "  -  " << projected_origin_[0] <<","<< projected_origin_[1] << std::endl;
 //	std::cout<< "->" << Vo << " ^ "<< dV << " = " << W << " * "<< psa << " => "<< alpha << std::endl;
 
-	return alpha;
+	return alpha/100.0f;
 }
 
 float32 FrameManipulator::distance_from_mouse(int dx, int dy)

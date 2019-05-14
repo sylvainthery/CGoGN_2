@@ -33,9 +33,10 @@
 
 using Vec3 = Eigen::Vector3d;
 namespace GL = cgogn::rendering_pgl;
-
+class App;
 class Drawing : public GL::ImGUIViewer
 {
+	friend class App;
 public:
 	Drawing();
 	Drawing(GL::ImGUIViewer* v);
@@ -45,12 +46,9 @@ public:
 
 	void draw() override;
 	void init() override;
-	void interface() override;
 	void close_event() override;
-	void key_press_event(int k) override;
 	virtual ~Drawing() override;
 
-////private:
 	std::shared_ptr<GL::DisplayListDrawer> drawer_;
 	std::shared_ptr<GL::DisplayListDrawer> drawer2_;
 	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer_rend_;
@@ -66,6 +64,15 @@ public:
 
 };
 
+class App: public GL::ImGUIApp
+{
+	int current_view_;
+public:
+	App():	current_view_(0) {}
+	Drawing* view() { return static_cast<Drawing*>(viewers_.front()); }
+	void interface() override;
+	void key_press_event(int k) override;
+};
 
 
 Drawing::~Drawing()
@@ -128,16 +135,19 @@ Drawing::Drawing(GL::ImGUIViewer* v) :
 //{}
 
 
-void Drawing::key_press_event(int k)
+void App::key_press_event(int k)
 {
 	std::cout << "key_press_event "<< k << std::endl;
 	switch(k)
 	{
 		case int('S'):
-			if (shift_pressed_)
-				interface_scaling_ += 0.1f;
+			if (focused_->shift_pressed())
+				interface_scaling_ += 0.1;
 			else
-				interface_scaling_ -= 0.1f;
+				interface_scaling_ -= 0.1;
+			break;
+		case int(' '):
+			show_imgui_ = !show_imgui_;
 			break;
 		default:
 			break;
@@ -159,7 +169,6 @@ void Drawing::draw()
 
 void Drawing::init()
 {
-
 	set_scene_radius(5.0);
 	set_scene_center(Eigen::Vector3d(0,0,0));
 	glClearColor(0.1f,0.1f,0.3f,0.0f);
@@ -257,10 +266,8 @@ void Drawing::init()
 	drawer2_->end_list();
 }
 
-void Drawing::interface()
+void App::interface()
 {
-	glfwMakeContextCurrent(window_);
-
 	ImGui::SetCurrentContext(context_);
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
@@ -277,10 +284,12 @@ int main(int argc, char** argv)
 {
 	// Instantiate the viewer.
 
-	Drawing view;
+	App app;
 	gl3wInit();
-	view.set_window_title("Drawing");
-	view.launch();
+	Drawing view;
+	app.set_window_title("Drawing");
+	app.add_view(&view);
+	app.launch();
 
 
 	return 0;

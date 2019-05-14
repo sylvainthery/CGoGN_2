@@ -21,13 +21,11 @@
 *                                                                              *
 *******************************************************************************/
 
+#include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <cgogn/core/cmap/cmap2.h>
-
 #include <cgogn/io/map_import.h>
 #include <cgogn/io/map_export.h>
-
 #include <cgogn/geometry/algos/bounding_box.h>
-#include <cgogn/rendering_pureGL/imgui_viewer.h>
 #include <cgogn/rendering_pureGL/drawer.h>
 #include <cgogn/rendering_pureGL/map_render.h>
 #include <cgogn/rendering_pureGL/topo_drawer.h>
@@ -65,7 +63,7 @@ public:
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(Viewer);
 
 	void draw() override;
-	 void init() override;
+	void init() override;
 	void key_press_event(int k) override;
 	void mouse_press_event(int32 button, float64 x, float64 y) override;
 	void close_event() override;
@@ -94,15 +92,14 @@ public:
 	Viewer* view(int i) { return static_cast<Viewer*>(viewers_[i]); }
 	void interface() override;
 	void key_press_event(int k) override;
-
 };
 
 
 
 void App::interface()
 {
-//	ImGui::SetCurrentContext(context_);
-	imgui_make_context_current();
+	ImGui::SetCurrentContext(context_);
+//	imgui_make_context_current();
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
@@ -207,7 +204,7 @@ void Viewer::draw()
 {
 //glClearColor(0.5f,0.5f,0.9f,0);
 //	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
+	glViewport(vp_x_,vp_y_, vp_w_, vp_h_);
 	glEnable(GL_DEPTH_TEST);
 
 	GL::GLMat4 proj = get_projection_matrix();
@@ -252,6 +249,7 @@ void Viewer::init()
 
 void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
 {
+	ImGUIViewer::mouse_press_event(button,x,y);
 }
 
 int main(int argc, char** argv)

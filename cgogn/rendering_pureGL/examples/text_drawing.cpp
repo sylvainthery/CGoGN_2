@@ -33,9 +33,10 @@ using Vec3 = Eigen::Vector3d;
 
 using namespace cgogn;
 namespace RGL = rendering_pgl;
-
+class App;
 class TextDrawing : public RGL::ImGUIViewer
 {
+	friend class App;
 public:
 	TextDrawing();
 //	TextDrawing(TextDrawing* ptr);
@@ -57,7 +58,11 @@ public:
 	std::string fps_;
 };
 
-
+class App: public RGL::ImGUIApp
+{
+public:
+	App() {}
+};
 
 TextDrawing::TextDrawing() :
 	tdr_(nullptr),
@@ -119,7 +124,7 @@ void TextDrawing::init()
 	tdr2_ = cgogn::make_unique<RGL::TextDrawer>();
 	tdr_rend2_ = tdr2_->generate_renderer();
 
-	float sz = 32.0f / (device_pixel_ratio()*width());
+	float sz = 32.0f / (/*device_pixel_ratio()* */width());
 	*tdr2_ <<Vec3{sz,sz,-1} << RGL::GLColor(1,1,1,1) <<sz << fps_ << " fps"<< RGL::TextDrawer::end ;
 	tdr_rend2_->set_italic(0.2f);
 	start_fps_ = std::chrono::system_clock::now();
@@ -130,7 +135,7 @@ void TextDrawing::resize_event(int32 w, int32 h)
 {
 	if (tdr2_)
 	{
-		float sz = 32.0f / (device_pixel_ratio()*w);
+		float sz = 32.0f / (/*device_pixel_ratio()* */w);
 		*tdr2_ <<Vec3{sz,sz,-1} << RGL::GLColor(1,1,1,1) <<sz << fps_ << " fps"<< RGL::TextDrawer::end ;
 	}
 
@@ -159,8 +164,10 @@ void TextDrawing::key_press_event(int k)
 int main(int argc, char** argv)
 {
 //	qoglviewer::init_ogl_context();
-	TextDrawing view;
+	App app;
 	gl3wInit();
-	view.set_window_title("TextDrawing");
-	view.launch();
+	TextDrawing view;
+	app.add_view(&view);
+	app.set_window_title("TextDrawing");
+	app.launch();
 }

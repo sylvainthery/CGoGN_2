@@ -36,7 +36,7 @@
 #include <cgogn/rendering_pureGL/shaders/shader_vector_per_vertex.h>
 #include <cgogn/rendering_pureGL/shaders/shader_bold_line.h>
 #include <cgogn/rendering_pureGL/shaders/shader_point_sprite.h>
-//#include <cgogn/rendering_pureGL/shaders/shader_round_point.h>
+#include <cgogn/rendering_pureGL/shaders/shader_frame2d.h>
 #include <cgogn/rendering_pureGL/drawer.h>
 #include <cgogn/rendering_pureGL/vbo_update.h>
 #include <cgogn/geometry/algos/ear_triangulation.h>
@@ -63,7 +63,6 @@ public:
 
 	void import(const std::string& surface_mesh);
 
-private:
 	Map2 map_;
 	VertexAttribute<Vec3> vertex_position_;
 	VertexAttribute<Vec3> vertex_normal_;
@@ -80,6 +79,7 @@ private:
 	std::unique_ptr<GL::ShaderPhong::Param> param_phong_;
 	std::unique_ptr<GL::ShaderPointSpriteColorSize::Param> param_point_sprite_;
 
+	std::unique_ptr<GL::ShaderFrame2d::Param> param_frame_;
 	std::unique_ptr<GL::DisplayListDrawer> drawer_;
 	std::unique_ptr<GL::DisplayListDrawer::Renderer> drawer_rend_;
 
@@ -92,7 +92,6 @@ private:
 	bool edge_rendering_;
 	bool normal_rendering_;
 	bool bb_rendering_;
-	float interface_scaling_;
 public:
 	void draw() override;
 	void init() override;
@@ -117,8 +116,8 @@ public:
 
 void App::interface()
 {
-//	ImGui::SetCurrentContext(context_);
-	imgui_make_context_current();
+	ImGui::SetCurrentContext(context_);
+//	imgui_make_context_current();
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
@@ -343,6 +342,8 @@ void Viewer::init()
 	param_phong_->ambiant_color_ =  GL::GLColor(0.1f,0.1f,0.1f,1);
 	param_phong_->set_vbos(vbo_pos_.get(), vbo_norm_.get());//, vbo_color_.get());
 
+	param_frame_ = GL::ShaderFrame2d::generate_param();
+
 	// drawer for simple old-school g1 rendering
 	drawer_ = cgogn::make_unique<GL::DisplayListDrawer>();
 	drawer_rend_= drawer_->generate_renderer();
@@ -457,6 +458,7 @@ void Viewer::draw()
 	fbo_->release();
 	glDisable(GL_DEPTH_TEST);
 	param_fst_->draw();
+	param_frame_->draw(width(),height());
 
 }
 

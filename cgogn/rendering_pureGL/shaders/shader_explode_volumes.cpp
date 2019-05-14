@@ -32,10 +32,11 @@ namespace rendering_pgl
 
 static const char* vertex_shader_source =
 "#version 150\n"
+"uniform mat4 model_view_matrix;\n"
 "in vec3 vertex_pos;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = vec4(vertex_pos,1.0);\n"
+"   gl_Position = model_view_matrix * vec4(vertex_pos,1.0);\n"
 "}\n";
 
 static const char* geometry_shader_source =
@@ -44,8 +45,6 @@ static const char* geometry_shader_source =
 "layout (triangle_strip, max_vertices=3) out;\n"
 "out vec3 color_f;\n"
 "uniform mat4 projection_matrix;\n"
-"uniform mat4 model_view_matrix;\n"
-"uniform mat3 normal_matrix;\n"
 "uniform float explode_vol;\n"
 "uniform vec3 light_position;\n"
 "uniform vec4 color;\n"
@@ -59,14 +58,14 @@ static const char* geometry_shader_source =
 "	{\n"
 "		vec3 v1 = gl_in[2].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
 "		vec3 v2 = gl_in[3].gl_Position.xyz - gl_in[1].gl_Position.xyz;\n"
-"		vec3 N  = normalize(normal_matrix*cross(v1,v2));\n"
-"		vec4 face_center =  model_view_matrix * gl_in[1].gl_Position;\n"
+"		vec3 N  = normalize(cross(v1,v2));\n"
+"		vec4 face_center =  gl_in[1].gl_Position;\n"
 "		vec3 L =  normalize (light_position - face_center.xyz);\n"
 "		float lambertTerm = abs(dot(N,L));\n"
 "		for (int i=1; i<=3; i++)\n"
 "		{\n"
 "			vec4 Q = explode_vol *  gl_in[i].gl_Position  + (1.0-explode_vol) * gl_in[0].gl_Position;\n"
-"			gl_Position = projection_matrix * model_view_matrix *  Q;\n"
+"			gl_Position = projection_matrix * Q;\n"
 "			color_f = color.rgb * lambertTerm;\n"
 "			EmitVertex();\n"
 "		}\n"
@@ -77,10 +76,12 @@ static const char* geometry_shader_source =
 static const char* fragment_shader_source =
 "#version 150\n"
 "in vec3 color_f;\n"
-"out vec3 fragColor;\n"
+"uniform vec4 color;\n"
+"out vec4 fragColor;\n"
 "void main()\n"
 "{\n"
-"   fragColor = color_f;\n"
+"	if (!gl_FrontFacing) discard;\n"
+"   fragColor = vec4(color_f,color.a);\n"
 "}\n";
 
 ShaderExplodeVolumes* ShaderExplodeVolumes::instance_ = nullptr;
@@ -89,7 +90,7 @@ ShaderExplodeVolumes::ShaderExplodeVolumes()
 {
 	load3_bind(vertex_shader_source,fragment_shader_source,geometry_shader_source,
 		 "vertex_pos");
-	add_uniforms("color","explode_vol","plane_clip","plane_clip2");
+	add_uniforms("color","light_position","explode_vol","plane_clip","plane_clip2");
 }
 
 }
