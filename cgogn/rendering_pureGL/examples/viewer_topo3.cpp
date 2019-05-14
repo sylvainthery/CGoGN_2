@@ -372,6 +372,7 @@ void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
 		drawer_->end();
 
 		drawer_->end_list();
+		ask_update();
 	}
 
 	if (shift_pressed() && control_pressed())
@@ -385,10 +386,11 @@ void Viewer::mouse_press_event(int32 button, float64 x, float64 y)
 		{
 			topo_drawer_->update_color(da, Vec3(1.0,0.0,0.0));
 		}
+		ask_update();
 	}
 
-	GL::ImGUIViewer::mouse_press_event(button,x,y);
-	ask_update();
+	if (shift_pressed() && !control_pressed())
+		GL::ImGUIViewer::mouse_press_event(button,x,y);
 }
 
 void Viewer::mouse_release_event(int32 button, float64 x, float64 y)

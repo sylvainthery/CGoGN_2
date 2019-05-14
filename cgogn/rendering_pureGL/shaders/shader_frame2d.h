@@ -62,7 +62,10 @@ public:
 		bind();
 		shader_->set_uniform_value(2,w);
 		shader_->set_uniform_value(3,h);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 10);
+		glDisable(GL_BLEND);
 		release();
 	}
 };

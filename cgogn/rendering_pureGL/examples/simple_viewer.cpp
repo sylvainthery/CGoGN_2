@@ -343,6 +343,7 @@ void Viewer::init()
 	param_phong_->set_vbos(vbo_pos_.get(), vbo_norm_.get());//, vbo_color_.get());
 
 	param_frame_ = GL::ShaderFrame2d::generate_param();
+	param_frame_->sz_ = 9.0f;
 
 	// drawer for simple old-school g1 rendering
 	drawer_ = cgogn::make_unique<GL::DisplayListDrawer>();

@@ -21,47 +21,84 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/rendering_pureGL/shaders/shader_frame2d.h>
-
+#ifndef CGOGN_RENDERING_SHADERS_HISTO_H_
+#define CGOGN_RENDERING_SHADERS_HISTO_H_
+#include <GL/gl3w.h>
+#include <cgogn/rendering_pureGL/cgogn_rendering_puregl_export.h>
+#include <cgogn/rendering_pureGL/shaders/shader_program.h>
+#include <cgogn/rendering_pureGL/texture.h>
+#include <cgogn/rendering_pureGL/fbo.h>
 
 namespace cgogn
 {
 
 namespace rendering_pgl
 {
+DECLARE_SHADER_CLASS(Histo)
 
-ShaderFrame2d* ShaderFrame2d::instance_ = nullptr;
-
-ShaderFrame2d::ShaderFrame2d()
+class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamHisto : public ShaderParam
 {
-	const char* vertex_shader_source =
-	"#version 150\n"
-	"const float vertex_pos[]=float[](-1,-1,1, -1,-1,0, 1,-1,1, 1,-1,0, 1,1,1, 1,1,0, -1,1,1, -1,1,0, -1,-1,1, -1,-1,0);\n"
-	"uniform float w;\n"
-	"uniform float h;\n"
-	"uniform float sz;\n"
-	"out float alpha;\n"
-	"void main()\n"
-	"{\n"
-	"	vec2 mu = vec2(1.0,1.0) - 2.0 * sz* float((gl_VertexID)%2)/vec2(w,h);\n"
-	"	vec2 P = vec2(vertex_pos[3*gl_VertexID],vertex_pos[3*gl_VertexID+1]) * mu;\n"
-	"   gl_Position = vec4(P,0.0,1.0);\n"
-	"	alpha = vertex_pos[3*gl_VertexID +2];\n"
-	"}\n";
+	inline void set_uniforms() override
+	{
+		shader_->set_uniforms_values(texture_->bind(0), texture_->width());
+	}
 
-	const char* fragment_shader_source =
-	"#version 150\n"
-	"in float alpha;\n"
-	"out vec4 frag;\n"
-	"uniform vec4 color;\n"
-	"void main()\n"
-	"{\n"
-	"	frag = vec4(color.rgb,alpha);\n"
-	"}\n";
+public:
+	Texture2D* tex_fbo_;
+	FBO* fbo_;
+	Texture2D* texture_;
 
-	load(vertex_shader_source,fragment_shader_source);
-	add_uniforms("color","sz","w","h");
-}
+	using LocalShader = ShaderHisto;
 
-}
-}
+	inline ShaderParamHisto(LocalShader* sh) :
+		ShaderParam(sh)
+	{
+		tex_fbo_ = new Texture2D();
+		tex_fbo_->alloc(1,1,GL_R32F,GL_RED,nullptr,GL_FLOAT);
+		fbo_ = new FBO({tex_fbo_},false,nullptr);
+	}
+
+	inline ~ShaderParamHisto() override {}
+
+	inline void draw(int nbb)
+	{
+		std::vector<float> histogram;
+		histogram.resize(nbb,5.5f);
+
+		fbo_->resize(nbb,1);
+		bind();
+
+
+		fbo_->bind();
+
+		GLenum idbuf = GL_COLOR_ATTACHMENT0;
+		glDrawBuffers(1,&idbuf);
+		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(0.01,0,0,0);
+		glViewport(0,0,nbb,1);
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE,GL_ONE);
+		glDrawArrays(GL_POINTS,0,texture_->width()*texture_->height());
+		glDisable(GL_BLEND);
+		fbo_->release();
+		release();
+
+		fbo_->bind();
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glReadPixels(0,0,nbb,1,GL_RED,GL_FLOAT,histogram.data());
+		fbo_->release();
+
+		for( float h: histogram)
+			std::cout << " | " << h ;
+
+		std::cout << " | " << std::endl;
+
+	}
+
+};
+
+} // namespace rendering_pgl
+} // namespace cgogn
+
+#endif

@@ -21,8 +21,8 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <cgogn/rendering_pureGL/shaders/shader_frame2d.h>
 
+#include <cgogn/rendering_pureGL/shaders/shader_histo.h>
 
 namespace cgogn
 {
@@ -30,38 +30,32 @@ namespace cgogn
 namespace rendering_pgl
 {
 
-ShaderFrame2d* ShaderFrame2d::instance_ = nullptr;
 
-ShaderFrame2d::ShaderFrame2d()
+ShaderHisto* ShaderHisto::instance_ = nullptr;
+
+ShaderHisto::ShaderHisto()
 {
 	const char* vertex_shader_source =
-	"#version 150\n"
-	"const float vertex_pos[]=float[](-1,-1,1, -1,-1,0, 1,-1,1, 1,-1,0, 1,1,1, 1,1,0, -1,1,1, -1,1,0, -1,-1,1, -1,-1,0);\n"
-	"uniform float w;\n"
-	"uniform float h;\n"
-	"uniform float sz;\n"
-	"out float alpha;\n"
-	"void main()\n"
-	"{\n"
-	"	vec2 mu = vec2(1.0,1.0) - 2.0 * sz* float((gl_VertexID)%2)/vec2(w,h);\n"
-	"	vec2 P = vec2(vertex_pos[3*gl_VertexID],vertex_pos[3*gl_VertexID+1]) * mu;\n"
-	"   gl_Position = vec4(P,0.0,1.0);\n"
-	"	alpha = vertex_pos[3*gl_VertexID +2];\n"
-	"}\n";
-
+			"#version 150\n"
+			"uniform sampler2D TU;\n"
+			"uniform int width;\n"
+			"void main()\n"
+			"{\n"
+			"	ivec2 tc  = ivec2(gl_VertexID%width, gl_VertexID/width);\n"
+			"	float p = texelFetch(TU,tc,0).r *2.0 -1.0;"
+			"   gl_Position = vec4(p,0.0,0.0,1.0);\n"
+			"}\n";
 	const char* fragment_shader_source =
-	"#version 150\n"
-	"in float alpha;\n"
-	"out vec4 frag;\n"
-	"uniform vec4 color;\n"
-	"void main()\n"
-	"{\n"
-	"	frag = vec4(color.rgb,alpha);\n"
-	"}\n";
+			"#version 150\n"
+			"out float frag;\n"
+			"void main()\n"
+			"{\n"
+			"	frag = 1.0;\n"
+			"}\n";
 
 	load(vertex_shader_source,fragment_shader_source);
-	add_uniforms("color","sz","w","h");
+	add_uniforms("TU","width");
 }
 
 }
-}
+} // namespace cgogn

@@ -29,6 +29,9 @@
 #include <cgogn/rendering_pureGL/wall_paper.h>
 #include <cgogn/rendering_pureGL/types.h>
 
+#include <cgogn/rendering_pureGL/shaders/shader_histo.h>
+
+
 #define DEFAULT_MESH_PATH CGOGN_STR(CGOGN_TEST_MESHES_PATH)
 
 using Vec3 = Eigen::Vector3d;
@@ -264,6 +267,16 @@ void Drawing::init()
 			}
 	drawer2_->end();
 	drawer2_->end_list();
+
+	GL::Texture2D t;
+	t.load(GL::GLImage("/home/thery/lena.jpg"));
+	auto param = GL::ShaderHisto::generate_param();
+	param->texture_ = &t;
+	param->draw(1);
+	param->draw(2);
+	param->draw(4);
+	param->draw(8);
+
 }
 
 void App::interface()
