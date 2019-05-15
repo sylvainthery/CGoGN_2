@@ -63,8 +63,10 @@ public:
 	std::unique_ptr<GL::WallPaper::Renderer> button_rend_;
 
 //	Drawing* m_first;
-	float interface_scaling_;
-
+	GL::Texture2D th_;
+	std::vector<float> histogram_;
+	int nbb_;
+	std::shared_ptr<GL::ShaderParamHisto> param_histo_;
 };
 
 class App: public GL::ImGUIApp
@@ -104,7 +106,7 @@ Drawing::Drawing() :
 	button_(nullptr),
 	wp_rend_(nullptr),
 	button_rend_(nullptr),
-	interface_scaling_(1.0)
+	nbb_(1)
 {
 }
 
@@ -117,8 +119,7 @@ Drawing::Drawing(GL::ImGUIViewer* v) :
 	wp_(nullptr),
 	button_(nullptr),
 	wp_rend_(nullptr),
-	button_rend_(nullptr),
-	interface_scaling_(1.0)
+	button_rend_(nullptr)
 {
 }
 
@@ -168,6 +169,8 @@ void Drawing::draw()
 
 	drawer_rend_->draw(proj,view);
 	drawer2_rend_->draw(proj,view);
+
+	param_histo_->draw(nbb_,histogram_);
 }
 
 void Drawing::init()
@@ -268,15 +271,9 @@ void Drawing::init()
 	drawer2_->end();
 	drawer2_->end_list();
 
-	GL::Texture2D t;
-	t.load(GL::GLImage("/home/thery/lena.jpg"));
-	auto param = GL::ShaderHisto::generate_param();
-	param->texture_ = &t;
-	param->draw(1);
-	param->draw(2);
-	param->draw(4);
-	param->draw(8);
-
+	th_.load(GL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/medu.png")))));
+	param_histo_ = GL::ShaderHisto::generate_param();
+	param_histo_->texture_ = &th_;
 }
 
 void App::interface()
@@ -286,6 +283,9 @@ void App::interface()
 
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoScrollbar);
 	ImGui::SetWindowSize({0,0});
+
+	ImGui::SliderInt("NBB",&view()->nbb_,1,256);
+	ImGui::PlotHistogram("Histo",view()->histogram_.data(),view()->histogram_.size(),0,nullptr,FLT_MAX,FLT_MAX,{512,200});
 
 	ImGui::Separator();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

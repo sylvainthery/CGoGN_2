@@ -39,22 +39,24 @@ ShaderHisto::ShaderHisto()
 			"#version 150\n"
 			"uniform sampler2D TU;\n"
 			"uniform int width;\n"
-			"void main()\n"
+	        "uniform float k;\n"
+	        "void main()\n"
 			"{\n"
 			"	ivec2 tc  = ivec2(gl_VertexID%width, gl_VertexID/width);\n"
-			"	float p = texelFetch(TU,tc,0).r *2.0 -1.0;"
-			"   gl_Position = vec4(p,0.0,0.0,1.0);\n"
+	        "	float p = texelFetch(TU,tc,0).r * k;\n"
+	        "	p = p*2.0 - 1.0;\n"
+	        "   gl_Position = vec4(p,0.0,0.0,1.0);\n"
 			"}\n";
 	const char* fragment_shader_source =
 			"#version 150\n"
 			"out float frag;\n"
 			"void main()\n"
 			"{\n"
-			"	frag = 1.0;\n"
+	        "	frag = 1.0;\n"
 			"}\n";
 
 	load(vertex_shader_source,fragment_shader_source);
-	add_uniforms("TU","width");
+	add_uniforms("TU","width","k");
 }
 
 }

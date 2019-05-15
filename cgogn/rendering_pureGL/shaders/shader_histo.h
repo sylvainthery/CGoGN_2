@@ -40,7 +40,7 @@ class CGOGN_RENDERING_PUREGL_EXPORT ShaderParamHisto : public ShaderParam
 {
 	inline void set_uniforms() override
 	{
-		shader_->set_uniforms_values(texture_->bind(0), texture_->width());
+        shader_->set_uniforms_values(texture_->bind(0), texture_->width(),1.0f);
 	}
 
 public:
@@ -60,26 +60,25 @@ public:
 
 	inline ~ShaderParamHisto() override {}
 
-	inline void draw(int nbb)
+	inline void draw(int nbb, std::vector<float>& histogram)
 	{
-		std::vector<float> histogram;
 		histogram.resize(nbb,5.5f);
 
 		fbo_->resize(nbb,1);
+
 		bind();
-
-
+		shader_->set_uniform_value(2,1.0f-0.5f/nbb);
 		fbo_->bind();
 
 		GLenum idbuf = GL_COLOR_ATTACHMENT0;
 		glDrawBuffers(1,&idbuf);
 		glClear(GL_COLOR_BUFFER_BIT);
-		glClearColor(0.01,0,0,0);
+		glClearColor(0.0,0,0,0);
 		glViewport(0,0,nbb,1);
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE,GL_ONE);
-		glDrawArrays(GL_POINTS,0,texture_->width()*texture_->height());
+		glDrawArrays(GL_POINTS,0, texture_->width()*texture_->height());
 		glDisable(GL_BLEND);
 		fbo_->release();
 		release();
@@ -90,9 +89,11 @@ public:
 		fbo_->release();
 
 		for( float h: histogram)
-			std::cout << " | " << h ;
-
-		std::cout << " | " << std::endl;
+			std::cout << "|" << h ;
+		float tot=0;
+		for( float h: histogram)
+			tot+=h;
+		std::cout << "| => " << tot << std::endl;
 
 	}
 
