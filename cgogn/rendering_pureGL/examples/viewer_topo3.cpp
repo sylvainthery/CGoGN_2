@@ -126,7 +126,7 @@ class App: public GL::ImGUIApp
 public:
 	App() {}
 //	inline Viewer* view(int i) { return static_cast<Viewer*>(viewers_[i]); }
-//	void interface() override;
+//	bools interface() override;
 };
 
 //

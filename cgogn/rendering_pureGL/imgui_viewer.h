@@ -32,6 +32,8 @@
 #include <imgui_impl_opengl3.h>
 #include <cgogn/rendering_pureGL/fbo.h>
 #include <cgogn/rendering_pureGL/types.h>
+#include <cgogn/rendering_pureGL/shaders/shader_fullscreen_texture.h>
+#include <cgogn/rendering_pureGL/fbo.h>
 
 namespace cgogn
 {
@@ -58,8 +60,11 @@ protected:
 	float64 vp_percent_height_;
 	float64 double_click_timeout_;
 	float64 last_click_time_;
-	FBO* global_fbo_;
+	std::unique_ptr<ShaderFSTexture::Param> param_fst_;
+	std::unique_ptr<FBO> fbo_;
+	std::unique_ptr<Texture2D> tex_;
 
+	void internal_init();
 public:
 	ImGUIViewer(ImGUIViewer* share=nullptr);
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIViewer);
@@ -96,13 +101,15 @@ protected:
 
 	std::vector<ImGUIViewer*> viewers_;
 	ImGUIViewer* focused_;
+	bool interface_need_redraw_;
+
 public:
 	ImGUIApp();
 	CGOGN_NOT_COPYABLE_NOR_MOVABLE(ImGUIApp);
 	virtual ~ImGUIApp();
 	void resize_event(int32 w, int32 h);
 	void close_event();
-	virtual void interface();
+	virtual bool interface();
 	virtual void key_press_event(int32 k);
 	virtual void key_release_event(int32 k);
 

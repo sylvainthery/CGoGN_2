@@ -75,7 +75,7 @@ class App: public GL::ImGUIApp
 public:
 	App():	current_view_(0) {}
 	Drawing* view() { return static_cast<Drawing*>(viewers_.front()); }
-	void interface() override;
+	bool interface() override;
 	void key_press_event(int k) override;
 };
 
@@ -271,12 +271,12 @@ void Drawing::init()
 	drawer2_->end();
 	drawer2_->end_list();
 
-	th_.load(GL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/medu.png")))));
+	th_.load(GL::GLImage(std::string((DEFAULT_MESH_PATH) + std::string(("../images/lena.jpg")))));
 	param_histo_ = GL::ShaderHisto::generate_param();
 	param_histo_->texture_ = &th_;
 }
 
-void App::interface()
+bool App::interface()
 {
 	ImGui::SetCurrentContext(context_);
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
@@ -290,6 +290,7 @@ void App::interface()
 	ImGui::Separator();
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
+	return true;
 }
 
 

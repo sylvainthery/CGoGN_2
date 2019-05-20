@@ -62,7 +62,7 @@ public:
 
 	inline void draw(int nbb, std::vector<float>& histogram)
 	{
-		histogram.resize(nbb,5.5f);
+		histogram.resize(nbb);
 
 		fbo_->resize(nbb,1);
 
@@ -72,21 +72,17 @@ public:
 
 		GLenum idbuf = GL_COLOR_ATTACHMENT0;
 		glDrawBuffers(1,&idbuf);
-		glClear(GL_COLOR_BUFFER_BIT);
+//		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		glClearColor(0.0,0,0,0);
-		glViewport(0,0,nbb,1);
+		glClear(GL_COLOR_BUFFER_BIT);
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE,GL_ONE);
 		glDrawArrays(GL_POINTS,0, texture_->width()*texture_->height());
 		glDisable(GL_BLEND);
-		fbo_->release();
-		release();
-
-		fbo_->bind();
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
-		glReadPixels(0,0,nbb,1,GL_RED,GL_FLOAT,histogram.data());
-		fbo_->release();
+		glReadPixels(0,0,nbb,1,GL_RED,GL_FLOAT,histogram.data());		fbo_->release();
+		release();
 
 		for( float h: histogram)
 			std::cout << "|" << h ;

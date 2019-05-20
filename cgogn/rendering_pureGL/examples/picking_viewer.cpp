@@ -21,11 +21,6 @@
 *                                                                              *
 *******************************************************************************/
 
-#include <QApplication>
-#include <QMatrix4x4>
-#include <QMouseEvent>
-#include <QVector3D>
-
 #include <QOGLViewer/qoglviewer.h>
 #include <QOGLViewer/vec.h>
 

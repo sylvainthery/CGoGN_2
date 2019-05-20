@@ -1569,7 +1569,7 @@ public:
 			}
 		}
 
-		// embed remaining cells
+		//  remaining cells
 		concrete->merge_finish_embedding(first);
 
 		// ok

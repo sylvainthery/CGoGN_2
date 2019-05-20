@@ -32,12 +32,12 @@ target_link_libraries(text_drawingPGL cgogn::renderingPGL)
 add_executable(viewer_topo3PGL viewer_topo3.cpp)
 target_link_libraries(viewer_topo3PGL cgogn::core cgogn::io cgogn::renderingPGL)
 
+#add_executable(picking_viewerPGL picking_viewer.cpp)
+#target_link_libraries(picking_viewerPGL cgogn::core cgogn::io cgogn::renderingPGL)
 
 #[[add_executable(viewer_per_face viewer_per_face.cpp)
 target_link_libraries(viewer_per_face cgogn::core cgogn::io cgogn::rendering)
 
-add_executable(picking_viewer picking_viewer.cpp)
-target_link_libraries(picking_viewer cgogn::core cgogn::io cgogn::rendering)
 
 
 add_executable(mt_viewer mt_viewer.cpp)

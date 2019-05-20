@@ -108,64 +108,79 @@ class App: public GL::ImGUIApp
 	int current_view_;
 public:
 	App():	current_view_(0) {}
-	Viewer* view() { return static_cast<Viewer*>(viewers_.front()); }
-	void interface() override;
+	Viewer* view() { return static_cast<Viewer*>(viewers_[current_view_]); }
+	bool interface() override;
 	void key_press_event(int k) override;
 };
 
 
-void App::interface()
+bool App::interface()
 {
+	std::cout << "draw interface" << std::endl;
+
 	ImGui::SetCurrentContext(context_);
 //	imgui_make_context_current();
 	ImGui::GetIO().FontGlobalScale = interface_scaling_;
 
+	bool& inr = interface_need_redraw_;
+
 	ImGui::Begin("Control Window",nullptr, ImGuiWindowFlags_NoSavedSettings);
 	ImGui::SetWindowSize({0,0});
-	ImGui::Checkbox("Phong/Flat", &view()->phong_rendering_);
-	ImGui::Checkbox("Vertices", &view()->vertices_rendering_);
-	ImGui::Checkbox("Normals", &view()->normal_rendering_);
-	ImGui::Checkbox("Edges", &view()->edge_rendering_);
-	ImGui::Checkbox("BB", &view()->bb_rendering_);
+
+	inr |= ImGui::RadioButton("Left Viewer", &current_view_, 0);
+	ImGui::SameLine();
+	inr |= ImGui::RadioButton("Right Viewer", &current_view_, 1);
+	inr |= ImGui::Checkbox("BB", &view()->bb_rendering_);
+	inr |= ImGui::Checkbox("Phong/Flat", &view()->phong_rendering_);
+	inr |= ImGui::Checkbox("Vertices", &view()->vertices_rendering_);
+	inr |= ImGui::Checkbox("Normals", &view()->normal_rendering_);
+	inr |= ImGui::Checkbox("Edges", &view()->edge_rendering_);
+	inr |= ImGui::Checkbox("BB", &view()->bb_rendering_);
 
 	if (view()->phong_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Phong parameters");
-		ImGui::ColorEdit3("front color##phong",view()->param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		inr |= ImGui::ColorEdit3("front color##phong",view()->param_phong_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##phong",view()->param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("spec##phong", &(view()->param_phong_->specular_coef_), 10.0f, 1000.0f);
-		ImGui::Checkbox("double side##phong", &(view()->param_phong_->double_side_));
+		inr |= ImGui::ColorEdit3("back color##phong",view()->param_phong_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		inr |= ImGui::SliderFloat("spec##phong", &(view()->param_phong_->specular_coef_), 10.0f, 1000.0f);
+		inr |= ImGui::Checkbox("double side##phong", &(view()->param_phong_->double_side_));
 	}
 	else
 	{
 		ImGui::Separator();
 		ImGui::Text("Flat parameters");
-		ImGui::ColorEdit3("front color##flat",view()->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
+		inr |= ImGui::ColorEdit3("front color##flat",view()->param_flat_->front_color_.data(),ImGuiColorEditFlags_NoInputs);
 		ImGui::SameLine();
-		ImGui::ColorEdit3("back color##flat",view()->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::Checkbox("single side##flat", &(view()->param_flat_->bf_culling_));
+		inr |= ImGui::ColorEdit3("back color##flat",view()->param_flat_->back_color_.data(),ImGuiColorEditFlags_NoInputs);
+		inr |= ImGui::Checkbox("single side##flat", &(view()->param_flat_->bf_culling_));
 	}
 	if (view()->normal_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Normal parameters");
-		ImGui::ColorEdit3("color##norm",view()->param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
-		ImGui::SliderFloat("length##norm", &(view()->param_normal_->length_), 0.01f, 0.5f);
+		inr |= ImGui::ColorEdit3("color##norm",view()->param_normal_->color_.data(),ImGuiColorEditFlags_NoInputs);
+		inr |= ImGui::SliderFloat("length##norm", &(view()->param_normal_->length_), 0.01f, 0.5f);
 	}
 
 	if (view()->edge_rendering_)
 	{
 		ImGui::Separator();
 		ImGui::Text("Edge parameters");
-		ImGui::ColorEdit3("color##edge",view()->param_edge_->color_.data());
-		ImGui::SliderFloat("Width##edge", &(view()->param_edge_->width_), 1.0f, 10.0f);
+		inr |= ImGui::ColorEdit3("color##edge",view()->param_edge_->color_.data());
+		inr |= ImGui::SliderFloat("Width##edge", &(view()->param_edge_->width_), 1.0f, 10.0f);
 	}
 
-	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 	ImGui::End();
+
+	if (inr)
+	{
+		view()->ask_update();
+	}
+	return inr;
 }
 
 void App::key_press_event(int32 k)
@@ -374,33 +389,35 @@ void Viewer::init()
 	drawer_->end();
 	drawer_->end_list();
 
-	tex_ = cgogn::make_unique<GL::Texture2D>();
-	tex_->alloc(1,1,GL_RGBA8,GL_RGBA);
-	std::vector<GL::Texture2D*> vt{tex_.get()};
-	fbo_ = cgogn::make_unique<GL::FBO>(vt,true,nullptr);
-	fbo_->resize(width(),height());
-	global_fbo_ = fbo_.get();
+//	tex_ = cgogn::make_unique<GL::Texture2D>();
+//	tex_->alloc(1,1,GL_RGBA8,GL_RGBA);
+//	std::vector<GL::Texture2D*> vt{tex_.get()};
+//	fbo_ = cgogn::make_unique<GL::FBO>(vt,true,nullptr);
+//	fbo_->resize(width(),height());
+//	global_fbo_ = fbo_.get();
 
-	param_fst_ = GL::ShaderFSTexture::generate_param();
-	param_fst_->texture_ = fbo_->texture(0);
+//	param_fst_ = GL::ShaderFSTexture::generate_param();
+//	param_fst_->texture_ = fbo_->texture(0);
 }
 
 void Viewer::resize_event(int w, int h)
 {
-	fbo_->resize(w,h);
+//	fbo_->resize(w,h);
 }
 
 void Viewer::draw()
 {
-	if (need_redraw_)
-	{
-		fbo_->bind();
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.25f,0.25f,0.29f,1);
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+//	if (need_redraw_)
+//	{
+		std::cout << "update FBO" << std::endl;
 
-		GLenum idbuf = GL_COLOR_ATTACHMENT0;
-		glDrawBuffers(1,&idbuf);
+//		fbo_->bind();
+//		glEnable(GL_DEPTH_TEST);
+//		glClearColor(0.25f,0.25f,0.29f,1);
+//		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+//		GLenum idbuf = GL_COLOR_ATTACHMENT0;
+//		glDrawBuffers(1,&idbuf);
 
 
 		GL::GLMat4 proj = get_projection_matrix();
@@ -452,14 +469,13 @@ void Viewer::draw()
 		{
 			drawer_rend_->draw(proj,view);
 		}
+//	}
 
-		need_redraw_ = camera().is_moving_;
-	}
-
-	fbo_->release();
-	glDisable(GL_DEPTH_TEST);
-	param_fst_->draw();
-	param_frame_->draw(width(),height());
+//	std::cout << "drw FBO" << std::endl;
+//	fbo_->release();
+//	glDisable(GL_DEPTH_TEST);
+//	param_fst_->draw();
+//	param_frame_->draw(width(),height());
 
 }
 

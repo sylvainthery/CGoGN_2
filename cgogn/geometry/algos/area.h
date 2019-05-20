@@ -108,13 +108,14 @@ inline auto area(
 	return cell_area;
 }
 
-template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR>
+template <typename CellType, typename MAP, typename MASK, typename VERTEX_ATTR, typename CELL_ATTR>
 inline void compute_area(
 	const MAP& map,
 	const MASK& mask,
 	const VERTEX_ATTR& position,
-	Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>& cell_area)
+	CELL_ATTR& cell_area)
 {
+	static_assert(std::is_same<CELL_ATTR, Attribute<ScalarOf<InsideTypeOf<VERTEX_ATTR>>, CellType::ORBIT>>::value);
 	static_assert(is_orbit_of<VERTEX_ATTR, MAP::Vertex::ORBIT>::value,"position must be a vertex attribute");
 
 	map.parallel_foreach_cell([&] (CellType c)

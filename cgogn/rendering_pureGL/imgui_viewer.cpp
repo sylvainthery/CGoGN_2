@@ -47,7 +47,9 @@ ImGUIViewer::ImGUIViewer(ImGUIViewer* share):
 	vp_percent_height_(1),
 	double_click_timeout_(0.4),
 	last_click_time_(0),
-	global_fbo_(nullptr)
+	fbo_(nullptr),
+	tex_(nullptr),
+	param_fst_(nullptr)
 {
 	bool err = gl3wInit();
 }
@@ -104,14 +106,14 @@ bool ImGUIViewer::get_pixel_scene_position(int32 x, int32 y, GLVec3d& P)
 	float64 xogl;
 	float64 yogl;
 	float64 zogl;
-	if (global_fbo_ != nullptr)
+	if (fbo_ != nullptr)
 	{
-		xs = GLint(double(x-vp_x_) / double(vp_w_) * global_fbo_->width());
-		ys = GLint(double((fr_h_-y)-vp_y_) / double(vp_h_) * global_fbo_->height());
-		global_fbo_->bind();
+		xs = GLint(double(x-vp_x_) / double(vp_w_) * fbo_->width());
+		ys = GLint(double((fr_h_-y)-vp_y_) / double(vp_h_) * fbo_->height());
+		fbo_->bind();
 		glReadBuffer(GL_DEPTH_ATTACHMENT);
 		glReadPixels(xs, ys,1,1,GL_DEPTH_COMPONENT,GL_FLOAT,z);
-		global_fbo_->release();
+		fbo_->release();
 		if (*z>=1.0f)
 			return false;
 		xogl = (float64(xs)/vp_w_)*2.0 - 1.0;
@@ -146,7 +148,17 @@ bool ImGUIViewer::get_pixel_scene_position(int32 x, int32 y, GLVec3d& P)
 		return true;
 	}
 	return false;
+}
 
+void ImGUIViewer::internal_init()
+{
+	tex_ = cgogn::make_unique<Texture2D>();
+	tex_->alloc(1,1,GL_RGBA8,GL_RGBA);
+	std::vector<Texture2D*> vt{tex_.get()};
+	fbo_ = cgogn::make_unique<FBO>(vt,true,nullptr);
+	fbo_->resize(width(),height());
+	param_fst_ = ShaderFSTexture::generate_param();
+	param_fst_->texture_ = fbo_->texture(0);
 }
 
 ImGUIApp::ImGUIApp():
@@ -156,7 +168,8 @@ ImGUIApp::ImGUIApp():
 	win_frame_height_(512),
 	interface_scaling_(1.0f),
 	show_imgui_(true),
-	focused_(nullptr)
+	focused_(nullptr),
+	interface_need_redraw_(true)
 {
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
@@ -204,9 +217,6 @@ ImGUIApp::ImGUIApp():
 	std::cout << x << " , " <<  y << std::endl;
 
 
-
-
-
 	glfwSetWindowSizeCallback(window_, [](GLFWwindow* wi, int , int)
 	{
 		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
@@ -217,14 +227,20 @@ ImGUIApp::ImGUIApp():
 			v->update_viewer_geometry(that->win_frame_width_,that->win_frame_height_);
 			v->cam_.set_aspect_ratio(double(v->vp_w_)/v->vp_h_);
 			v->need_redraw_ = true;
+			v->fbo_->resize(v->vp_w_,v->vp_h_);
 			v->resize_event(v->vp_w_,v->vp_h_);
 		}
+		that->interface_need_redraw_ = true;
 	});
 
 	glfwSetMouseButtonCallback(window_, [](GLFWwindow* wi, int b, int a, int m)
 	{
-		if (ImGui::GetIO().WantCaptureMouse) return;
 		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
+		if (ImGui::GetIO().WantCaptureMouse)
+		{
+			that->interface_need_redraw_ = true;
+			return;
+		}
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
 		for (ImGUIViewer* v: that->viewers_)
@@ -267,15 +283,18 @@ ImGUIApp::ImGUIApp():
 				that->focused_->mouse_buttons_ = 0;
 			that->focused_ = nullptr;
 		}
-
 	});
 
 	glfwSetScrollCallback(window_, [](GLFWwindow* wi, double dx, double dy)
 	{
-		if (ImGui::GetIO().WantCaptureMouse) return;
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
+		if (ImGui::GetIO().WantCaptureMouse)
+		{
+			that->interface_need_redraw_ = true;
+			return;
+		}
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
-		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if (v->over_viewport(cx,cy))
@@ -294,10 +313,14 @@ ImGUIApp::ImGUIApp():
 
 	glfwSetCursorPosCallback(window_, [](GLFWwindow* wi, double x, double y)
 	{
-		if (ImGui::GetIO().WantCaptureMouse) return;
+		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
+		if (ImGui::GetIO().WantCaptureMouse)
+		{
+			that->interface_need_redraw_ = true;
+			return;
+		}
 		double cx,cy;
 		glfwGetCursorPos(wi,&cx,&(cy));
-		ImGUIApp* that = static_cast<ImGUIApp*>(glfwGetWindowUserPointer(wi));
 		for (ImGUIViewer* v: that->viewers_)
 		{
 			if (v->mouse_buttons_ && v->over_viewport(cx,cy))
@@ -436,8 +459,10 @@ void ImGUIApp::close_event()
 }
 
 
-void ImGUIApp::interface()
-{}
+bool ImGUIApp::interface()
+{
+	return true;
+}
 
 void ImGUIApp::key_press_event(int32 /*key_code*/)
 {}
@@ -461,6 +486,7 @@ void ImGUIApp::set_window_title(const std::string&  name)
 void ImGUIApp::add_view(ImGUIViewer* view)
 {
 	glfwMakeContextCurrent(window_);
+	view->internal_init();
 	view->init();
 	view->mouse_buttons_ = 0;
 	viewers_.push_back(view);
@@ -493,13 +519,16 @@ void ImGUIApp::adapt_viewers_geometry()
 
 void ImGUIApp::launch()
 {
+	interface_need_redraw_ = true;
 	adapt_viewers_geometry();
 
 	for (ImGUIViewer* v: viewers_)
 	{
+
 		v->update_viewer_geometry(win_frame_width_,win_frame_height_);
-		v->cam_.set_aspect_ratio(double(v->vp_w_)/v->vp_h_);
+		v->fbo_->resize(v->vp_w_,v->vp_h_);
 		v->need_redraw_ = true;
+		v->cam_.set_aspect_ratio(double(v->vp_w_)/v->vp_h_);
 		v->resize_event(v->vp_w_,v->vp_h_);
 	}
 	while (!glfwWindowShouldClose(window_))
@@ -507,24 +536,52 @@ void ImGUIApp::launch()
 
 		glfwPollEvents();
 		glfwMakeContextCurrent(window_);
-		if (show_imgui_)
+
+		for (ImGUIViewer* v: viewers_)
+			interface_need_redraw_ |= v->need_redraw_;
+
+		if (interface_need_redraw_ )
 		{
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui_ImplGlfw_NewFrame();
-			ImGui::NewFrame();
-			interface();
-			ImGui::Render();
+			if (show_imgui_)
+			{
+				ImGui_ImplOpenGL3_NewFrame();
+				ImGui_ImplGlfw_NewFrame();
+				ImGui::NewFrame();
+				interface_need_redraw_ = interface();
+				ImGui::Render();
+			}
+			glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+			for(ImGUIViewer* v: viewers_)
+			{
+				v->spin();
+				v->set_vp();
+				if (v->need_redraw_)
+				{
+					std::cout << "update FBO" << std::endl;
+
+					v->fbo_->bind();
+					glEnable(GL_DEPTH_TEST);
+					glClearColor(0.25f,0.25f,0.29f,1);
+					glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+					GLenum idbuf = GL_COLOR_ATTACHMENT0;
+					glDrawBuffers(1,&idbuf);
+
+					v->draw();
+				}
+
+				std::cout << "draw FBO" << std::endl;
+				v->fbo_->release();
+				glDisable(GL_DEPTH_TEST);
+				v->param_fst_->draw();
+//				v->param_frame_->draw(v->width(),v->height());
+				v->need_redraw_ = v->camera().is_moving_;
+			}
+			if (show_imgui_)
+				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			glfwSwapBuffers(window_);
+			interface_need_redraw_ = false;
 		}
-		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-		for(ImGUIViewer* v: viewers_)
-		{
-			v->spin();
-			v->set_vp();
-			v->draw();
-		}
-		if (show_imgui_)
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		glfwSwapBuffers(window_);
 	}
 	glfwDestroyWindow(window_);
 }

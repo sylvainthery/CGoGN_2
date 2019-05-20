@@ -90,13 +90,13 @@ public:
 	App():	current_view_(0) {}
 	GL::GLColor clear_color;
 	Viewer* view(int i) { return static_cast<Viewer*>(viewers_[i]); }
-	void interface() override;
+	bool interface() override;
 	void key_press_event(int k) override;
 };
 
 
 
-void App::interface()
+bool App::interface()
 {
 	ImGui::SetCurrentContext(context_);
 //	imgui_make_context_current();
@@ -114,6 +114,7 @@ void App::interface()
 	ImGui::Checkbox("single side##flat", &(view(current_view_)->param_flat_->bf_culling_));
 	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	ImGui::End();
+	return true;
 }
 
 void App::key_press_event(int32 k)
