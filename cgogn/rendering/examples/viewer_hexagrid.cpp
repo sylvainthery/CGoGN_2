@@ -239,23 +239,23 @@ void Viewer::keyPressEvent(QKeyEvent *ev)
 
 		case Qt::Key_A:
 			if (ev->modifiers() & Qt::ShiftModifier)
-				clipping_topo_Back_[0] -= 1.0;
-			else
 				clipping_topo_Back_[0] += 1.0;
+			else
+				clipping_topo_Back_[0] -= 1.0;
 			HexaGrid_drawer_rend_->set_clipping_plane_topo2(clipping_topo_Back_);
 			break;
 		case Qt::Key_B:
 			if (ev->modifiers() & Qt::ShiftModifier)
-				clipping_topo_Back_[1] -= 1.0;
-			else
 				clipping_topo_Back_[1] += 1.0;
+			else
+				clipping_topo_Back_[1] -= 1.0;
 			HexaGrid_drawer_rend_->set_clipping_plane_topo2(clipping_topo_Back_);
 			break;
 		case Qt::Key_C:
 			if (ev->modifiers() & Qt::ShiftModifier)
-				clipping_topo_Back_[2] -= 1.0;
-			else
 				clipping_topo_Back_[2] += 1.0;
+			else
+				clipping_topo_Back_[2] -= 1.0;
 			HexaGrid_drawer_rend_->set_clipping_plane_topo2(clipping_topo_Back_);
 			break;
 

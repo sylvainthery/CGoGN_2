@@ -48,7 +48,7 @@ struct FakeAttribute
 {
 	T value_;
 public:
-	static const Orbit orb_ = ORBIT;
+        static const Orbit orb_ = Orbit(ORBIT);
 	FakeAttribute(const T& v):
 		value_(v) {}
 	template <typename C>
