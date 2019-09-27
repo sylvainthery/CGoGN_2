@@ -65,15 +65,17 @@ public:
  *
  * init:
  *  volu_ = cgogn::make_unique<cgogn::rendering::HexaGridDrawer>();
+ *  FakeAttribute<Map3::Volume::ORBIT, Vec3> fake_color(Vec3(0.2,0.8,0.5));
+ *  volu_->update_face(map_,vertex_position_,fake_color,vol_indI,vol_indJ,vol_indK);
+ *  volu_->update_edge(map_,vertex_position_,vol_indI,vol_indJ,vol_indK);
  *  volu_rend_ = volu_->generate_renderer();
- *  volu_->update_face(map_, vertex_position_);
- *  volu_->update_edge(map_, vertex_position_);
- *
- * draw:
+  * draw:
  *  volu_rend_->set_explode_volume(0.9);
  *  volu_rend_->draw_faces(proj, view);
  *  volu_rend_->draw_edges(proj, view);
- *
+ *  volu_rend_->set_clipping_plane_topo(Vec3(3,4,6)); //clip what is before
+ *  volu_rend_->set_clipping_plane_topo2(Vec3(17,16,14)); //clip what is after
+
  */
 class CGOGN_RENDERING_EXPORT HexaGridDrawer
 {
